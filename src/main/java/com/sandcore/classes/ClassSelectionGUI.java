@@ -8,6 +8,7 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,75 +19,69 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sandcore.util.ColorUtils;
+
 /**
- * ClassSelectionGUI constructs and manages the GUI for class selection.
- * It dynamically builds the interface using both class definitions (from classes.yml)
- * and GUI layout settings (from gui.yml). This allows you to customize the title, size,
- * background, and the positions where the dynamic class items will be placed.
+ * ClassSelectionGUI constructs and manages the Class Selection GUI.
+ * It reads its layout from gui.yml (from the "classGUI" section),
+ * letting you configure the title, rows, background, dynamic class item slots,
+ * and fixed items (like close or info buttons).
  */
 public class ClassSelectionGUI implements Listener {
-    private static final String DEFAULT_TITLE = "&aClass Selection";
     private JavaPlugin plugin;
     private ClassManager classManager;
-    
+    private static final String DEFAULT_TITLE = "<hex:#CCCCCC>Class Selection";
+
     public ClassSelectionGUI(JavaPlugin plugin, ClassManager classManager) {
         this.plugin = plugin;
         this.classManager = classManager;
-        // Register as listener for inventory click events.
+        // Register this class as an event listener.
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
-    
+
     /**
-     * Opens the class selection GUI for the specified player, using settings from gui.yml.
-     *
-     * The configuration file (gui.yml) should be located in the plugin's data folder.
-     * If it doesn't exist, you must first copy it from the jar.
-     *
-     * Expected configuration structure (example):
-     *
-     * gui:
-     *   title: "&aCustom GUI Menu"
-     *   rows: 3
-     *   background:
-     *     material: "BLACK_STAINED_GLASS_PANE"
-     *     displayName: "&r"
-     *     lore: []
-     *   classStartSlot: 10
-     *   classSlots: [12, 13, 14]   <-- (optional list of specific slots)
-     *
-     * @param player The player who will see the GUI.
+     * Opens the Class Selection GUI for the specified player using settings from gui.yml.
      */
     public void openGUI(Player player) {
-        // Load gui.yml from the plugin data folder.
+        // Load gui.yml from the plugin's data folder.
         File guiFile = new File(plugin.getDataFolder(), "gui.yml");
         YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+        // Get the configuration section for the Class Selection GUI
+        ConfigurationSection classGuiSection = guiConfig.getConfigurationSection("classGUI");
+        if (classGuiSection == null) {
+            plugin.getLogger().severe("classGUI section not found in gui.yml. Using default settings.");
+        }
         
-        // Read basic settings.
-        String title = guiConfig.getString("gui.title", DEFAULT_TITLE);
-        int rows = guiConfig.getInt("gui.rows", 3);
+        // Read title, rows, and calculate inventory size.
+        String title = (classGuiSection != null) ? classGuiSection.getString("title", DEFAULT_TITLE) : DEFAULT_TITLE;
+        int rows = (classGuiSection != null) ? classGuiSection.getInt("rows", 3) : 3;
         int inventorySize = rows * 9;
-        Inventory guiInventory = Bukkit.createInventory(null, inventorySize, ChatColor.translateAlternateColorCodes('&', title));
+        Inventory guiInventory = Bukkit.createInventory(null, inventorySize, ColorUtils.translate(title));
         
-        // Setup background item.
-        String bgMaterialName = guiConfig.getString("gui.background.material", "BLACK_STAINED_GLASS_PANE");
+        // Setup background item from configuration.
         Material bgMaterial;
-        try {
-            bgMaterial = Material.valueOf(bgMaterialName);
-        } catch (IllegalArgumentException e) {
-            bgMaterial = Material.BARRIER;
+        if (classGuiSection != null) {
+            String bgMaterialName = classGuiSection.getString("background.material", "GRAY_STAINED_GLASS_PANE");
+            try {
+                bgMaterial = Material.valueOf(bgMaterialName);
+            } catch (IllegalArgumentException e) {
+                bgMaterial = Material.BARRIER;
+            }
+        } else {
+            bgMaterial = Material.GRAY_STAINED_GLASS_PANE;
         }
         ItemStack bgItem = new ItemStack(bgMaterial);
         ItemMeta bgMeta = bgItem.getItemMeta();
-        bgMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', guiConfig.getString("gui.background.displayName", "&r")));
-        List<String> bgLore = guiConfig.getStringList("gui.background.lore");
+        String bgDisplay = (classGuiSection != null) ? classGuiSection.getString("background.displayName", "<hex:#FFFFFF>") : "<hex:#FFFFFF>";
+        bgMeta.setDisplayName(ColorUtils.translate(bgDisplay));
+        List<String> bgLore = (classGuiSection != null) ? classGuiSection.getStringList("background.lore") : new ArrayList<>();
         List<String> translatedBgLore = new ArrayList<>();
         for (String line : bgLore) {
-            translatedBgLore.add(ChatColor.translateAlternateColorCodes('&', line));
+            translatedBgLore.add(ColorUtils.translate(line));
         }
         bgMeta.setLore(translatedBgLore);
         bgItem.setItemMeta(bgMeta);
-        
-        // Fill entire inventory with background.
+        // Fill all inventory slots with the background.
         for (int i = 0; i < inventorySize; i++) {
             guiInventory.setItem(i, bgItem.clone());
         }
@@ -99,43 +94,74 @@ public class ClassSelectionGUI implements Listener {
             return;
         }
         
-        // Option 1: Use specific classSlots if provided.
-        List<Integer> classSlots = guiConfig.getIntegerList("gui.classSlots");
+        // Determine dynamic slots: either a list ("classSlots") or a starting slot ("classStartSlot").
+        List<Integer> classSlots = null;
+        int classStartSlot = 10; // default
+        if (classGuiSection != null) {
+            classSlots = classGuiSection.getIntegerList("classSlots");
+            if (classSlots == null || classSlots.isEmpty()) {
+                classStartSlot = classGuiSection.getInt("classStartSlot", 10);
+            }
+        }
+        int index = 0;
         if (classSlots != null && !classSlots.isEmpty() && classSlots.size() >= classDefs.size()) {
-            int slotIndex = 0;
             for (Map.Entry<String, ClassDefinition> entry : classDefs.entrySet()) {
-                int slot = classSlots.get(slotIndex);
+                int slot = classSlots.get(index);
                 if (slot >= 0 && slot < inventorySize) {
                     setClassItem(guiInventory, entry.getValue(), slot);
                 }
-                slotIndex++;
+                index++;
             }
         } else {
-            // Option 2: Use a starting slot from config or default to 10.
-            int startSlot = guiConfig.getInt("gui.classStartSlot", 10);
-            int i = 0;
             for (Map.Entry<String, ClassDefinition> entry : classDefs.entrySet()) {
-                int slot = startSlot + i;
+                int slot = classStartSlot + index;
                 if (slot < inventorySize) {
                     setClassItem(guiInventory, entry.getValue(), slot);
                 }
-                i++;
+                index++;
             }
         }
         
-        // Optionally: You could load extra fixed items from a section like gui.fixedItems
-        // and overlay them here if needed.
+        // Add fixed items defined in the configuration.
+        if (classGuiSection != null) {
+            ConfigurationSection fixedItemsSection = classGuiSection.getConfigurationSection("fixedItems");
+            if (fixedItemsSection != null) {
+                for (String key : fixedItemsSection.getKeys(false)) {
+                    ConfigurationSection itemSection = fixedItemsSection.getConfigurationSection(key);
+                    if (itemSection != null) {
+                        int slot = itemSection.getInt("slot", -1);
+                        if (slot >= 0 && slot < inventorySize) {
+                            String materialName = itemSection.getString("material", "BARRIER");
+                            Material material;
+                            try {
+                                material = Material.valueOf(materialName);
+                            } catch (IllegalArgumentException e) {
+                                material = Material.BARRIER;
+                            }
+                            ItemStack fixedItem = new ItemStack(material);
+                            ItemMeta meta = fixedItem.getItemMeta();
+                            String displayName = itemSection.getString("displayName", "");
+                            meta.setDisplayName(ColorUtils.translate(displayName));
+                            List<String> lore = itemSection.getStringList("lore");
+                            List<String> translatedLore = new ArrayList<>();
+                            for (String line : lore) {
+                                translatedLore.add(ColorUtils.translate(line));
+                            }
+                            meta.setLore(translatedLore);
+                            fixedItem.setItemMeta(meta);
+                            guiInventory.setItem(slot, fixedItem);
+                        }
+                    }
+                }
+            }
+        }
         
         player.openInventory(guiInventory);
         plugin.getLogger().info("Opened class selection GUI for " + player.getName() + " using gui.yml configuration.");
     }
     
     /**
-     * Helper method to set a class item in the inventory at the specified slot.
-     *
-     * @param inventory The inventory to update.
-     * @param def       The class definition.
-     * @param slot      The slot to place the item.
+     * Helper method to place a dynamic class item in the inventory at the specified slot.
      */
     private void setClassItem(Inventory inventory, ClassDefinition def, int slot) {
         Material material;
@@ -146,58 +172,60 @@ public class ClassSelectionGUI implements Listener {
         }
         ItemStack classItem = new ItemStack(material);
         ItemMeta meta = classItem.getItemMeta();
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', def.getDisplayName()));
+        meta.setDisplayName(ColorUtils.translate(def.getDisplayName()));
         List<String> lore = new ArrayList<>();
-        lore.add(ChatColor.translateAlternateColorCodes('&', def.getLore()));
+        lore.add(ColorUtils.translate(def.getLore()));
         meta.setLore(lore);
         classItem.setItemMeta(meta);
         inventory.setItem(slot, classItem);
     }
     
     /**
-     * Listens to inventory click events for the class selection GUI.
-     * It cancels all item movements and processes the player's click to set the chosen class,
-     * providing feedback and logging the selection.
-     *
-     * @param event The inventory click event.
+     * Listens to inventory click events. If a dynamic class item is clicked,
+     * the player's class is set accordingly.
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         String inventoryTitle = event.getView().getTitle();
-        // Check if the inventory matches our GUI's title by stripping color codes.
-        if (ChatColor.stripColor(inventoryTitle).equals(ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', DEFAULT_TITLE)))
-            || inventoryTitle.contains("Custom GUI Menu")) {
-            event.setCancelled(true); // Lock the GUI.
-            
-            if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
-            
-            Player player = (Player) event.getWhoClicked();
-            int slot = event.getSlot();
-            
-            List<ClassDefinition> classList = new ArrayList<>(classManager.getAllClasses().values());
-            // Determine if the click corresponds to a class selection.
-            // We check the dynamic slots; if slot is one of the registered ones in our config, then process it.
-            int usedSlot = -1;
-            // Check if a list of dedicated class slots was used.
-            File guiFile = new File(plugin.getDataFolder(), "gui.yml");
-            YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
-            List<Integer> classSlots = guiConfig.getIntegerList("gui.classSlots");
-            if (classSlots != null && !classSlots.isEmpty()) {
-                if (classSlots.contains(slot)) {
-                    usedSlot = classSlots.indexOf(slot);
-                }
-            } else {
-                usedSlot = slot - guiConfig.getInt("gui.classStartSlot", 10);
-            }
-            
-            if (usedSlot >= 0 && usedSlot < classList.size()) {
-                ClassDefinition selected = classList.get(usedSlot);
-                classManager.setPlayerClass(player, selected.getId());
-                player.sendMessage(ChatColor.GREEN + "You have selected the " +
-                        ChatColor.translateAlternateColorCodes('&', selected.getDisplayName()) + ChatColor.GREEN + " class!");
-                plugin.getLogger().info("Player " + player.getName() + " selected class " + selected.getId());
-                player.closeInventory();
-            }
+        // Identify this GUI by checking for "Class Selection" in the stripped title.
+        if (!ChatColor.stripColor(inventoryTitle).contains("Class Selection")) {
+            return;
         }
+        event.setCancelled(true); // Lock the GUI so items cannot be moved.
+        if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) {
+            return;
+        }
+        Player player = (Player) event.getWhoClicked();
+        int slot = event.getSlot();
+        
+        // Reload the classGUI configuration from gui.yml to determine dynamic slots.
+        File guiFile = new File(plugin.getDataFolder(), "gui.yml");
+        YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+        ConfigurationSection classGuiSection = guiConfig.getConfigurationSection("classGUI");
+        if (classGuiSection == null) {
+            return;
+        }
+        List<Integer> classSlots = classGuiSection.getIntegerList("classSlots");
+        int dynamicIndex = -1;
+        if (classSlots != null && !classSlots.isEmpty()) {
+            if (classSlots.contains(slot)) {
+                dynamicIndex = classSlots.indexOf(slot);
+            }
+        } else {
+            int classStartSlot = classGuiSection.getInt("classStartSlot", 10);
+            dynamicIndex = slot - classStartSlot;
+        }
+        if (dynamicIndex < 0) {
+            return;
+        }
+        List<ClassDefinition> classList = new ArrayList<>(classManager.getAllClasses().values());
+        if (dynamicIndex >= classList.size()) {
+            return;
+        }
+        ClassDefinition selected = classList.get(dynamicIndex);
+        classManager.setPlayerClass(player, selected.getId());
+        player.sendMessage(ColorUtils.translate("<hex:#00FF00>You have selected the " + selected.getDisplayName() + " class!"));
+        plugin.getLogger().info("Player " + player.getName() + " selected class " + selected.getId());
+        player.closeInventory();
     }
 } 

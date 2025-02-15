@@ -1,41 +1,36 @@
-# General GUI Configuration for SandCore Plugin
+# GUI configuration for SandCore Plugin
 #
-# This file lets you customize the in-game GUI.
-# The GUI supports hex color codes using the '&' syntax.
+# This file allows you to customize various in-game GUIs.
+# It now uses gradient and hex tags instead of & color codes.
 #
-# Settings:
-#   title: The GUI title (supports hex colors).
-#   rows: The number of rows in the inventory (each row has 9 slots).
+# There are two sections:
+#   defaultGUI: A general purpose GUI configuration.
+#   classGUI: The layout configuration for the Class Selection GUI.
 #
-# Background:
-#   You can define a background item to fill empty slots.
-#
-# Items:
-#   Define interactive items with a unique key.
-#   Each item can have a:
-#     - slot: an integer (0-indexed slot position; slots go from 0 to (rows*9)-1).
-#     - material: a valid Bukkit Material name.
-#     - displayName: the name shown for the item (supports hex color codes).
-#     - lore: a list of lines shown as additional information.
-#
-gui:
-  title: "&aCustom GUI Menu"
+classGUI:
+  # This section is used by the Class Selection GUI.
+  title: "<gradient:#0099FF:#6600FF>Class Selection</gradient>"
   rows: 3
   background:
-    material: "BLACK_STAINED_GLASS_PANE"
-    displayName: "&r"    # Reset color for background (no text)
-    lore: []             # No lore for the background
-  items:
-    item1:
-      slot: 10
-      material: "DIAMOND"
-      displayName: "&b&lClaim Reward"
-      lore:
-        - "&7Click here to claim your reward!"
-        - "&eRewards will be given upon confirmation."
-    item2:
-      slot: 16
+    material: "GRAY_STAINED_GLASS_PANE"
+    displayName: "<hex:#FFFFFF> "
+    lore: []
+  # Define specific slots for dynamic class items.
+  classSlots: [10, 11, 12, 13, 14]
+  # Alternatively, you can specify a starting slot:
+  # classStartSlot: 10
+  fixedItems:
+    # Fixed item used to close the GUI.
+    close:
+      slot: 26
       material: "BARRIER"
-      displayName: "&cClose"
+      displayName: "<hex:#FF0000>Close"
       lore:
-        - "&7Click to close the GUI." 
+        - "<hex:#AAAAAA>Click to exit the classes selection."
+    # Fixed item used for GUI information.
+    info:
+      slot: 4
+      material: "BOOK"
+      displayName: "<gradient:#FFA500:#FFD700>Class Selection</gradient>"
+      lore:
+        - "<hex:#AAAAAA>Choose a class by clicking on it." 
