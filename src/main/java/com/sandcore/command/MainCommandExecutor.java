@@ -48,12 +48,6 @@ public class MainCommandExecutor implements CommandExecutor {
                     plugin.getLogger().info("Default classes.yml saved and loaded.");
                 }
                 
-                // Reload casting configuration.
-                if (plugin.getCastingManager() != null) {
-                    plugin.getCastingManager().reloadCastingConfig();
-                    plugin.getLogger().info("Casting configuration reloaded successfully.");
-                }
-                
                 // Reload gui.yml.
                 File guiFile = new File(plugin.getDataFolder(), "gui.yml");
                 if (guiFile.exists()) {
@@ -78,6 +72,10 @@ public class MainCommandExecutor implements CommandExecutor {
                 plugin.getLogger().severe("Error reloading configuration: " + e.getMessage());
                 e.printStackTrace();
             }
+            return true;
+        }
+        if (args[0].equalsIgnoreCase("reloadcast")) {
+            sender.sendMessage("Casting system has been removed.");
             return true;
         }
         return false;
