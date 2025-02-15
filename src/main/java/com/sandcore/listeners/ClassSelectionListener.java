@@ -40,8 +40,8 @@ public class ClassSelectionListener implements Listener {
             data.setSelectedClass(className);
             // Save the player data so that it persists.
             playerDataManager.savePlayerData();
-            player.sendMessage(ChatColor.GREEN + "You have selected class: " + className);
             player.closeInventory();
+            player.sendMessage(ChatColor.GREEN + "You have selected the " + className + " class.");
         }
     }
 } 

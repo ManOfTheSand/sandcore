@@ -19,10 +19,10 @@ public class ProfileGUI {
     public static void open(Player player, PlayerData data, YamlConfiguration guiConfig) {
         // Retrieve profile GUI parameters from gui.yml
         String section = "profileGUI";
-        String title = ChatColor.translateAlternateColorCodes('&', 
-                guiConfig.getString(section + ".title", "&6Profile"));
+        String rawTitle = guiConfig.getString(section + ".title", "&6Profile");
+        String title = stripGradient(rawTitle);
         int size = guiConfig.getInt(section + ".size", 9);
-        Inventory inventory = Bukkit.createInventory(null, size, title);
+        Inventory inventory = Bukkit.createInventory(new ProfileGUIHolder(), size, title);
         
         // Retrieve the configuration for the profile item.
         String itemPath = section + ".items.profileItem";
@@ -61,5 +61,10 @@ public class ProfileGUI {
         
         // Open the inventory for the player.
         player.openInventory(inventory);
+    }
+
+    private static String stripGradient(String input) {
+        // This simple regex removes <gradient:#xxxxxx:#xxxxxx> and </gradient> tags.
+        return input.replaceAll("<gradient:#[A-Fa-f0-9]{6}:#[A-Fa-f0-9]{6}>", "").replace("</gradient>", "");
     }
 } 
