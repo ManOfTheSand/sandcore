@@ -265,4 +265,77 @@ public class CastingManager implements Listener {
         this.castSound = getSoundOrDefault(config.getString("casting.sounds.cast", "ENTITY_ENDER_DRAGON_GROWL"), Sound.ENTITY_ENDER_DRAGON_GROWL);
         logger.info("Casting configuration reloaded.");
     }
+    
+    /**
+     * Returns true if the player is currently in casting mode.
+     *
+     * @param player The player to check.
+     * @return true if in casting mode, false otherwise.
+     */
+    public boolean isInCastingMode(Player player) {
+        return castingPlayers.containsKey(player.getUniqueId());
+    }
+    
+    /**
+     * Manually registers a click for the player's casting combo.
+     *
+     * @param player    The player casting.
+     * @param clickType "L" for left click or "R" for right click.
+     */
+    public void registerClick(Player player, String clickType) {
+        if (!castingPlayers.containsKey(player.getUniqueId())) {
+            return;
+        }
+        CastingData data = castingPlayers.get(player.getUniqueId());
+        if (data.timeoutTask != null) {
+            data.timeoutTask.cancel();
+        }
+        data.timeoutTask = scheduleTimeout(player);
+        data.combo.add(clickType);
+        StringBuilder comboDisplay = new StringBuilder("Casting Combo: ");
+        for (String s : data.combo) {
+            comboDisplay.append("[").append(s).append("] ");
+        }
+        sendActionBar(player, comboDisplay.toString());
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+        if (data.combo.size() == 3) {
+            data.timeoutTask.cancel();
+            processCastingCombo(player, data.combo);
+            castingPlayers.remove(player.getUniqueId());
+        }
+    }
+    
+    /**
+     * Toggles the casting mode for the given player.
+     * If the player is in casting mode, it cancels it; otherwise, it starts casting mode.
+     *
+     * @param player The player to toggle casting mode.
+     */
+    public void toggleCastingMode(Player player) {
+        if (isInCastingMode(player)) {
+            cancelCastingMode(player);
+        } else {
+            startCasting(player);
+            sendActionBar(player, enterMessage);
+            player.playSound(player.getLocation(), enterSound, 1.0f, 1.0f);
+            logger.info(player.getName() + " has toggled casting mode on.");
+        }
+    }
+    
+    /**
+     * Cancels casting mode for the given player.
+     *
+     * @param player The player whose casting mode will be cancelled.
+     */
+    private void cancelCastingMode(Player player) {
+        CastingData data = castingPlayers.remove(player.getUniqueId());
+        if (data != null) {
+            if (data.timeoutTask != null) {
+                data.timeoutTask.cancel();
+            }
+            sendActionBar(player, exitMessage);
+            player.playSound(player.getLocation(), exitSound, 1.0f, 1.0f);
+            logger.info(player.getName() + " has toggled casting mode off.");
+        }
+    }
 } 
