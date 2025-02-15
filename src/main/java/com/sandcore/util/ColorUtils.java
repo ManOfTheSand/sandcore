@@ -1,8 +1,9 @@
 package com.sandcore.util;
 
-import org.bukkit.ChatColor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.md_5.bungee.api.ChatColor;
 
 /**
  * Utility class for converting custom color and gradient tags into Minecraft color codes.

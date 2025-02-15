@@ -86,7 +86,7 @@ public class ClassSelectionGUI implements Listener {
             guiInventory.setItem(i, bgItem.clone());
         }
         
-        // Place dynamic class items.
+        // Place dynamic class items using the slot defined in each class configuration.
         Map<String, ClassDefinition> classDefs = classManager.getAllClasses();
         if (classDefs.isEmpty()) {
             player.sendMessage(ChatColor.RED + "No class definitions loaded. Check your classes.yml file.");
@@ -94,31 +94,16 @@ public class ClassSelectionGUI implements Listener {
             return;
         }
         
-        // Determine dynamic slots: either a list ("classSlots") or a starting slot ("classStartSlot").
-        List<Integer> classSlots = null;
-        int classStartSlot = 10; // default
-        if (classGuiSection != null) {
-            classSlots = classGuiSection.getIntegerList("classSlots");
-            if (classSlots == null || classSlots.isEmpty()) {
-                classStartSlot = classGuiSection.getInt("classStartSlot", 10);
+        int defaultSlot = (classGuiSection != null) ? classGuiSection.getInt("classStartSlot", 10) : 10;
+        int counter = 0;
+        for (Map.Entry<String, ClassDefinition> entry : classDefs.entrySet()) {
+            int slot = entry.getValue().getSlot();
+            if (slot < 0 || slot >= inventorySize) {
+                slot = defaultSlot + counter;
+                counter++;
             }
-        }
-        int index = 0;
-        if (classSlots != null && !classSlots.isEmpty() && classSlots.size() >= classDefs.size()) {
-            for (Map.Entry<String, ClassDefinition> entry : classDefs.entrySet()) {
-                int slot = classSlots.get(index);
-                if (slot >= 0 && slot < inventorySize) {
-                    setClassItem(guiInventory, entry.getValue(), slot);
-                }
-                index++;
-            }
-        } else {
-            for (Map.Entry<String, ClassDefinition> entry : classDefs.entrySet()) {
-                int slot = classStartSlot + index;
-                if (slot < inventorySize) {
-                    setClassItem(guiInventory, entry.getValue(), slot);
-                }
-                index++;
+            if (slot < inventorySize) {
+                setClassItem(guiInventory, entry.getValue(), slot);
             }
         }
         
