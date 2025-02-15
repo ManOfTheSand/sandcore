@@ -3,9 +3,14 @@ package com.sandcore;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sandcore.classes.ClassManager;
+import com.sandcore.command.ClassesCommandExecutor;
 import com.sandcore.command.MainCommandExecutor;
 
 public class SandCore extends JavaPlugin {
+
+    // Keep a reference so that the ClassManager can be used later in your plugin.
+    private ClassManager classManager;
 
     @Override
     public void onEnable() {
@@ -19,6 +24,9 @@ public class SandCore extends JavaPlugin {
 
         // Register core services.
         registerServices();
+
+        // Initialize the ClassManager (loads classes from classes.yml).
+        classManager = new ClassManager(this);
 
         // Register the main command executor.
         registerCommands();
@@ -118,6 +126,12 @@ public class SandCore extends JavaPlugin {
                 getLogger().info("Command /reload registered successfully!");
             } else {
                 getLogger().severe("Command /reload is not defined in plugin.yml!");
+            }
+            if (getCommand("classes") != null) {
+                getCommand("classes").setExecutor(new ClassesCommandExecutor(this, classManager));
+                getLogger().info("Command /classes registered successfully!");
+            } else {
+                getLogger().severe("Command /classes is not defined in plugin.yml!");
             }
         } catch (Exception e) {
             getLogger().severe("Error registering commands: " + e.getMessage());
