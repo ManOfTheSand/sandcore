@@ -12,6 +12,7 @@ import com.sandcore.command.ClassesCommandExecutor;
 import com.sandcore.command.DebugXPCommandExecutor;
 import com.sandcore.command.GiveXPCommandExecutor;
 import com.sandcore.command.MainCommandExecutor;
+import com.sandcore.command.ProfileCommandExecutor;
 import com.sandcore.command.SetLevelCommandExecutor;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.hud.HUDManager;
@@ -218,6 +219,12 @@ public class SandCore extends JavaPlugin {
                 getLogger().info("Command /debugxp registered successfully.");
             } else {
                 getLogger().severe("Command /debugxp is not defined in plugin.yml!");
+            }
+            if(getCommand("profile") != null) {
+                getCommand("profile").setExecutor(new ProfileCommandExecutor(this, playerDataManager));
+                getLogger().info("Command /profile registered successfully.");
+            } else {
+                getLogger().severe("Command /profile is not defined in plugin.yml!");
             }
         } catch (Exception e) {
             getLogger().severe("Error registering commands: " + e.getMessage());

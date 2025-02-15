@@ -33,4 +33,17 @@ classGUI:
       material: "BOOK"
       displayName: "<gradient:#FFA500:#FFD700>Class Selection</gradient>"
       lore:
-        - "<hex:#AAAAAA>Choose a class by clicking on it." 
+        - "<hex:#AAAAAA>Choose a class by clicking on it."
+
+profileGUI:
+  title: "&6Profile"
+  size: 9
+  items:
+    profileItem:
+      slot: 4
+      material: PAPER
+      displayName: "&aProfile Info"
+      lore:
+        - "Selected Class: {selectedClass}"
+        - "Level: {level}"
+        - "XP: {xp}" 

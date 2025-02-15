@@ -23,6 +23,9 @@ commands:
   debugxp:
     description: "Debug and test the XP/level system. Usage: /debugxp [player] [xpAmount]"
     usage: "/debugxp [player] [xpAmount]"
+  profile:
+    description: "Opens your profile GUI displaying your selected class, level, and XP."
+    usage: "/profile"
     
 permissions:
   sandmmo.admin.reload:
