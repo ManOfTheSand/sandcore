@@ -20,6 +20,9 @@ commands:
   setlevel:
     description: "Set a player's level."
     usage: "/setlevel <player> <level>"
+  debugxp:
+    description: "Debug and test the XP/level system. Usage: /debugxp [player] [xpAmount]"
+    usage: "/debugxp [player] [xpAmount]"
     
 permissions:
   sandmmo.admin.reload:

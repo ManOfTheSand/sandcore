@@ -164,13 +164,10 @@ public class SandCore extends JavaPlugin {
     private void registerCommands() {
         try {
             getLogger().info("Registering commands...");
-            if (getCommand("reload") != null) {
-                // Pass a reference to this plugin instance so that the executor can access its methods.
-                getCommand("reload").setExecutor(new MainCommandExecutor(this));
-                getLogger().info("Command /reload registered successfully!");
-            } else {
-                getLogger().severe("Command /reload is not defined in plugin.yml!");
-            }
+            // Register reload command.
+            getCommand("reload").setExecutor(new MainCommandExecutor(this));
+            
+            // Existing commands
             if (getCommand("classes") != null) {
                 getCommand("classes").setExecutor(new ClassesCommandExecutor(this, classManager));
                 getLogger().info("Command /classes registered successfully!");
@@ -182,6 +179,26 @@ public class SandCore extends JavaPlugin {
                 getLogger().info("Command /classinfo registered successfully!");
             } else {
                 getLogger().severe("Command /classinfo is not defined in plugin.yml!");
+            }
+
+            // Register leveling system admin commands.
+            if(getCommand("givexp") != null) {
+                getCommand("givexp").setExecutor(new GiveXPCommandExecutor(this, levelManager, playerDataManager, hudManager));
+                getLogger().info("Command /givexp registered successfully.");
+            } else {
+                getLogger().severe("Command /givexp is not defined in plugin.yml!");
+            }
+            if(getCommand("setlevel") != null) {
+                getCommand("setlevel").setExecutor(new SetLevelCommandExecutor(this, levelManager, playerDataManager, hudManager));
+                getLogger().info("Command /setlevel registered successfully.");
+            } else {
+                getLogger().severe("Command /setlevel is not defined in plugin.yml!");
+            }
+            if(getCommand("debugxp") != null) {
+                getCommand("debugxp").setExecutor(new DebugXPCommandExecutor(this, levelManager, playerDataManager, hudManager));
+                getLogger().info("Command /debugxp registered successfully.");
+            } else {
+                getLogger().severe("Command /debugxp is not defined in plugin.yml!");
             }
         } catch (Exception e) {
             getLogger().severe("Error registering commands: " + e.getMessage());
