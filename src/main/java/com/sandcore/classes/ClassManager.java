@@ -10,6 +10,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sandcore.util.ChatUtil;
+
 /**
  * ClassManager is responsible for loading and managing player class definitions
  * from classes.yml and for storing/retrieving players' chosen classes.
@@ -141,5 +143,18 @@ public class ClassManager {
             plugin.getLogger().severe("Error loading player class assignments: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Retrieves the formatted display name for the given class key.
+     * If the class doesn't exist, the raw key is returned.
+     */
+    public String getFormattedClassName(String classKey) {
+        if (classes != null && classes.containsKey(classKey)) {
+            // Assume ClassDefinition has a method getDisplayName() returning the raw display name.
+            String rawName = classes.get(classKey).getDisplayName();
+            return ChatUtil.translateColors(rawName);
+        }
+        return classKey;
     }
 } 
