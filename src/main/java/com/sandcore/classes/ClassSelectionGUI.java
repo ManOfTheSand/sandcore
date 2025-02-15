@@ -40,9 +40,16 @@ public class ClassSelectionGUI implements Listener {
      */
     public void openGUI(Player player) {
         Map<String, ClassDefinition> classes = classManager.getAllClasses();
-        // Create an inventory with 9 slots. Adjust size if more classes are expected.
-        Inventory gui = Bukkit.createInventory(null, 9, GUI_TITLE);
+        plugin.getLogger().info("ClassSelectionGUI: Found " + classes.size() + " class definitions.");
 
+        if (classes.isEmpty()) {
+            // Notify the player for debugging.
+            player.sendMessage(ChatColor.RED + "No class definitions loaded. Check your classes.yml file.");
+            return;
+        }
+
+        // Create an inventory with 9 slots (modify size if you expect more classes)
+        Inventory gui = Bukkit.createInventory(null, 9, GUI_TITLE);
         int slot = 0;
         for (Map.Entry<String, ClassDefinition> entry : classes.entrySet()) {
             ClassDefinition def = entry.getValue();
@@ -51,7 +58,7 @@ public class ClassSelectionGUI implements Listener {
                 // Convert the material name (from config) into a Bukkit Material.
                 material = Material.valueOf(def.getMaterial());
             } catch (IllegalArgumentException e) {
-                // Fallback to BARRIER if the provided material is invalid.
+                // If the provided material is invalid, fallback to a barrier.
                 material = Material.BARRIER;
             }
             ItemStack item = new ItemStack(material);
@@ -63,12 +70,12 @@ public class ClassSelectionGUI implements Listener {
             lore.add(ChatColor.translateAlternateColorCodes('&', def.getLore()));
             meta.setLore(lore);
             item.setItemMeta(meta);
-
             gui.setItem(slot, item);
             slot++;
         }
-        // Open the inventory GUI for the player.
+        // Open the created GUI for the player.
         player.openInventory(gui);
+        plugin.getLogger().info("Opened class selection GUI for " + player.getName());
     }
 
     /**
