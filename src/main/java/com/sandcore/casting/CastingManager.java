@@ -15,7 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -157,21 +156,6 @@ public class CastingManager implements Listener {
      */
     private void sendActionBar(Player player, String message) {
         player.sendActionBar(message);
-    }
-    
-    /**
-     * Listens for the F key press (using item swap event) to enter casting mode.
-     *
-     * @param event The swap hand items event.
-     */
-    @EventHandler
-    public void onSwapHandItems(PlayerSwapHandItemsEvent event) {
-        // Use the swap-hand event as a trigger for entering casting mode.
-        Player player = event.getPlayer();
-        if (!castingPlayers.containsKey(player.getUniqueId())) {
-            event.setCancelled(true); // Prevent the standard item swap.
-            startCasting(player);
-        }
     }
     
     /**
