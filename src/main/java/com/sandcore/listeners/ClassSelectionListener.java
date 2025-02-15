@@ -53,4 +53,8 @@ public class ClassSelectionListener implements Listener {
             player.sendMessage(ChatColor.GREEN + "You have selected the " + className + " class.");
         }
     }
+
+    public void onClassSelect(Player player, String selectedClass) {
+        player.sendMessage("You have selected " + selectedClass + "!");
+    }
 } 
