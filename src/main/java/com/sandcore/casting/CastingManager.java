@@ -1,390 +1,197 @@
-package com.sandcore.casting;
+package com.sandcore.mmo.casting;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Logger;
-
+import com.sandcore.manager.PlayerClassDataManager;
+import com.sandcore.manager.ClassManager;
+import com.sandcore.classes.ClassDefinition;
+import io.lumine.mythic.api.skills.Skill;
+import io.lumine.mythic.bukkit.MythicBukkit;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import com.sandcore.classes.ClassDefinition;
-import com.sandcore.classes.ClassManager;
-import com.sandcore.data.PlayerDataManager;
-import com.sandcore.levels.LevelManager;
-import com.sandcore.util.ChatUtil;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
- * CastingManager is responsible for handling the simplified casting system.
- * 
- * A player presses F (detected via the PlayerSwapHandItemsEvent) to enter casting mode.
- * Once in casting mode, the next three left/right clicks (collected via PlayerInteractEvent)
- * are recorded. Each click is displayed on the action bar and a sound is played.
- * If three clicks are not completed within the allowed timeframe the combo is cancelled.
- */
-public class CastingManager implements Listener {
-
+public class CastingManager {
     private final JavaPlugin plugin;
     private final Logger logger;
+    private final Map<UUID, CastingState> castingPlayers = new HashMap<>();
+    private int timeoutSeconds = 5;
+    // Casting sound when entering casting mode.
+    private String enterSoundName = "BLOCK_NOTE_BLOCK_PLING";
+    private float enterSoundVolume = 1.0F;
+    private float enterSoundPitch = 1.0F;
     private final ClassManager classManager;
-    private final PlayerDataManager playerDataManager;
-    private final LevelManager levelManager;
-    
-    // Store casting data for each player currently in casting mode.
-    private final Map<UUID, CastingData> castingPlayers = new HashMap<>();
-    // Timeout delay in ticks for each combo click (e.g., 40 ticks = 2 seconds).
-    private final long TIMEOUT_DELAY = 40L;
-    // Debounce delay in milliseconds to prevent duplicate click registration.
-    private static final long CLICK_DEBOUNCE_DELAY = 200L;
-    
-    // Global casting feedback messages (loaded from config.yml).
-    private String enterMessage;
-    private String exitMessage;
-    private String invalidComboMessage;
-    private String insufficientLevelMessage;
-    private String castMessage;
-    // Sound settings (also from config.yml).
-    private Sound enterSound;
-    private Sound exitSound;
-    private Sound castSound;
-    
-    public CastingManager(JavaPlugin plugin, ClassManager classManager, PlayerDataManager playerDataManager, LevelManager levelManager) {
+
+    public CastingManager(JavaPlugin plugin, ClassManager classManager) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         this.classManager = classManager;
-        this.playerDataManager = playerDataManager;
-        this.levelManager = levelManager;
-        
-        // Load casting feedback and sound settings from config.yml under "casting"
-        FileConfiguration config = plugin.getConfig();
-        this.enterMessage = config.getString("casting.feedback.enterMessage", "You have entered casting mode!");
-        this.exitMessage = config.getString("casting.feedback.exitMessage", "You have exited casting mode.");
-        this.invalidComboMessage = config.getString("casting.feedback.invalidCombo", "Invalid casting combo: {combo}");
-        this.insufficientLevelMessage = config.getString("casting.feedback.insufficientLevel", "You must be at least level {minLevel} to cast {skill}.");
-        this.castMessage = config.getString("casting.feedback.castMessage", "Casting spell: {skill}!");
-        
-        this.enterSound = getSoundOrDefault(config.getString("casting.sounds.enter", "BLOCK_NOTE_BLOCK_PLING"), Sound.BLOCK_NOTE_BLOCK_PLING);
-        this.exitSound = getSoundOrDefault(config.getString("casting.sounds.exit", "BLOCK_NOTE_BLOCK_BASS"), Sound.BLOCK_NOTE_BLOCK_BASS);
-        this.castSound = getSoundOrDefault(config.getString("casting.sounds.cast", "ENTITY_ENDER_DRAGON_GROWL"), Sound.ENTITY_ENDER_DRAGON_GROWL);
-        
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        logger.info("CastingManager initialized with simplified casting system.");
+        loadConfiguration();
     }
-    
-    private Sound getSoundOrDefault(String soundName, Sound def) {
-        try {
-            return Sound.valueOf(soundName.toUpperCase());
-        } catch (Exception e) {
-            return def;
-        }
-    }
-    
-    /**
-     * Inner class representing a casting ability.
-     * (Ensure that your classes.yml defines an "abilities" section for each class and that ClassDefinition.getAbilities()
-     * returns a Map<String, CastingAbility> in which the key is the click combo—for example, "L" or "L,R".)
-     */
-    public static class CastingAbility {
-        private final String skill;
-        private final int minLevel;
-        
-        public CastingAbility(String skill, int minLevel) {
-            this.skill = skill;
-            this.minLevel = minLevel;
-        }
-        
-        public String getSkill() {
-            return skill;
-        }
-        
-        public int getMinLevel() {
-            return minLevel;
-        }
-    }
-    
-    // Inner class that holds a player's current combo and associated tasks.
-    private class CastingData {
-        List<String> combo = new ArrayList<>();
+
+    private class CastingState {
+        StringBuilder combo = new StringBuilder();
         BukkitTask timeoutTask;
-        BukkitTask updateTask; // New task for smooth action bar updates.
-        long lastClickTime = 0; // To debounce clicks.
+        com.sandcore.mmo.manager.ClassManager.PlayerClass playerClass;
     }
-    
-    /**
-     * Starts casting mode for the player.
-     *
-     * @param player The player entering casting mode.
-     */
-    private void startCasting(Player player) {
-        if (castingPlayers.containsKey(player.getUniqueId())) {
-            // Player is already in casting mode.
-            return;
-        }
-        CastingData data = new CastingData();
-        castingPlayers.put(player.getUniqueId(), data);
-        // Start a timeout in case the player does not complete the combo.
-        data.timeoutTask = scheduleTimeout(player);
-        // Schedule a repeating task to update the action bar smoothly every 2 ticks.
-        data.updateTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            StringBuilder comboDisplay = new StringBuilder("Casting Combo: ");
-            for (String s : data.combo) {
-                comboDisplay.append("[").append(s).append("] ");
-            }
-            sendActionBar(player, comboDisplay.toString());
-        }, 0L, 2L);
-        logger.info(player.getName() + " has entered casting mode.");
-    }
-    
-    /**
-     * Schedules a timeout task to cancel the casting combo if not completed in time.
-     *
-     * @param player The player in casting mode.
-     * @return The BukkitTask of the scheduled timeout.
-     */
-    private BukkitTask scheduleTimeout(final Player player) {
-        return Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            CastingData data = castingPlayers.remove(player.getUniqueId());
-            if (data != null) {
-                if (data.updateTask != null) {
-                    data.updateTask.cancel();
+
+    public void loadConfiguration() {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                File configFile = new File(plugin.getDataFolder(), "config.yml");
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+                
+                // Load casting timeout
+                timeoutSeconds = config.getInt("casting.timeout", 5);
+                
+                // Load enter sound configuration
+                if (config.isConfigurationSection("casting.enter_sound")) {
+                    enterSoundName = config.getString("casting.enter_sound.name", "BLOCK_NOTE_BLOCK_PLING");
+                    enterSoundVolume = (float) config.getDouble("casting.enter_sound.volume", 1.0);
+                    enterSoundPitch = (float) config.getDouble("casting.enter_sound.pitch", 1.0);
                 }
-                sendActionBar(player, "Casting cancelled due to timeout.");
-                logger.info("Casting combo timed out for " + player.getName());
+                
+                // (Key combos are now defined per class in classes.yml – see ClassManager)
+                logger.info("Casting timeout: " + timeoutSeconds + " seconds, "
+                    + "enter sound: " + enterSoundName + " (" + enterSoundVolume + "/" + enterSoundPitch + ")");
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed to load casting configuration", e);
             }
-        }, TIMEOUT_DELAY);
+        });
     }
-    
-    /**
-     * Utility method to send an action bar message to the player.
-     *
-     * @param player  The target player.
-     * @param message The message to display.
-     */
-    private void sendActionBar(Player player, String message) {
-        player.sendActionBar(ChatUtil.translateColors(message));
-    }
-    
-    /**
-     * Listens for player clicks while in casting mode.
-     * Records left/right clicks, updates the action bar, plays a sound,
-     * and processes the combo once three clicks are recorded.
-     *
-     * @param event The player interact event.
-     */
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        // Only process main-hand interactions to avoid registering duplicate clicks.
-        if (event.getHand() == null || !event.getHand().equals(EquipmentSlot.HAND)) {
-            return;
-        }
-        Player player = event.getPlayer();
+
+    public void toggleCastingMode(Player player) {
         UUID uuid = player.getUniqueId();
-        if (!castingPlayers.containsKey(uuid)) {
-            return; // Not in casting mode.
-        }
-        
-        // Process only left or right clicks.
-        Action action = event.getAction();
-        if (action != Action.LEFT_CLICK_AIR && action != Action.LEFT_CLICK_BLOCK
-                && action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
-        
-        event.setCancelled(true); // Prevent any default interaction effects during casting.
-        CastingData data = castingPlayers.get(uuid);
-        
-        // Debounce to prevent duplicate click registration.
-        long now = System.currentTimeMillis();
-        if (now - data.lastClickTime < CLICK_DEBOUNCE_DELAY) {
-            return;
-        }
-        data.lastClickTime = now;
-        
-        // Restart the timeout for combo continuation.
-        if (data.timeoutTask != null) {
-            data.timeoutTask.cancel();
-        }
-        data.timeoutTask = scheduleTimeout(player);
-        
-        // Determine click type: "L" for left, "R" for right.
-        String clickType = (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) ? "L" : "R";
-        data.combo.add(clickType);
-        
-        // Play a pling sound for each click.
-        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
-        
-        // When the combo reaches exactly 3 clicks, process the combo.
-        if (data.combo.size() == 3) {
-            data.timeoutTask.cancel();
-            data.updateTask.cancel();
-            processCastingCombo(player, data.combo);
-            // Remove the player from casting mode.
-            castingPlayers.remove(uuid);
+        if (castingPlayers.containsKey(uuid)) {
+            cancelCasting(player);
+            player.sendMessage("§cCasting mode disabled");
+        } else {
+            com.sandcore.mmo.manager.ClassManager.PlayerClass pClass = classManager.getPlayerClass(player);
+            if (pClass == null || pClass.getKeyCombos().isEmpty()) {
+                player.sendMessage("§cNo casting abilities available for your class");
+                return;
+            }
+
+            CastingState state = new CastingState();
+            state.playerClass = pClass;
+            castingPlayers.put(uuid, state);
+            player.sendMessage("§aCasting mode enabled - Perform a 3-click combo!");
+            logger.fine("toggleCastingMode: Enabled casting mode for player " + player.getName() + " (class: " + state.playerClass.getId() + ")");
+
+            // Play class-specific casting sound from player's class config.
+            try {
+                String classSound = pClass.getCastingSoundName();
+                float classSoundVol = pClass.getCastingSoundVolume();
+                float classSoundPitch = pClass.getCastingSoundPitch();
+                player.playSound(player.getLocation(), org.bukkit.Sound.valueOf(classSound), classSoundVol, classSoundPitch);
+                logger.fine("toggleCastingMode: Played class-specific casting sound (" + classSound + ") for player " + player.getName());
+            } catch (Exception ex) {
+                player.sendMessage("§cError playing casting sound.");
+                logger.warning("toggleCastingMode: Error playing casting sound for player " + player.getName() + ": " + ex.getMessage());
+            }
         }
     }
-    
-    /**
-     * Processes the complete casting combo.
-     * In this simplified system the combo is simply logged and a message is sent,
-     * but you can add additional logic here to trigger spells or abilities.
-     *
-     * @param player The player completing the combo.
-     * @param combo  The list representing the combo (e.g., ["L", "R", "L"]).
-     */
-    private void processCastingCombo(Player player, List<String> combo) {
-        // Build the combo key (e.g., "LRL")
-        StringBuilder executedCombo = new StringBuilder();
-        for (String s : combo) {
-            executedCombo.append(s);
+
+    private void cancelCasting(Player player) {
+        CastingState state = castingPlayers.remove(player.getUniqueId());
+        if (state != null && state.timeoutTask != null) {
+            state.timeoutTask.cancel();
         }
-        String comboKey = executedCombo.toString().toUpperCase();
-
-        // Retrieve the player's class definition.
-        ClassDefinition classDef = classManager.getPlayerClass(player);
-        if (classDef == null) {
-            player.sendMessage(ChatUtil.translateColors("&cNo class selected. Please choose a class."));
-            return;
-        }
-
-        // Get the abilities map from the class definition.
-        if (classDef.getAbilities() == null || classDef.getAbilities().isEmpty()) {
-            player.sendMessage(ChatUtil.translateColors("&cYour class has no defined abilities."));
-            return;
-        }
-
-        // Validate the input combo against the class abilities.
-        if (!classDef.getAbilities().containsKey(comboKey)) {
-            String invalid = invalidComboMessage.replace("{combo}", comboKey);
-            sendActionBar(player, invalid);
-            return;
-        }
-
-        CastingAbility ability = classDef.getAbilities().get(comboKey);
-
-        // Check if the player meets the minimum level requirement.
-        int playerLevel = player.getLevel(); // Using player's built-in level.
-        if (playerLevel < ability.getMinLevel()) {
-            String msg = insufficientLevelMessage.replace("{minLevel}", String.valueOf(ability.getMinLevel()))
-                                         .replace("{skill}", ability.getSkill());
-            sendActionBar(player, msg);
-            return;
-        }
-
-        // All checks passed: cast the ability.
-        String castMsg = castMessage.replace("{skill}", ability.getSkill());
-        sendActionBar(player, castMsg);
-        player.playSound(player.getLocation(), castSound, 1.0f, 1.0f);
-        logger.info(player.getName() + " casted skill " + ability.getSkill() + " using combo " + comboKey);
-
-        // TODO: Integrate the MythicMobs API call here to trigger the actual skill.
+        // Update GUI through your existing GUI system
     }
-    
-    /**
-     * Reloads the casting configuration from the plugin's config.yml.
-     */
-    public void reloadCastingConfig() {
-        FileConfiguration config = plugin.getConfig();
-        this.enterMessage = config.getString("casting.feedback.enterMessage", "You have entered casting mode!");
-        this.exitMessage = config.getString("casting.feedback.exitMessage", "You have exited casting mode.");
-        this.invalidComboMessage = config.getString("casting.feedback.invalidCombo", "Invalid casting combo: {combo}");
-        this.insufficientLevelMessage = config.getString("casting.feedback.insufficientLevel", "You must be at least level {minLevel} to cast {skill}.");
-        this.castMessage = config.getString("casting.feedback.castMessage", "Casting spell: {skill}!");
+
+    public void handleClick(Player player, ClickType clickType) {
+        CastingState state = castingPlayers.get(player.getUniqueId());
+        if (state == null) return;
+
+        // Start timeout on first click
+        if (state.combo.length() == 0) {
+            state.timeoutTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                cancelCasting(player);
+                player.sendMessage("§cCast timed out!");
+            }, timeoutSeconds * 20L);
+        }
+
+        // Record click and update action bar with current combo keys
+        state.combo.append(clickType == ClickType.LEFT ? "L" : "R");
+        player.sendActionBar(net.kyori.adventure.text.Component.text("Combo: " + state.combo.toString()));
         
-        this.enterSound = getSoundOrDefault(config.getString("casting.sounds.enter", "BLOCK_NOTE_BLOCK_PLING"), Sound.BLOCK_NOTE_BLOCK_PLING);
-        this.exitSound = getSoundOrDefault(config.getString("casting.sounds.exit", "BLOCK_NOTE_BLOCK_BASS"), Sound.BLOCK_NOTE_BLOCK_BASS);
-        this.castSound = getSoundOrDefault(config.getString("casting.sounds.cast", "ENTITY_ENDER_DRAGON_GROWL"), Sound.ENTITY_ENDER_DRAGON_GROWL);
-        logger.info("Casting configuration reloaded.");
+        if (state.combo.length() == 3) {
+            completeCast(player, state);
+        }
     }
-    
+
+    private void completeCast(Player player, CastingState state) {
+        try {
+            String combo = state.combo.toString();
+            logger.fine("completeCast: Player " + player.getName() + " performed combo: " + combo);
+
+            // Retrieve key combos from the player's class (loaded from classes.yml)
+            java.util.Map<String, String> keyCombos = state.playerClass.getKeyCombos();
+            String skillName = keyCombos.get(combo);
+
+            if (skillName != null) {
+                Skill skill = MythicBukkit.inst().getSkillManager().getSkill(skillName).orElse(null);
+                if (skill != null) {
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        MythicBukkit.inst().getAPIHelper().castSkill(player, skillName);
+                        player.sendMessage("§aCasted: §e" + skillName);
+                        logger.fine("completeCast: Successfully cast skill: " + skillName + " for player " + player.getName());
+                    });
+                } else {
+                    player.sendMessage("§cInvalid skill configuration");
+                    logger.warning("completeCast: Skill " + skillName + " not found for player " + player.getName());
+                }
+            } else {
+                player.sendMessage("§cInvalid combo for your class");
+                logger.warning("completeCast: Combo " + combo + " not valid for class " + state.playerClass.getId() + " (player " + player.getName() + ")");
+            }
+        } finally {
+            // Instead of canceling casting mode, reset the combo and reschedule timeout.
+            if (state.timeoutTask != null) {
+                state.timeoutTask.cancel();
+            }
+            state.combo.setLength(0); // reset combo
+            state.timeoutTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                cancelCasting(player);
+                player.sendMessage("§cCasting mode timed out!");
+            }, timeoutSeconds * 20L);
+            player.sendActionBar(net.kyori.adventure.text.Component.text("Combo: "));
+            logger.fine("completeCast: Combo reset for player " + player.getName());
+        }
+    }
+
+    public enum ClickType {
+        LEFT, RIGHT
+    }
+
     /**
      * Returns true if the player is currently in casting mode.
-     *
-     * @param player The player to check.
-     * @return true if in casting mode, false otherwise.
      */
-    public boolean isInCastingMode(Player player) {
-        return castingPlayers.containsKey(player.getUniqueId());
+    public boolean isCasting(Player player) {
+         return castingPlayers.containsKey(player.getUniqueId());
     }
-    
-    /**
-     * Manually registers a click for the player's casting combo.
-     *
-     * @param player    The player casting.
-     * @param clickType "L" for left click or "R" for right click.
-     */
-    public void registerClick(Player player, String clickType) {
-        if (!castingPlayers.containsKey(player.getUniqueId())) {
-            return;
-        }
-        CastingData data = castingPlayers.get(player.getUniqueId());
 
-        // Debounce to prevent duplicate click registration.
-        long now = System.currentTimeMillis();
-        if(now - data.lastClickTime < CLICK_DEBOUNCE_DELAY) {
-            return;
-        }
-        data.lastClickTime = now;
-
-        if (data.timeoutTask != null) {
-            data.timeoutTask.cancel();
-        }
-        data.timeoutTask = scheduleTimeout(player);
-        data.combo.add(clickType);
-
-        // No need for immediate update; the updateTask handles smooth updating.
-        if (data.combo.size() == 3) {
-            data.timeoutTask.cancel();
-            data.updateTask.cancel();
-            processCastingCombo(player, data.combo);
-            castingPlayers.remove(player.getUniqueId());
-        }
-    }
-    
     /**
-     * Toggles the casting mode for the given player.
-     * If the player is in casting mode, it cancels it; otherwise, it starts casting mode.
+     * Checks if the skill with the given id is unlocked for the player's class.
      *
-     * @param player The player to toggle casting mode.
+     * @param player the player attempting to cast.
+     * @param skillId the skill id to check.
+     * @return true if the player's class has unlocked this skill, false otherwise.
      */
-    public void toggleCastingMode(Player player) {
-        if (isInCastingMode(player)) {
-            cancelCastingMode(player);
-        } else {
-            startCasting(player);
-            sendActionBar(player, enterMessage);
-            player.playSound(player.getLocation(), enterSound, 1.0f, 1.0f);
-            logger.info(player.getName() + " has toggled casting mode on.");
-        }
-    }
-    
-    /**
-     * Cancels casting mode for the given player.
-     *
-     * @param player The player whose casting mode will be cancelled.
-     */
-    private void cancelCastingMode(Player player) {
-        CastingData data = castingPlayers.remove(player.getUniqueId());
-        if (data != null) {
-            if (data.timeoutTask != null) {
-                data.timeoutTask.cancel();
-            }
-            if (data.updateTask != null) {
-                data.updateTask.cancel();
-            }
-            sendActionBar(player, exitMessage);
-            player.playSound(player.getLocation(), exitSound, 1.0f, 1.0f);
-            logger.info(player.getName() + " has toggled casting mode off.");
-        }
+    public boolean isSkillUnlocked(Player player, String skillId) {
+        // Retrieve player's chosen class (set via /class)
+        String classId = PlayerClassDataManager.getPlayerClass(player);
+        if (classId == null) return false;
+        ClassDefinition def = classManager.getClassDefinition(classId);
+        if (def == null) return false;
+        return def.getSkills().stream().anyMatch(skill -> skill.getId().equalsIgnoreCase(skillId));
     }
 } 
