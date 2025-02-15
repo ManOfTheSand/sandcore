@@ -2,6 +2,7 @@ package com.sandcore.classes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,10 @@ public class ClassSelectionGUI implements Listener {
     private JavaPlugin plugin;
     private ClassManager classManager;
     private static final String DEFAULT_TITLE = "<hex:#CCCCCC>Class Selection";
+    
+    // Map to keep track of which inventory (GUI) has which dynamic class items.
+    // Key: the Inventory instance; Value: mapping from slot number to ClassDefinition.
+    private Map<Inventory, Map<Integer, ClassDefinition>> guiMappings = new HashMap<>();
 
     public ClassSelectionGUI(JavaPlugin plugin, ClassManager classManager) {
         this.plugin = plugin;
@@ -96,16 +101,22 @@ public class ClassSelectionGUI implements Listener {
         
         int defaultSlot = (classGuiSection != null) ? classGuiSection.getInt("classStartSlot", 10) : 10;
         int counter = 0;
+        // Build a mapping of slot -> ClassDefinition for this GUI.
+        Map<Integer, ClassDefinition> mapping = new HashMap<>();
         for (Map.Entry<String, ClassDefinition> entry : classDefs.entrySet()) {
             int slot = entry.getValue().getSlot();
             if (slot < 0 || slot >= inventorySize) {
+                // Fallback: assign sequentially starting at defaultSlot.
                 slot = defaultSlot + counter;
                 counter++;
             }
             if (slot < inventorySize) {
                 setClassItem(guiInventory, entry.getValue(), slot);
+                mapping.put(slot, entry.getValue());
             }
         }
+        // Store the mapping for this GUI.
+        guiMappings.put(guiInventory, mapping);
         
         // Add fixed items defined in the configuration.
         if (classGuiSection != null) {
@@ -171,6 +182,11 @@ public class ClassSelectionGUI implements Listener {
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
+        // Ensure we only process clicks in the top inventory.
+        if (event.getRawSlot() >= event.getInventory().getSize()) {
+            return;
+        }
+
         String inventoryTitle = event.getView().getTitle();
         // Identify this GUI by checking for "Class Selection" in the stripped title.
         if (!ChatColor.stripColor(inventoryTitle).contains("Class Selection")) {
@@ -182,35 +198,24 @@ public class ClassSelectionGUI implements Listener {
         }
         Player player = (Player) event.getWhoClicked();
         int slot = event.getSlot();
-        
-        // Reload the classGUI configuration from gui.yml to determine dynamic slots.
-        File guiFile = new File(plugin.getDataFolder(), "gui.yml");
-        YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
-        ConfigurationSection classGuiSection = guiConfig.getConfigurationSection("classGUI");
-        if (classGuiSection == null) {
+
+        // Look up the mapping for this GUI.
+        Map<Integer, ClassDefinition> mapping = guiMappings.get(event.getInventory());
+        if (mapping == null) {
             return;
         }
-        List<Integer> classSlots = classGuiSection.getIntegerList("classSlots");
-        int dynamicIndex = -1;
-        if (classSlots != null && !classSlots.isEmpty()) {
-            if (classSlots.contains(slot)) {
-                dynamicIndex = classSlots.indexOf(slot);
-            }
-        } else {
-            int classStartSlot = classGuiSection.getInt("classStartSlot", 10);
-            dynamicIndex = slot - classStartSlot;
-        }
-        if (dynamicIndex < 0) {
+
+        // If the clicked slot corresponds to a class, process the selection.
+        if (!mapping.containsKey(slot)) {
             return;
         }
-        List<ClassDefinition> classList = new ArrayList<>(classManager.getAllClasses().values());
-        if (dynamicIndex >= classList.size()) {
-            return;
-        }
-        ClassDefinition selected = classList.get(dynamicIndex);
+
+        ClassDefinition selected = mapping.get(slot);
         classManager.setPlayerClass(player, selected.getId());
         player.sendMessage(ColorUtils.translate("<hex:#00FF00>You have selected the " + selected.getDisplayName() + " class!"));
         plugin.getLogger().info("Player " + player.getName() + " selected class " + selected.getId());
         player.closeInventory();
+        // Optionally, remove the mapping for this closed inventory.
+        guiMappings.remove(event.getInventory());
     }
 } 
