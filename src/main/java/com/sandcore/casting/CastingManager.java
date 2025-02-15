@@ -193,4 +193,8 @@ public class CastingManager {
         if (def == null) return false;
         return def.getSkills().stream().anyMatch(skill -> skill.getId().equalsIgnoreCase(skillId));
     }
+
+    public ClassManager getClassManager() {
+        return this.classManager;
+    }
 } 

@@ -46,21 +46,22 @@ public class CastingListener implements Listener {
     @EventHandler
     public void onComboClick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        // Only proceed if player is in casting mode.
-        CastingManager castingManager = ServiceRegistry.getCastingManager();
-        if (castingManager == null || !castingManager.isCasting(player)) {
+        // Use the already-injected CastingManager instance.
+        if (!this.castingManager.isCasting(player)) {
             return;
         }
-        // Check if action is a valid click type (left or right) for a combo click.
+
+        // Process valid click actions.
         if (event.getAction() == Action.LEFT_CLICK_AIR ||
             event.getAction() == Action.LEFT_CLICK_BLOCK ||
             event.getAction() == Action.RIGHT_CLICK_AIR ||
             event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            ClassManager.PlayerClass playerClass = ServiceRegistry.getClassManager().getPlayerClass(player);
+            // Retrieve the player's class via CastingManager's ClassManager.
+            ClassManager.PlayerClass playerClass = this.castingManager.getClassManager().getPlayerClass(player);
             if (playerClass != null) {
-                String soundName = playerClass.getComboClickSoundName();
-                float volume = playerClass.getComboClickSoundVolume();
-                float pitch = playerClass.getComboClickSoundPitch();
+                String soundName = playerClass.getCastingSoundName();
+                float volume = playerClass.getCastingSoundVolume();
+                float pitch = playerClass.getCastingSoundPitch();
                 try {
                     Sound sound = Sound.valueOf(soundName);
                     player.playSound(player.getLocation(), sound, volume, pitch);
