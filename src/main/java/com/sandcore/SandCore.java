@@ -69,6 +69,14 @@ public class SandCore extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
                 new XPListener(xpSourceManager, playerDataManager, levelManager, hudManager, getLogger()), this);
 
+        // Schedule an asynchronous repeating task to auto-save player data every 60 seconds.
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (playerDataManager != null) {
+                playerDataManager.savePlayerData();
+                getLogger().info("Auto-saved player data.");
+            }
+        }, 1200L, 1200L); // 1200 ticks = 60 seconds at 20 tps
+
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
 

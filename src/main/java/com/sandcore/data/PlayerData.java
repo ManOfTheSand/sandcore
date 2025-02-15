@@ -10,11 +10,13 @@ public class PlayerData {
     private final UUID playerUUID;
     private int xp;
     private int level;
+    private String selectedClass;
     
     public PlayerData(UUID playerUUID) {
         this.playerUUID = playerUUID;
         this.xp = 0;
         this.level = 0;
+        this.selectedClass = ""; // default value; adjust if needed
     }
     
     public UUID getPlayerUUID() {
@@ -35,6 +37,14 @@ public class PlayerData {
     
     public void setLevel(int level) {
         this.level = level;
+    }
+    
+    public String getSelectedClass() {
+        return selectedClass;
+    }
+
+    public void setSelectedClass(String selectedClass) {
+        this.selectedClass = selectedClass;
     }
     
     /**

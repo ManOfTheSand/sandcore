@@ -39,9 +39,11 @@ public class PlayerDataManager {
                     UUID uuid = UUID.fromString(key);
                     int xp = playerDataConfig.getInt("players." + key + ".xp", 0);
                     int level = playerDataConfig.getInt("players." + key + ".level", 0);
+                    String selectedClass = playerDataConfig.getString("players." + key + ".selectedClass", "");
                     PlayerData data = new PlayerData(uuid);
                     data.setXP(xp);
                     data.setLevel(level);
+                    data.setSelectedClass(selectedClass);
                     playerDataMap.put(uuid, data);
                 }
             }
@@ -62,6 +64,7 @@ public class PlayerDataManager {
                 PlayerData data = entry.getValue();
                 playerDataConfig.set("players." + uuid.toString() + ".xp", data.getXP());
                 playerDataConfig.set("players." + uuid.toString() + ".level", data.getLevel());
+                playerDataConfig.set("players." + uuid.toString() + ".selectedClass", data.getSelectedClass());
             }
             playerDataConfig.save(playerDataFile);
             logger.info("Player data saved successfully.");
