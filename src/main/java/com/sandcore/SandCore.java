@@ -167,4 +167,8 @@ public class SandCore extends JavaPlugin {
             e.printStackTrace();
         }
     }
+
+    public ClassManager getClassManager() {
+        return classManager;
+    }
 }
