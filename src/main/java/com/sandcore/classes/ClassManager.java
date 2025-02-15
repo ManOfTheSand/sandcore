@@ -48,13 +48,34 @@ public class ClassManager {
             FileConfiguration config = YamlConfiguration.loadConfiguration(classesFile);
             if (config.contains("classes")) {
                 for (String key : config.getConfigurationSection("classes").getKeys(false)) {
-                    // Retrieve each attribute for a class.
-                    String displayName = config.getString("classes." + key + ".displayName");
-                    String lore = config.getString("classes." + key + ".lore");
-                    String material = config.getString("classes." + key + ".material");
-                    int slot = config.getInt("classes." + key + ".slot", -1);
-                    ClassDefinition def = new ClassDefinition(key, displayName, lore, material, slot);
-                    classes.put(key, def);
+                    ConfigurationSection sec = config.getConfigurationSection("classes." + key);
+                    // Read standard fields (e.g., displayName, material, slot, etc.)
+                    String displayName = sec.getString("displayName");
+                    String lore = sec.getString("lore");
+                    String material = sec.getString("material");
+                    int slot = sec.getInt("slot");
+                    ClassDefinition classDefinition = new ClassDefinition(key, displayName, lore, material, slot);
+                    
+                    // Parse abilities section for this class (if it exists).
+                    if (sec.isConfigurationSection("abilities")) {
+                        ConfigurationSection abilitiesSection = sec.getConfigurationSection("abilities");
+                        Map<String, CastingManager.CastingAbility> abilities = new HashMap<>();
+                        for (String comboKey : abilitiesSection.getKeys(false)) {
+                            String skill = abilitiesSection.getString(comboKey + ".skill", "");
+                            int minLevel = abilitiesSection.getInt(comboKey + ".minLevel", 0);
+                            abilities.put(comboKey.toUpperCase(), new CastingManager.CastingAbility(skill, minLevel));
+                            
+                            // Debug log: show that the ability is registered.
+                            if (plugin.getConfig().getBoolean("debug", false)) {
+                                plugin.getLogger().info("Registered ability for class " + key.toLowerCase() +
+                                    " :: Combo: " + comboKey + " -> Skill: " + skill + ", minLevel: " + minLevel);
+                            }
+                        }
+                        classDefinition.setAbilities(abilities);
+                    }
+                    
+                    // Store or register the class definition as per your implementation.
+                    classes.put(key.toLowerCase(), classDefinition);
                     plugin.getLogger().info("Loaded class definition: " + key);
                 }
             } else {

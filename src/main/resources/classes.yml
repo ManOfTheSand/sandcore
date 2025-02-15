@@ -6,10 +6,10 @@ classes:
     material: "BLAZE_ROD"
     abilities:
       L,L,L:
-        skill: "spear_stab-exec"
+        skill: "SmashAttack:"
         minLevel: 1
       L,L,R:
-        skill: "Lightning"
+        skill: "SmashAttack:"
         minLevel: 3
   warrior:
     slot: 12
@@ -18,7 +18,7 @@ classes:
     material: "IRON_SWORD"
     abilities:
       R,R,R:
-        skill: "spear_stab-exec"
+        skill: "SmashAttack:"
         minLevel: 2
   rogue:
     slot: 14
