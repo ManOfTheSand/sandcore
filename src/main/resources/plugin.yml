@@ -14,7 +14,13 @@ commands:
   classinfo:
     description: "Displays your current class or another player's class."
     usage: "/classinfo [player]"
-
+  givexp:
+    description: "Give XP to a player."
+    usage: "/givexp <player> <amount>"
+  setlevel:
+    description: "Set a player's level."
+    usage: "/setlevel <player> <level>"
+    
 permissions:
   sandmmo.admin.reload:
     description: "Allows the user to reload the plugin."
