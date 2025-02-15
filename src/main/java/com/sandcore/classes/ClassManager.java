@@ -11,7 +11,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.sandcore.casting.CastingManager;
 import com.sandcore.util.ChatUtil;
 
 /**
@@ -98,19 +97,13 @@ public class ClassManager {
                     // Parse abilities section for this class (if it exists).
                     if (sec.isConfigurationSection("abilities")) {
                         ConfigurationSection abilitiesSection = sec.getConfigurationSection("abilities");
-                        Map<String, CastingManager.CastingAbility> abilities = new HashMap<>();
+                        Map<String, String> keyCombos = new HashMap<>();
                         for (String comboKey : abilitiesSection.getKeys(false)) {
+                            // Assume the configuration simply defines the skill id for the combo.
                             String skill = abilitiesSection.getString(comboKey + ".skill", "");
-                            int minLevel = abilitiesSection.getInt(comboKey + ".minLevel", 0);
-                            abilities.put(comboKey.toUpperCase(), new CastingManager.CastingAbility(skill, minLevel));
-                            
-                            // Debug log: show that the ability is registered.
-                            if (plugin.getConfig().getBoolean("debug", false)) {
-                                plugin.getLogger().info("Registered ability for class " + key.toLowerCase() +
-                                    " :: Combo: " + comboKey + " -> Skill: " + skill + ", minLevel: " + minLevel);
-                            }
+                            keyCombos.put(comboKey.toUpperCase(), skill);
                         }
-                        classDefinition.setAbilities(abilities);
+                        classDefinition.setKeyCombos(keyCombos);
                     }
                     
                     // Store or register the class definition as per your implementation.

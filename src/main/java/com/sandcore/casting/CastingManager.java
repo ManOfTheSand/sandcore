@@ -1,21 +1,23 @@
 package com.sandcore.casting;
 
-import com.sandcore.classes.ClassDefinition;
-import com.sandcore.classes.ClassManager;
-import io.lumine.mythic.api.skills.Skill;
-import io.lumine.mythic.bukkit.MythicBukkit;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
+
+import com.sandcore.classes.ClassDefinition;
+import com.sandcore.classes.ClassManager;
+
+import io.lumine.mythic.api.skills.Skill;
+import io.lumine.mythic.bukkit.MythicBukkit;
 
 public class CastingManager {
     private final JavaPlugin plugin;
@@ -27,6 +29,14 @@ public class CastingManager {
     private float enterSoundVolume = 1.0F;
     private float enterSoundPitch = 1.0F;
     private final ClassManager classManager;
+    
+    // ---------------------------------------------------------------------------------
+    // Newly added inner class to satisfy references from ClassManager and others.
+    // You can later extend this stub with additional properties or behaviors as needed.
+    public static class CastingAbility {
+        // Stub implementation for casting ability functionality.
+    }
+    // ---------------------------------------------------------------------------------
 
     public CastingManager(JavaPlugin plugin, ClassManager classManager) {
         this.plugin = plugin;
@@ -186,15 +196,23 @@ public class CastingManager {
      * @return true if the player's class has unlocked this skill, false otherwise.
      */
     public boolean isSkillUnlocked(Player player, String skillId) {
-        // Retrieve player's chosen class (set via /class)
-        String classId = com.sandcore.classes.PlayerClassDataManager.getPlayerClass(player);
-        if (classId == null) return false;
-        ClassDefinition def = classManager.getClassDefinition(classId);
+        // Retrieve player's chosen class via the ClassManager.
+        ClassManager.PlayerClass pClass = classManager.getPlayerClass(player);
+        if (pClass == null) return false;
+        ClassDefinition def = classManager.getClassDefinition(pClass.getId());
         if (def == null) return false;
-        return def.getSkills().stream().anyMatch(skill -> skill.getId().equalsIgnoreCase(skillId));
+        // Check if any key combo value matches the provided skillId.
+        return def.getKeyCombos().values().stream().anyMatch(id -> id.equalsIgnoreCase(skillId));
     }
 
     public ClassManager getClassManager() {
         return this.classManager;
+    }
+
+    /**
+     * Reloads the casting configuration.
+     */
+    public void reloadCastingConfig() {
+        loadConfiguration();
     }
 } 

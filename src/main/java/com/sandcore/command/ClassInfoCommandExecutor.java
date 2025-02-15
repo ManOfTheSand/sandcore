@@ -36,7 +36,12 @@ public class ClassInfoCommandExecutor implements CommandExecutor {
                 return true;
             }
             Player player = (Player) sender;
-            ClassDefinition def = classManager.getPlayerClass(player);
+            ClassManager.PlayerClass pClass = classManager.getPlayerClass(player);
+            if (pClass == null) {
+                player.sendMessage("You haven't selected a class.");
+                return true;
+            }
+            ClassDefinition def = classManager.getClassDefinition(pClass.getId());
             if (def == null) {
                 player.sendMessage(ColorUtils.translate("<hex:#FFFF00>You do not have a class set."));
             } else {
@@ -54,7 +59,12 @@ public class ClassInfoCommandExecutor implements CommandExecutor {
                 sender.sendMessage(ColorUtils.translate("<hex:#FF0000>Player " + targetName + " is not online."));
                 return true;
             }
-            ClassDefinition def = classManager.getPlayerClass(target);
+            ClassManager.PlayerClass pClass = classManager.getPlayerClass(target);
+            if (pClass == null) {
+                sender.sendMessage("You haven't selected a class.");
+                return true;
+            }
+            ClassDefinition def = classManager.getClassDefinition(pClass.getId());
             if (def == null) {
                 sender.sendMessage(ColorUtils.translate("<hex:#FFFF00>" + target.getName() + " does not have a class set."));
             } else {
