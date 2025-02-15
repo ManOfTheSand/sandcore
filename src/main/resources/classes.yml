@@ -1,0 +1,13 @@
+classes:
+  mage:
+    displayName: "&9Mage"
+    lore: "&7A master of the arcane."
+    material: "BLAZE_ROD"
+  warrior:
+    displayName: "&6Warrior"
+    lore: "&7A fearless fighter."
+    material: "IRON_SWORD"
+  rogue:
+    displayName: "&aRogue"
+    lore: "&7A stealthy assassin."
+    material: "LEATHER_BOOTS"
