@@ -1,0 +1,16 @@
+classes:
+  mage:
+    slot: 10
+    displayName: "<gradient:#FFA500:#FFD700>Mage</gradient>"
+    lore: "<hex:#AAAAAA>A master of magic."
+    material: "BLAZE_ROD"
+  warrior:
+    slot: 11
+    displayName: "<hex:#FF0000>Warrior</hex>"
+    lore: "<hex:#AAAAAA>A fearless fighter."
+    material: "IRON_SWORD"
+  rogue:
+    slot: 12
+    displayName: "<hex:#00FF00>Rogue</hex>"
+    lore: "<hex:#AAAAAA>A stealthy assassin."
+    material: "LEATHER_BOOTS"
