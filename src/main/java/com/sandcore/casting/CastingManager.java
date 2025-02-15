@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -139,6 +138,20 @@ public class CastingManager {
         }
         combo.append(clickType);
         clickCombos.put(uuid, combo);
+        
+        // Check if the combo now has exactly three clicks.
+        String comboStr = combo.toString();
+        int count = comboStr.split(",").length;
+        if (count == 3) {
+            // Cancel any existing scheduled task for this player.
+            if (comboTasks.containsKey(uuid)) {
+                comboTasks.get(uuid).cancel();
+                comboTasks.remove(uuid);
+            }
+            processCombo(player, comboStr);
+            clickCombos.remove(uuid);
+            return;
+        }
         
         // Cancel any existing scheduled task for this player.
         if (comboTasks.containsKey(uuid)) {

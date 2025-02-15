@@ -5,10 +5,10 @@ classes:
     lore: "<hex:#AAAAAA>A master of magic."
     material: "BLAZE_ROD"
     abilities:
-      L:
+      L,L,L:
         skill: "Fireball"
         minLevel: 1
-      L,R:
+      L,L,R:
         skill: "Lightning"
         minLevel: 3
   warrior:
@@ -17,7 +17,7 @@ classes:
     lore: "<hex:#AAAAAA>A fearless fighter."
     material: "IRON_SWORD"
     abilities:
-      R:
+      R,R,R:
         skill: "spear_stab-exec"
         minLevel: 2
   rogue:
