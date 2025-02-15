@@ -43,7 +43,9 @@ public class ProfileGUI {
         List<String> processedLore = new ArrayList<>();
         for (String line : loreList) {
             line = ChatColor.translateAlternateColorCodes('&', line);
-            line = line.replace("{selectedClass}", data.getSelectedClass());
+            // If selectedClass is empty, display "None"
+            String selected = data.getSelectedClass().isEmpty() ? "None" : data.getSelectedClass();
+            line = line.replace("{selectedClass}", selected);
             line = line.replace("{level}", String.valueOf(data.getLevel()));
             line = line.replace("{xp}", String.valueOf(data.getXP()));
             processedLore.add(line);

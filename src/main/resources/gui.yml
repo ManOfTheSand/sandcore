@@ -36,7 +36,7 @@ classGUI:
         - "<hex:#AAAAAA>Choose a class by clicking on it."
 
 profileGUI:
-  title: "&6Profile"
+  title: "<gradient:#0099FF:#6600FF>Profile</gradient>"
   size: 9
   items:
     profileItem:
