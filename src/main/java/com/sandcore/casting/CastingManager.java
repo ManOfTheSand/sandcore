@@ -17,10 +17,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.inventory.EquipmentSlot;
 
 import com.sandcore.classes.ClassManager;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.levels.LevelManager;
+import com.sandcore.classes.ClassDefinition;
+import com.sandcore.util.ChatUtil;
 
 /**
  * CastingManager is responsible for handling the simplified casting system.
@@ -39,7 +42,7 @@ public class CastingManager implements Listener {
     private final LevelManager levelManager;
     
     // Store casting data for each player currently in casting mode.
-    private Map<UUID, CastingData> castingPlayers = new HashMap<>();
+    private final Map<UUID, CastingData> castingPlayers = new HashMap<>();
     // Timeout delay in ticks for each combo click (e.g., 40 ticks = 2 seconds).
     private final long TIMEOUT_DELAY = 40L;
     
@@ -108,10 +111,11 @@ public class CastingManager implements Listener {
         }
     }
     
-    // Inner class that holds a player's current combo and timeout task.
+    // Inner class that holds a player's current combo and associated tasks.
     private class CastingData {
         List<String> combo = new ArrayList<>();
         BukkitTask timeoutTask;
+        BukkitTask updateTask; // New task for smooth action bar updates.
     }
     
     /**
@@ -128,7 +132,14 @@ public class CastingManager implements Listener {
         castingPlayers.put(player.getUniqueId(), data);
         // Start a timeout in case the player does not complete the combo.
         data.timeoutTask = scheduleTimeout(player);
-        sendActionBar(player, "Casting mode enabled. Awaiting combo: ");
+        // Schedule a repeating task to update the action bar smoothly every 2 ticks.
+        data.updateTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            StringBuilder comboDisplay = new StringBuilder("Casting Combo: ");
+            for (String s : data.combo) {
+                comboDisplay.append("[").append(s).append("] ");
+            }
+            sendActionBar(player, comboDisplay.toString());
+        }, 0L, 2L);
         logger.info(player.getName() + " has entered casting mode.");
     }
     
@@ -155,7 +166,7 @@ public class CastingManager implements Listener {
      * @param message The message to display.
      */
     private void sendActionBar(Player player, String message) {
-        player.sendActionBar(message);
+        player.sendActionBar(ChatUtil.translateColors(message));
     }
     
     /**
@@ -167,6 +178,10 @@ public class CastingManager implements Listener {
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        // Only process main-hand interactions to avoid registering duplicate clicks.
+        if (event.getHand() == null || !event.getHand().equals(EquipmentSlot.HAND)) {
+            return;
+        }
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         if (!castingPlayers.containsKey(uuid)) {
@@ -193,19 +208,13 @@ public class CastingManager implements Listener {
         String clickType = (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) ? "L" : "R";
         data.combo.add(clickType);
         
-        // Build and display the current combo in the action bar.
-        StringBuilder comboDisplay = new StringBuilder("Casting Combo: ");
-        for (String s : data.combo) {
-            comboDisplay.append("[").append(s).append("] ");
-        }
-        sendActionBar(player, comboDisplay.toString());
-        
         // Play a pling sound for each click.
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
         
         // When the combo reaches exactly 3 clicks, process the combo.
         if (data.combo.size() == 3) {
             data.timeoutTask.cancel();
+            data.updateTask.cancel();
             processCastingCombo(player, data.combo);
             // Remove the player from casting mode.
             castingPlayers.remove(uuid);
@@ -221,16 +230,51 @@ public class CastingManager implements Listener {
      * @param combo  The list representing the combo (e.g., ["L", "R", "L"]).
      */
     private void processCastingCombo(Player player, List<String> combo) {
+        // Build the combo key (e.g., "LRL")
         StringBuilder executedCombo = new StringBuilder();
         for (String s : combo) {
             executedCombo.append(s);
         }
-        // Notify the player and log the completed combo.
-        player.sendMessage("Casting complete! Your combo: " + executedCombo.toString());
-        sendActionBar(player, "Casting complete!");
-        logger.info(player.getName() + " executed casting combo: " + executedCombo.toString());
-        
-        // TODO: Integrate proper ability/spell activation here.
+        String comboKey = executedCombo.toString().toUpperCase();
+
+        // Retrieve the player's class definition.
+        ClassDefinition classDef = classManager.getPlayerClass(player);
+        if (classDef == null) {
+            player.sendMessage(ChatUtil.translateColors("&cNo class selected. Please choose a class."));
+            return;
+        }
+
+        // Get the abilities map from the class definition.
+        if (classDef.getAbilities() == null || classDef.getAbilities().isEmpty()) {
+            player.sendMessage(ChatUtil.translateColors("&cYour class has no defined abilities."));
+            return;
+        }
+
+        // Validate the input combo against the class abilities.
+        if (!classDef.getAbilities().containsKey(comboKey)) {
+            String invalid = invalidComboMessage.replace("{combo}", comboKey);
+            sendActionBar(player, invalid);
+            return;
+        }
+
+        CastingAbility ability = classDef.getAbilities().get(comboKey);
+
+        // Check if the player meets the minimum level requirement.
+        int playerLevel = levelManager.getPlayerLevel(player); // Ensure this method exists in LevelManager.
+        if (playerLevel < ability.getMinLevel()) {
+            String msg = insufficientLevelMessage.replace("{minLevel}", String.valueOf(ability.getMinLevel()))
+                                         .replace("{skill}", ability.getSkill());
+            sendActionBar(player, msg);
+            return;
+        }
+
+        // All checks passed: cast the ability.
+        String castMsg = castMessage.replace("{skill}", ability.getSkill());
+        sendActionBar(player, castMsg);
+        player.playSound(player.getLocation(), castSound, 1.0f, 1.0f);
+        logger.info(player.getName() + " casted skill " + ability.getSkill() + " using combo " + comboKey);
+
+        // TODO: Integrate the MythicMobs API call here to trigger the actual skill.
     }
     
     /**
@@ -276,14 +320,10 @@ public class CastingManager implements Listener {
         }
         data.timeoutTask = scheduleTimeout(player);
         data.combo.add(clickType);
-        StringBuilder comboDisplay = new StringBuilder("Casting Combo: ");
-        for (String s : data.combo) {
-            comboDisplay.append("[").append(s).append("] ");
-        }
-        sendActionBar(player, comboDisplay.toString());
-        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+        // No need for immediate update; the updateTask handles smooth updating.
         if (data.combo.size() == 3) {
             data.timeoutTask.cancel();
+            data.updateTask.cancel();
             processCastingCombo(player, data.combo);
             castingPlayers.remove(player.getUniqueId());
         }
@@ -316,6 +356,9 @@ public class CastingManager implements Listener {
         if (data != null) {
             if (data.timeoutTask != null) {
                 data.timeoutTask.cancel();
+            }
+            if (data.updateTask != null) {
+                data.updateTask.cancel();
             }
             sendActionBar(player, exitMessage);
             player.playSound(player.getLocation(), exitSound, 1.0f, 1.0f);
