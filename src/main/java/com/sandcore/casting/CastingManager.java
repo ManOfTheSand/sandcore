@@ -15,14 +15,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.inventory.EquipmentSlot;
 
+import com.sandcore.classes.ClassDefinition;
 import com.sandcore.classes.ClassManager;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.levels.LevelManager;
-import com.sandcore.classes.ClassDefinition;
 import com.sandcore.util.ChatUtil;
 
 /**
@@ -260,7 +260,7 @@ public class CastingManager implements Listener {
         CastingAbility ability = classDef.getAbilities().get(comboKey);
 
         // Check if the player meets the minimum level requirement.
-        int playerLevel = levelManager.getPlayerLevel(player); // Ensure this method exists in LevelManager.
+        int playerLevel = player.getLevel(); // Using player's built-in level.
         if (playerLevel < ability.getMinLevel()) {
             String msg = insufficientLevelMessage.replace("{minLevel}", String.valueOf(ability.getMinLevel()))
                                          .replace("{skill}", ability.getSkill());
