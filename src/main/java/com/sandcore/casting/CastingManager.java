@@ -82,23 +82,28 @@ public class CastingManager {
             cancelCasting(player);
             player.sendMessage("§cCasting mode disabled");
         } else {
-            com.sandcore.classes.ClassManager.PlayerClass pClass = classManager.getPlayerClass(player);
-            if (pClass == null || pClass.getKeyCombos().isEmpty()) {
-                player.sendMessage("§cNo casting abilities available for your class");
+            ClassManager.PlayerClass playerClass = this.classManager.getPlayerClass(player);
+            if (playerClass == null) {
+                player.sendMessage(ChatColor.RED + "No class assigned.");
+                return;
+            }
+            Map<?, ?> keyCombos = playerClass.getKeyCombos();
+            if (keyCombos == null || keyCombos.isEmpty()) {
+                player.sendMessage(ChatColor.RED + "Your class does not support any key combos.");
                 return;
             }
 
             CastingState state = new CastingState();
-            state.playerClass = pClass;
+            state.playerClass = playerClass;
             castingPlayers.put(uuid, state);
             player.sendMessage("§aCasting mode enabled - Perform a 3-click combo!");
             logger.fine("toggleCastingMode: Enabled casting mode for player " + player.getName() + " (class: " + state.playerClass.getId() + ")");
 
             // Play class-specific casting sound from player's class config.
             try {
-                String classSound = pClass.getCastingSoundName();
-                float classSoundVol = pClass.getCastingSoundVolume();
-                float classSoundPitch = pClass.getCastingSoundPitch();
+                String classSound = playerClass.getCastingSoundName();
+                float classSoundVol = playerClass.getCastingSoundVolume();
+                float classSoundPitch = playerClass.getCastingSoundPitch();
                 player.playSound(player.getLocation(), org.bukkit.Sound.valueOf(classSound), classSoundVol, classSoundPitch);
                 logger.fine("toggleCastingMode: Played class-specific casting sound (" + classSound + ") for player " + player.getName());
             } catch (Exception ex) {
@@ -202,7 +207,11 @@ public class CastingManager {
         ClassDefinition def = classManager.getClassDefinition(pClass.getId());
         if (def == null) return false;
         // Check if any key combo value matches the provided skillId.
-        return def.getKeyCombos().values().stream().anyMatch(id -> id.equalsIgnoreCase(skillId));
+        Map<?, ?> keyCombos = def.getKeyCombos();
+        if (keyCombos == null) {
+            return false;
+        }
+        return keyCombos.values().stream().anyMatch(id -> id.equalsIgnoreCase(skillId));
     }
 
     public ClassManager getClassManager() {
