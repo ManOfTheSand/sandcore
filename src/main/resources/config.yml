@@ -32,4 +32,8 @@ xpRequirements:
   - 2100
 maxLevel: 6
 
-# Other plugin settings can be added below. 
+# Other plugin settings can be added below.
+
+levelUp:
+  sound: "ENTITY_PLAYER_LEVELUP"
+  message: "<hex:#00FF00>Congratulations, you have reached level {level}!" 
