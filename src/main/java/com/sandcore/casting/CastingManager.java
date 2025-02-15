@@ -33,15 +33,15 @@ public class CastingManager {
     private final long comboTimeout = 10L; // 0.5 seconds
     
     // Global casting feedback messages (loaded from config.yml).
-    private final String enterMessage;
-    private final String exitMessage;
-    private final String invalidComboMessage;
-    private final String insufficientLevelMessage;
-    private final String castMessage;
+    private String enterMessage;
+    private String exitMessage;
+    private String invalidComboMessage;
+    private String insufficientLevelMessage;
+    private String castMessage;
     // Sound settings (also from config.yml).
-    private final Sound enterSound;
-    private final Sound exitSound;
-    private final Sound castSound;
+    private Sound enterSound;
+    private Sound exitSound;
+    private Sound castSound;
     
     public CastingManager(JavaPlugin plugin, ClassManager classManager, PlayerDataManager playerDataManager, LevelManager levelManager) {
         this.plugin = plugin;
@@ -221,5 +221,22 @@ public class CastingManager {
     private String translate(String message) {
         // Use your ChatUtil to convert custom color codes (hex, gradient, etc.) to Minecraft format.
         return com.sandcore.util.ChatUtil.translateColors(message);
+    }
+    
+    /**
+     * Reloads the casting configuration from the plugin's config.yml.
+     */
+    public void reloadCastingConfig() {
+        FileConfiguration config = plugin.getConfig();
+        this.enterMessage = config.getString("casting.feedback.enterMessage", "You have entered casting mode!");
+        this.exitMessage = config.getString("casting.feedback.exitMessage", "You have exited casting mode.");
+        this.invalidComboMessage = config.getString("casting.feedback.invalidCombo", "Invalid casting combo: {combo}");
+        this.insufficientLevelMessage = config.getString("casting.feedback.insufficientLevel", "You must be at least level {minLevel} to cast {skill}.");
+        this.castMessage = config.getString("casting.feedback.castMessage", "Casting spell: {skill}!");
+        
+        this.enterSound = getSoundOrDefault(config.getString("casting.sounds.enter", "BLOCK_NOTE_BLOCK_PLING"), Sound.BLOCK_NOTE_BLOCK_PLING);
+        this.exitSound = getSoundOrDefault(config.getString("casting.sounds.exit", "BLOCK_NOTE_BLOCK_BASS"), Sound.BLOCK_NOTE_BLOCK_BASS);
+        this.castSound = getSoundOrDefault(config.getString("casting.sounds.cast", "ENTITY_ENDER_DRAGON_GROWL"), Sound.ENTITY_ENDER_DRAGON_GROWL);
+        logger.info("Casting configuration reloaded.");
     }
 } 
