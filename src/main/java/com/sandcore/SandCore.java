@@ -10,6 +10,11 @@ import com.sandcore.classes.ClassManager;
 import com.sandcore.command.ClassInfoCommandExecutor;
 import com.sandcore.command.ClassesCommandExecutor;
 import com.sandcore.command.MainCommandExecutor;
+import com.sandcore.data.PlayerDataManager;
+import com.sandcore.hud.HUDManager;
+import com.sandcore.levels.LevelManager;
+import com.sandcore.levels.XPSourceManager;
+import com.sandcore.listeners.XPListener;
 
 public class SandCore extends JavaPlugin {
 
@@ -42,12 +47,11 @@ public class SandCore extends JavaPlugin {
         // Register global event listeners.
         registerEventListeners();
 
-        // Load config.yml (which should contain xpRequirements and maxLevel)
+        // Leveling system initialization:
         saveDefaultConfig();
         levelManager = new LevelManager(getLogger());
         levelManager.loadConfiguration(getConfig());
         
-        // Load xp-sources.yml from the plugin's data folder.
         File xpSourcesFile = new File(getDataFolder(), "xp-sources.yml");
         if (!xpSourcesFile.exists()) {
             saveResource("xp-sources.yml", false);
@@ -55,13 +59,10 @@ public class SandCore extends JavaPlugin {
         xpSourceManager = new XPSourceManager(getLogger());
         xpSourceManager.loadXPSources(xpSourcesFile);
         
-        // Initialize PlayerDataManager (persisting player XP and levels)
         playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
-        
-        // Initialize HUDManager
         hudManager = new HUDManager(getLogger());
         
-        // Register XPListener to award XP on mob kills.
+        // Register the XP listener for awarding XP on mob kills.
         getServer().getPluginManager().registerEvents(
                 new XPListener(xpSourceManager, playerDataManager, levelManager, hudManager, getLogger()), this);
 

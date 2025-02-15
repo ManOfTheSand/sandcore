@@ -6,4 +6,30 @@ setting1: value1
 setting2: value2
 
 # Example: Debug mode (true to enable verbose logging)
-debug: true 
+debug: true
+
+# General plugin configuration for SandCore
+
+# Leveling system settings:
+#
+# xpRequirements: A list where each entry represents the cumulative XP required to reach that level.
+# For example, in the list below:
+#   Level 0: 0 XP
+#   Level 1: 100 XP
+#   Level 2: 300 XP
+#   Level 3: 600 XP
+#   Level 4: 1000 XP
+#   Level 5: 1500 XP
+#   Level 6: 2100 XP
+# maxLevel: The highest level a player can reach.
+xpRequirements:
+  - 0
+  - 100
+  - 300
+  - 600
+  - 1000
+  - 1500
+  - 2100
+maxLevel: 6
+
+# Other plugin settings can be added below. 
