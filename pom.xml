@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sandcore</groupId>
-    <artifactId>sandmmo</artifactId>
+    <artifactId>sandcore</artifactId>
     <version>1.0</version>
 
     <properties>

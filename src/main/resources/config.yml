@@ -1,0 +1,9 @@
+# Default configuration for SandCore
+# Customize these settings as needed
+
+# General settings
+setting1: value1
+setting2: value2
+
+# Example: Debug mode (true to enable verbose logging)
+debug: true 
