@@ -47,8 +47,16 @@ public class PlayerData {
      */
     public boolean addXP(int amount, com.sandcore.levels.LevelManager levelManager) {
         if (amount < 0) return false;
+        
+        // If the player is already at max level, cap XP to maximum and return.
+        if (level >= levelManager.getMaxLevel()) {
+            xp = levelManager.getXPForLevel(levelManager.getMaxLevel());
+            return false;
+        }
+        
         xp += amount;
         boolean leveledUp = false;
+        
         while (level < levelManager.getMaxLevel()) {
             int requiredXP = levelManager.getXPForLevel(level + 1);
             if (xp >= requiredXP) {
@@ -57,6 +65,11 @@ public class PlayerData {
             } else {
                 break;
             }
+        }
+        
+        // Once maximum level is reached, cap XP at the required amount for max level.
+        if (level == levelManager.getMaxLevel()) {
+            xp = levelManager.getXPForLevel(level);
         }
         return leveledUp;
     }
