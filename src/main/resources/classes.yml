@@ -6,7 +6,7 @@ classes:
     material: "BLAZE_ROD"
     abilities:
       L,L,L:
-        skill: "Fireball"
+        skill: "spear_stab-exec"
         minLevel: 1
       L,L,R:
         skill: "Lightning"
