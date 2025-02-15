@@ -4,11 +4,22 @@ classes:
     displayName: "<gradient:#FFA500:#FFD700>Mage</gradient>"
     lore: "<hex:#AAAAAA>A master of magic."
     material: "BLAZE_ROD"
+    abilities:
+      L:
+        skill: "Fireball"
+        minLevel: 1
+      L,R:
+        skill: "Lightning"
+        minLevel: 3
   warrior:
     slot: 12
-    displayName: "<hex:#FF0000>Warrior"
+    displayName: "<hex:#FF0000>Warrior</hex>"
     lore: "<hex:#AAAAAA>A fearless fighter."
     material: "IRON_SWORD"
+    abilities:
+      R:
+        skill: "Cleave"
+        minLevel: 2
   rogue:
     slot: 14
     displayName: "<hex:#00FF00>Rogue"

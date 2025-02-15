@@ -37,3 +37,15 @@ maxLevel: 6
 levelUp:
   sound: "ENTITY_PLAYER_LEVELUP"
   message: "<hex:#00FF00>Congratulations, you have reached level {level}!" 
+
+casting:
+  feedback:
+    enterMessage: "<hex:#00FF00>You have entered casting mode!"
+    exitMessage: "<hex:#FF0000>You have exited casting mode."
+    invalidCombo: "<hex:#FF0000>Invalid casting combo: {combo}"
+    insufficientLevel: "<hex:#FF0000>You must be at least level {minLevel} to cast {skill}."
+    castMessage: "<hex:#00FFFF>Casting spell: {skill}!"
+  sounds:
+    enter: "BLOCK_NOTE_BLOCK_PLING"
+    exit: "BLOCK_NOTE_BLOCK_BASS"
+    cast: "ENTITY_ENDER_DRAGON_GROWL"
