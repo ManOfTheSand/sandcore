@@ -50,7 +50,8 @@ public class ClassManager {
                     String displayName = config.getString("classes." + key + ".displayName");
                     String lore = config.getString("classes." + key + ".lore");
                     String material = config.getString("classes." + key + ".material");
-                    ClassDefinition def = new ClassDefinition(key, displayName, lore, material);
+                    int slot = config.getInt("classes." + key + ".slot", -1);
+                    ClassDefinition def = new ClassDefinition(key, displayName, lore, material, slot);
                     classes.put(key, def);
                     plugin.getLogger().info("Loaded class definition: " + key);
                 }
