@@ -15,6 +15,10 @@ public class SandCore extends JavaPlugin {
 
     // Keep a reference so that the ClassManager can be used later in your plugin.
     private ClassManager classManager;
+    private LevelManager levelManager;
+    private XPSourceManager xpSourceManager;
+    private PlayerDataManager playerDataManager;
+    private HUDManager hudManager;
 
     @Override
     public void onEnable() {
@@ -38,11 +42,39 @@ public class SandCore extends JavaPlugin {
         // Register global event listeners.
         registerEventListeners();
 
-        getLogger().info("SandCore enabled successfully!");
+        // Load config.yml (which should contain xpRequirements and maxLevel)
+        saveDefaultConfig();
+        levelManager = new LevelManager(getLogger());
+        levelManager.loadConfiguration(getConfig());
+        
+        // Load xp-sources.yml from the plugin's data folder.
+        File xpSourcesFile = new File(getDataFolder(), "xp-sources.yml");
+        if (!xpSourcesFile.exists()) {
+            saveResource("xp-sources.yml", false);
+        }
+        xpSourceManager = new XPSourceManager(getLogger());
+        xpSourceManager.loadXPSources(xpSourcesFile);
+        
+        // Initialize PlayerDataManager (persisting player XP and levels)
+        playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
+        
+        // Initialize HUDManager
+        hudManager = new HUDManager(getLogger());
+        
+        // Register XPListener to award XP on mob kills.
+        getServer().getPluginManager().registerEvents(
+                new XPListener(xpSourceManager, playerDataManager, levelManager, hudManager, getLogger()), this);
+
+        // Other initialization (e.g., class system integration) goes here.
+        getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
 
     @Override
     public void onDisable() {
+        // Save player data on plugin disable.
+        if (playerDataManager != null) {
+            playerDataManager.savePlayerData();
+        }
         getLogger().info("SandCore disabled successfully!");
     }
 
