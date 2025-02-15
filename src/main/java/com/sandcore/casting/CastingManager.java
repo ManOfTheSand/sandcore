@@ -45,6 +45,8 @@ public class CastingManager implements Listener {
     private final Map<UUID, CastingData> castingPlayers = new HashMap<>();
     // Timeout delay in ticks for each combo click (e.g., 40 ticks = 2 seconds).
     private final long TIMEOUT_DELAY = 40L;
+    // Debounce delay in milliseconds to prevent duplicate click registration.
+    private static final long CLICK_DEBOUNCE_DELAY = 200L;
     
     // Global casting feedback messages (loaded from config.yml).
     private String enterMessage;
@@ -116,6 +118,7 @@ public class CastingManager implements Listener {
         List<String> combo = new ArrayList<>();
         BukkitTask timeoutTask;
         BukkitTask updateTask; // New task for smooth action bar updates.
+        long lastClickTime = 0; // To debounce clicks.
     }
     
     /**
@@ -151,8 +154,11 @@ public class CastingManager implements Listener {
      */
     private BukkitTask scheduleTimeout(final Player player) {
         return Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (castingPlayers.containsKey(player.getUniqueId())) {
-                castingPlayers.remove(player.getUniqueId());
+            CastingData data = castingPlayers.remove(player.getUniqueId());
+            if (data != null) {
+                if (data.updateTask != null) {
+                    data.updateTask.cancel();
+                }
                 sendActionBar(player, "Casting cancelled due to timeout.");
                 logger.info("Casting combo timed out for " + player.getName());
             }
@@ -197,6 +203,13 @@ public class CastingManager implements Listener {
         
         event.setCancelled(true); // Prevent any default interaction effects during casting.
         CastingData data = castingPlayers.get(uuid);
+        
+        // Debounce to prevent duplicate click registration.
+        long now = System.currentTimeMillis();
+        if (now - data.lastClickTime < CLICK_DEBOUNCE_DELAY) {
+            return;
+        }
+        data.lastClickTime = now;
         
         // Restart the timeout for combo continuation.
         if (data.timeoutTask != null) {
@@ -315,11 +328,20 @@ public class CastingManager implements Listener {
             return;
         }
         CastingData data = castingPlayers.get(player.getUniqueId());
+
+        // Debounce to prevent duplicate click registration.
+        long now = System.currentTimeMillis();
+        if(now - data.lastClickTime < CLICK_DEBOUNCE_DELAY) {
+            return;
+        }
+        data.lastClickTime = now;
+
         if (data.timeoutTask != null) {
             data.timeoutTask.cancel();
         }
         data.timeoutTask = scheduleTimeout(player);
         data.combo.add(clickType);
+
         // No need for immediate update; the updateTask handles smooth updating.
         if (data.combo.size() == 3) {
             data.timeoutTask.cancel();

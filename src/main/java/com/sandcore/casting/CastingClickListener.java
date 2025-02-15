@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 
 public class CastingClickListener implements Listener {
 
@@ -16,27 +17,25 @@ public class CastingClickListener implements Listener {
     
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        if (!castingManager.isInCastingMode(player)) {
+        // Only process main-hand events to avoid duplicate counting from off-hand clicks.
+        if (event.getHand() == null || !event.getHand().equals(EquipmentSlot.HAND)) {
             return;
         }
         
+        Player player = event.getPlayer();
         Action action = event.getAction();
-        String clickType = null;
-        switch (action) {
-            case LEFT_CLICK_AIR:
-            case LEFT_CLICK_BLOCK:
-                clickType = "L";
-                break;
-            case RIGHT_CLICK_AIR:
-            case RIGHT_CLICK_BLOCK:
-                clickType = "R";
-                break;
-            default:
-                return;
+
+        // Only process left/right click actions.
+        if (action != Action.LEFT_CLICK_AIR && action != Action.LEFT_CLICK_BLOCK
+                && action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+            return;
         }
         
+        // Optionally cancel the event so no default behavior interferes.
         event.setCancelled(true);
+
+        // Determine which click type to register.
+        String clickType = (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) ? "L" : "R";
         castingManager.registerClick(player, clickType);
     }
 } 
