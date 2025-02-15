@@ -1,17 +1,19 @@
 package com.sandcore.listeners;
 
+import java.util.logging.Logger;
+
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
-import com.sandcore.levels.XPSourceManager;
+
 import com.sandcore.data.PlayerData;
 import com.sandcore.data.PlayerDataManager;
-import com.sandcore.levels.LevelManager;
 import com.sandcore.hud.HUDManager;
-import java.util.logging.Logger;
+import com.sandcore.levels.LevelManager;
+import com.sandcore.levels.XPSourceManager;
 
 /**
  * XPListener awards XP to players for killing mobs.
@@ -40,7 +42,7 @@ public class XPListener implements Listener {
         Entity entity = event.getEntity();
         // Only process if the entity is a living mob and has a killer.
         if (entity instanceof LivingEntity) {
-            Player killer = entity.getKiller();
+            Player killer = ((LivingEntity) entity).getKiller();
             if (killer != null) {
                 String mobType = entity.getType().name();
                 int xpAward = xpSourceManager.getXPForMob(mobType);
