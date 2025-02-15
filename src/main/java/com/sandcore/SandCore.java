@@ -6,7 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.sandcore.casting.CastingClickListener;
+import com.sandcore.casting.CastingListener;
 import com.sandcore.casting.CastingManager;
 import com.sandcore.casting.CastingToggleListener;
 import com.sandcore.classes.ClassManager;
@@ -66,10 +66,10 @@ public class SandCore extends JavaPlugin {
 
         // Initialize the CastingManager, passing the necessary managers.
         // (Ensure you have getters for your ClassManager, PlayerDataManager, and LevelManager.)
-        this.castingManager = new CastingManager(this, getClassManager(), playerDataManager, getLevelManager());
+        castingManager = new CastingManager(this, classManager);
         // Register the Casting listeners.
-        getServer().getPluginManager().registerEvents(new CastingToggleListener(this.castingManager), this);
-        getServer().getPluginManager().registerEvents(new CastingClickListener(this.castingManager), this);
+        getServer().getPluginManager().registerEvents(new CastingToggleListener(castingManager), this);
+        getServer().getPluginManager().registerEvents(new CastingListener(castingManager), this);
 
         // Now that leveling system dependencies are initialized, register the commands.
         registerCommands();

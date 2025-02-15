@@ -2,8 +2,6 @@ package com.sandcore.classes;
 
 import java.util.Map;
 
-import com.sandcore.casting.CastingManager;
-
 public class ClassDefinition {
     private String id;
     private String displayName;

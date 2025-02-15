@@ -1,8 +1,7 @@
-package com.sandcore.mmo.casting;
+package com.sandcore.casting;
 
-import com.sandcore.manager.PlayerClassDataManager;
-import com.sandcore.manager.ClassManager;
 import com.sandcore.classes.ClassDefinition;
+import com.sandcore.classes.ClassManager;
 import io.lumine.mythic.api.skills.Skill;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import org.bukkit.Bukkit;
@@ -39,7 +38,7 @@ public class CastingManager {
     private class CastingState {
         StringBuilder combo = new StringBuilder();
         BukkitTask timeoutTask;
-        com.sandcore.mmo.manager.ClassManager.PlayerClass playerClass;
+        com.sandcore.classes.ClassManager.PlayerClass playerClass;
     }
 
     public void loadConfiguration() {
@@ -73,7 +72,7 @@ public class CastingManager {
             cancelCasting(player);
             player.sendMessage("§cCasting mode disabled");
         } else {
-            com.sandcore.mmo.manager.ClassManager.PlayerClass pClass = classManager.getPlayerClass(player);
+            com.sandcore.classes.ClassManager.PlayerClass pClass = classManager.getPlayerClass(player);
             if (pClass == null || pClass.getKeyCombos().isEmpty()) {
                 player.sendMessage("§cNo casting abilities available for your class");
                 return;
@@ -188,7 +187,7 @@ public class CastingManager {
      */
     public boolean isSkillUnlocked(Player player, String skillId) {
         // Retrieve player's chosen class (set via /class)
-        String classId = PlayerClassDataManager.getPlayerClass(player);
+        String classId = com.sandcore.classes.PlayerClassDataManager.getPlayerClass(player);
         if (classId == null) return false;
         ClassDefinition def = classManager.getClassDefinition(classId);
         if (def == null) return false;

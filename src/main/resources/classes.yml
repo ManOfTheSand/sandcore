@@ -23,7 +23,6 @@ classes:
     keyCombos:
       LLL: "charge"
       LRR: "smash"
-
   rogue:
     slot: 14
     displayName: "<hex:#00FF00>Rogue"
