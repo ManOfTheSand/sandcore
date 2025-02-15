@@ -5,12 +5,14 @@ public class ClassDefinition {
     private String displayName;
     private String lore;
     private String material;
+    private int slot;
 
-    public ClassDefinition(String id, String displayName, String lore, String material) {
+    public ClassDefinition(String id, String displayName, String lore, String material, int slot) {
         this.id = id;
         this.displayName = displayName;
         this.lore = lore;
         this.material = material;
+        this.slot = slot;
     }
 
     public String getId() {
@@ -27,5 +29,9 @@ public class ClassDefinition {
 
     public String getMaterial() {
         return material;
+    }
+
+    public int getSlot() {
+        return slot;
     }
 } 
