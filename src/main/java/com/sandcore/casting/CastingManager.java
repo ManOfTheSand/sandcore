@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -211,7 +212,7 @@ public class CastingManager {
         if (keyCombos == null) {
             return false;
         }
-        return keyCombos.values().stream().anyMatch(id -> id.equalsIgnoreCase(skillId));
+        return keyCombos.values().stream().anyMatch(id -> String.valueOf(id).equalsIgnoreCase(skillId));
     }
 
     public ClassManager getClassManager() {
