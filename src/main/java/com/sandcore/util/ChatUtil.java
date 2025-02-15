@@ -2,6 +2,7 @@ package com.sandcore.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.bukkit.ChatColor;
 
 public class ChatUtil {
@@ -13,12 +14,22 @@ public class ChatUtil {
         StringBuffer buffer = new StringBuffer();
         while (matcher.find()) {
             String hexCode = matcher.group(1);
-            // Use Minecraft's API to get the proper color code (requires 1.16+)
-            String replacement = ChatColor.of(hexCode).toString();
+            // Convert hex to legacy color code format, e.g., §x§R§R§G§G§B§B
+            String replacement = toLegacy(hexCode);
             matcher.appendReplacement(buffer, replacement);
         }
         matcher.appendTail(buffer);
-        // Also translate alternate color codes (e.g., &a, &b) if present
+        // Also translate alternate color codes (e.g., &a, &b) if present.
         return ChatColor.translateAlternateColorCodes('&', buffer.toString());
+    }
+    
+    private static String toLegacy(String hex) {
+        if (hex == null || !hex.startsWith("#") || hex.length() != 7) return hex;
+        StringBuilder sb = new StringBuilder("§x");
+        // Convert each hex digit into the legacy format.
+        for (int i = 1; i < hex.length(); i++) {
+            sb.append("§").append(hex.charAt(i));
+        }
+        return sb.toString();
     }
 } 
