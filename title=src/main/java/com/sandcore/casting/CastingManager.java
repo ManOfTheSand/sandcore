@@ -35,4 +35,35 @@ public class CastingManager {
             if (comboTasks.containsKey(uuid)) {
                 comboTasks.get(uuid).cancel();
                 comboTasks.remove(uuid);
- 
+            }
+            processCombo(player, comboStr);
+            clickCombos.remove(uuid);
+            return;
+        }
+
+        if (comboTasks.containsKey(uuid)) {
+            comboTasks.get(uuid).cancel();
+        }
+
+        BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (!clickCombos.containsKey(uuid)) {
+                return;
+            }
+            String finalCombo = clickCombos.get(uuid).toString();
+            int finalCount = finalCombo.split(",").length;
+            if (finalCount != 3) {
+                player.sendMessage("§cCombo timed out! Please try again.");
+                clickCombos.remove(uuid);
+            } else {
+                processCombo(player, finalCombo);
+                clickCombos.remove(uuid);
+            }
+            comboTasks.remove(uuid);
+        }, comboTimeout);
+        comboTasks.put(uuid, task);
+    }
+
+    private void processCombo(Player player, String combo) {
+        // Implementation of combo processing logic
+    }
+}
