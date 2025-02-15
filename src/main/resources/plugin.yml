@@ -1,0 +1,15 @@
+name: SandCore
+main: com.sandcore.SandCore
+version: 1.0.0
+description: A Minecraft MMORPG Plugin - SandCore
+author: Sandman
+
+commands:
+  reload:
+    description: "Reloads the plugin configuration and refreshes all GUIs."
+    usage: "/reload"
+
+permissions:
+  sandmmo.admin.reload:
+    description: "Allows the user to reload the plugin."
+    default: op
