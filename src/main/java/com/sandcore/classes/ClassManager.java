@@ -20,6 +20,43 @@ import com.sandcore.util.ChatUtil;
  */
 public class ClassManager {
 
+    // NEW: Define the PlayerClass type that holds per-player class info.
+    public static class PlayerClass {
+        private String id;
+        private Map<String, String> keyCombos;
+        private String castingSoundName;
+        private float castingSoundVolume;
+        private float castingSoundPitch;
+        
+        public PlayerClass(String id, Map<String, String> keyCombos, String castingSoundName, float castingSoundVolume, float castingSoundPitch) {
+            this.id = id;
+            this.keyCombos = keyCombos;
+            this.castingSoundName = castingSoundName;
+            this.castingSoundVolume = castingSoundVolume;
+            this.castingSoundPitch = castingSoundPitch;
+        }
+        
+        public String getId() {
+            return id;
+        }
+        
+        public Map<String, String> getKeyCombos() {
+            return keyCombos;
+        }
+        
+        public String getCastingSoundName() {
+            return castingSoundName;
+        }
+        
+        public float getCastingSoundVolume() {
+            return castingSoundVolume;
+        }
+        
+        public float getCastingSoundPitch() {
+            return castingSoundPitch;
+        }
+    }
+
     private JavaPlugin plugin;
     // Map of class definitions from the configuration (key: class id).
     private Map<String, ClassDefinition> classes = new HashMap<>();
@@ -114,10 +151,16 @@ public class ClassManager {
      * @param player The player.
      * @return The ClassDefinition of the player's class, or null if not set.
      */
-    public ClassDefinition getPlayerClass(Player player) {
+    public PlayerClass getPlayerClass(Player player) {
         String classId = playerClasses.get(player.getUniqueId());
         if (classId != null) {
-            return classes.get(classId);
+            ClassDefinition def = classes.get(classId);
+            if (def == null) {
+                return null;
+            }
+            // In a real implementation, you would load actual values (including sounds) from your configuration.
+            return new PlayerClass(classId, def.getKeyCombos(), 
+                    "BLOCK_NOTE_BLOCK_PLING", 1.0f, 1.0f);
         }
         return null;
     }

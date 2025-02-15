@@ -8,7 +8,7 @@ public class ClassDefinition {
     private String lore;
     private String material;
     private int slot;
-    private Map<String, CastingManager.CastingAbility> abilities;
+    private Map<String, String> keyCombos;
 
     public ClassDefinition(String id, String displayName, String lore, String material, int slot) {
         this.id = id;
@@ -38,11 +38,11 @@ public class ClassDefinition {
         return slot;
     }
 
-    public Map<String, CastingManager.CastingAbility> getAbilities() {
-        return abilities;
+    public Map<String, String> getKeyCombos() {
+        return keyCombos;
     }
 
-    public void setAbilities(Map<String, CastingManager.CastingAbility> abilities) {
-        this.abilities = abilities;
+    public void setKeyCombos(Map<String, String> keyCombos) {
+        this.keyCombos = keyCombos;
     }
 } 
