@@ -1,0 +1,16 @@
+# XP Sources configuration for SandCore
+#
+# This file defines the XP awarded for killing different mob types.
+#
+# Example:
+# - Under the "vanilla" section: Killing a ZOMBIE awards 50 XP.
+# - Under the "mythic" section: Killing a MYTHIC_ZOMBIE awards 100 XP.
+
+vanilla:
+  ZOMBIE: 50
+  SKELETON: 60
+  CREEPER: 70
+
+mythic:
+  MYTHIC_ZOMBIE: 100
+  MYTHIC_SKELETON: 120 
