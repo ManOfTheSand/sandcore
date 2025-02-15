@@ -40,8 +40,12 @@ public class ClassSelectionListener implements Listener {
                 return;
             }
 
-            // Update the player's data with the selected class.
+            // Update the player's data with the selected class only if not already set.
             PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
+            if (data.getSelectedClass().equalsIgnoreCase(className)) {
+                // Already set to this class; avoid duplicate processing.
+                return;
+            }
             data.setSelectedClass(className);
             // Save the player data so that it persists.
             playerDataManager.savePlayerData();
