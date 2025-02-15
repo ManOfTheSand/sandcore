@@ -13,9 +13,8 @@ import com.sandcore.classes.ClassManager;
 
 /**
  * ClassInfoCommandExecutor handles the /classinfo command.
- * When executed with no arguments, it displays the sender's current class.
- * When executed with a player's name, it displays that player's class for those
- * with the proper administrative permission.
+ * - With no arguments, it displays the sender's current class.
+ * - With a player's name as an argument, it displays that player's class (requires appropriate permission).
  */
 public class ClassInfoCommandExecutor implements CommandExecutor {
 
@@ -29,10 +28,12 @@ public class ClassInfoCommandExecutor implements CommandExecutor {
     
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // If no argument is provided, show sender's own class.
+        plugin.getLogger().info("Executing /classinfo command, args length: " + args.length);
+        
+        // When no arguments are provided, show the sender's own class.
         if (args.length == 0) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage(ChatColor.RED + "You must be a player to check your own class.");
+                sender.sendMessage(ChatColor.RED + "Console cannot check its own class.");
                 return true;
             }
             Player player = (Player) sender;
@@ -40,16 +41,16 @@ public class ClassInfoCommandExecutor implements CommandExecutor {
             if (def == null) {
                 player.sendMessage(ChatColor.YELLOW + "You do not have a class set.");
             } else {
-                player.sendMessage(ChatColor.GREEN + "Your class is: " + ChatColor.translateAlternateColorCodes('&', def.getDisplayName()));
+                player.sendMessage(ChatColor.GREEN + "Your class is: " 
+                        + ChatColor.translateAlternateColorCodes('&', def.getDisplayName()));
             }
             return true;
         } else {
-            // Admin section: Check another player's class.
+            // For players with permission, check another specified player's class.
             if (!sender.hasPermission("sandmmo.admin.classinfo")) {
                 sender.sendMessage(ChatColor.RED + "You do not have permission to check others' classes.");
                 return true;
             }
-            // Use the first argument as the player's name.
             String targetName = args[0];
             Player target = Bukkit.getPlayerExact(targetName);
             if (target == null) {
@@ -60,7 +61,8 @@ public class ClassInfoCommandExecutor implements CommandExecutor {
             if (def == null) {
                 sender.sendMessage(ChatColor.YELLOW + target.getName() + " does not have a class set.");
             } else {
-                sender.sendMessage(ChatColor.GREEN + target.getName() + "'s class is: " + ChatColor.translateAlternateColorCodes('&', def.getDisplayName()));
+                sender.sendMessage(ChatColor.GREEN + target.getName() + "'s class is: " 
+                        + ChatColor.translateAlternateColorCodes('&', def.getDisplayName()));
             }
             return true;
         }

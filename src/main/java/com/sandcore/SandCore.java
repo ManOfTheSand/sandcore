@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sandcore.classes.ClassManager;
+import com.sandcore.command.ClassInfoCommandExecutor;
 import com.sandcore.command.ClassesCommandExecutor;
 import com.sandcore.command.MainCommandExecutor;
 
@@ -132,6 +133,12 @@ public class SandCore extends JavaPlugin {
                 getLogger().info("Command /classes registered successfully!");
             } else {
                 getLogger().severe("Command /classes is not defined in plugin.yml!");
+            }
+            if (getCommand("classinfo") != null) {
+                getCommand("classinfo").setExecutor(new ClassInfoCommandExecutor(this, classManager));
+                getLogger().info("Command /classinfo registered successfully!");
+            } else {
+                getLogger().severe("Command /classinfo is not defined in plugin.yml!");
             }
         } catch (Exception e) {
             getLogger().severe("Error registering commands: " + e.getMessage());
