@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -20,7 +19,7 @@ public class ProfileGUI {
         // Retrieve profile GUI parameters from gui.yml
         String section = "profileGUI";
         String rawTitle = guiConfig.getString(section + ".title", "&6Profile");
-        String title = stripGradient(rawTitle);
+        String title = com.sandcore.util.ChatUtil.translateColors(rawTitle);
         int size = guiConfig.getInt(section + ".size", 9);
         Inventory inventory = Bukkit.createInventory(new ProfileGUIHolder(), size, title);
         
@@ -34,7 +33,7 @@ public class ProfileGUI {
         }
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        String displayName = ChatColor.translateAlternateColorCodes('&', 
+        String displayName = com.sandcore.util.ChatUtil.translateColors(
                 guiConfig.getString(itemPath + ".displayName", "&aProfile Info"));
         meta.setDisplayName(displayName);
         
@@ -42,8 +41,8 @@ public class ProfileGUI {
         List<String> loreList = guiConfig.getStringList(itemPath + ".lore");
         List<String> processedLore = new ArrayList<>();
         for (String line : loreList) {
-            line = ChatColor.translateAlternateColorCodes('&', line);
-            // If selectedClass is empty, display "None"
+            // Process each line with our color translator.
+            line = com.sandcore.util.ChatUtil.translateColors(line);
             String selected = data.getSelectedClass().isEmpty() ? "None" : data.getSelectedClass();
             line = line.replace("{selectedClass}", selected);
             line = line.replace("{level}", String.valueOf(data.getLevel()));
@@ -61,10 +60,5 @@ public class ProfileGUI {
         
         // Open the inventory for the player.
         player.openInventory(inventory);
-    }
-
-    private static String stripGradient(String input) {
-        // This simple regex removes <gradient:#xxxxxx:#xxxxxx> and </gradient> tags.
-        return input.replaceAll("<gradient:#[A-Fa-f0-9]{6}:#[A-Fa-f0-9]{6}>", "").replace("</gradient>", "");
     }
 } 

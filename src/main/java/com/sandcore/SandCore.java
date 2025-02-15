@@ -235,11 +235,12 @@ public class SandCore extends JavaPlugin {
     private void registerEventListeners() {
         try {
             getLogger().info("Registering event listeners...");
-            // Register any global event listeners needed for the plugin.
-            // Example: getServer().getPluginManager().registerEvents(new GlobalEventListener(), this);
-            // Register the Profile GUI listener to cancel clicks in locked inventories.
+            // Register the Profile GUI listener.
             getServer().getPluginManager().registerEvents(new com.sandcore.listeners.ProfileGUIListener(), this);
+            // Register the Class Selection listener.
             getServer().getPluginManager().registerEvents(new com.sandcore.listeners.ClassSelectionListener(this, playerDataManager), this);
+            // Register Vanilla XP listener to prevent vanilla XP from affecting the XP bar.
+            getServer().getPluginManager().registerEvents(new com.sandcore.listeners.VanillaXPListener(playerDataManager, levelManager), this);
             getLogger().info("Global event listeners registered successfully!");
         } catch (Exception e) {
             getLogger().severe("Error registering event listeners: " + e.getMessage());
