@@ -4,25 +4,34 @@ classes:
     displayName: "<gradient:#FFA500:#FFD700>Mage</gradient>"
     lore: "<hex:#AAAAAA>A master of magic."
     material: "BLAZE_ROD"
-    abilities:
-      L,L,L:
-        skill: "SmashAttack:"
-        minLevel: 1
-      L,L,R:
-        skill: "SmashAttack:"
-        minLevel: 3
+    # Sound played on each combo click
+    comboClickSoundName: "ENTITY_ENDER_DRAGON_GROWL"
+    comboClickSoundVolume: 1.0
+    comboClickSoundPitch: 1.0
+    # Define the casting key combos mapping to MythicMobs skill ids
+    keyCombos:
+      LRL: "fireball"
+      RLL: "icebolt"
   warrior:
     slot: 12
     displayName: "<hex:#FF0000>Warrior</hex>"
     lore: "<hex:#AAAAAA>A fearless fighter."
     material: "IRON_SWORD"
-    abilities:
-      R,R,R:
-        skill: "SmashAttack:"
-        minLevel: 2
+    comboClickSoundName: "BLOCK_ANVIL_LAND"
+    comboClickSoundVolume: 1.0
+    comboClickSoundPitch: 1.0
+    keyCombos:
+      LLL: "charge"
+      LRR: "smash"
+
   rogue:
     slot: 14
     displayName: "<hex:#00FF00>Rogue"
     lore: "<hex:#AAAAAA>A stealthy assassin."
     material: "LEATHER_BOOTS"
-    
+    comboClickSoundName: "ENTITY_ARROW_SHOOT"
+    comboClickSoundVolume: 1.0
+    comboClickSoundPitch: 1.0
+    keyCombos:
+      RLR: "piercing_shot"
+      RRL: "rain_of_arrows"
