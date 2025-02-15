@@ -2,7 +2,6 @@ package com.sandcore.command;
 
 import java.io.File;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -37,8 +36,8 @@ public class ProfileCommandExecutor implements CommandExecutor {
         File guiFile = new File(plugin.getDataFolder(), "gui.yml");
         YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
         
-        // Open the profile GUI and pass the LevelManager.
-        ProfileGUI.open(player, data, guiConfig, plugin.getLevelManager());
+        // Open the profile GUI and pass the LevelManager and ClassManager.
+        ProfileGUI.open(player, data, guiConfig, plugin.getLevelManager(), plugin.getClassManager());
         return true;
     }
 } 

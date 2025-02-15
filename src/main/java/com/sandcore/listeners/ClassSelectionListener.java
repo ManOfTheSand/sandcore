@@ -33,8 +33,13 @@ public class ClassSelectionListener implements Listener {
             }
 
             Player player = (Player) event.getWhoClicked();
-            // Assume the display name of the clicked item is the class name.
+            // Get the display name of the clicked item.
             String className = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+            // Ignore if the item is a fixed icon (e.g., Close or info).
+            if (className.equalsIgnoreCase("Close") || className.equalsIgnoreCase("Class Selection")) {
+                return;
+            }
+
             // Update the player's data with the selected class.
             PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
             data.setSelectedClass(className);

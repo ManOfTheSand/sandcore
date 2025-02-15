@@ -13,10 +13,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.sandcore.data.PlayerData;
 import com.sandcore.levels.LevelManager;
+import com.sandcore.classes.ClassManager;
 
 public class ProfileGUI {
     
-    public static void open(Player player, PlayerData data, YamlConfiguration guiConfig, LevelManager levelManager) {
+    public static void open(Player player, PlayerData data, YamlConfiguration guiConfig, LevelManager levelManager, com.sandcore.classes.ClassManager classManager) {
         // Retrieve profile GUI parameters from gui.yml
         String section = "profileGUI";
         String rawTitle = guiConfig.getString(section + ".title", "&6Profile");
@@ -57,8 +58,15 @@ public class ProfileGUI {
         for (String line : loreList) {
             // Process each line with our color translator.
             line = com.sandcore.util.ChatUtil.translateColors(line);
-            String selected = data.getSelectedClass().isEmpty() ? "None" : data.getSelectedClass();
-            line = line.replace("{selectedClass}", selected);
+            String selectedClassKey = data.getSelectedClass();
+            String formattedClass = "None";
+            if (!selectedClassKey.isEmpty()) {
+                formattedClass = classManager.getFormattedClassName(selectedClassKey);
+                if (formattedClass == null || formattedClass.isEmpty()) {
+                    formattedClass = selectedClassKey;
+                }
+            }
+            line = line.replace("{selectedClass}", formattedClass);
             line = line.replace("{level}", String.valueOf(data.getLevel()));
             line = line.replace("{xp}", xpDisplay);
             processedLore.add(line);
