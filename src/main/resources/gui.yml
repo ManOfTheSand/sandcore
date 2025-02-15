@@ -16,7 +16,7 @@ classGUI:
     displayName: "<hex:#FFFFFF> "
     lore: []
   # Define specific slots for dynamic class items.
-  classSlots: [10, 11, 12, 13, 14]
+  classSlots: [10, 12, 14]
   # Alternatively, you can specify a starting slot:
   # classStartSlot: 10
   fixedItems:
