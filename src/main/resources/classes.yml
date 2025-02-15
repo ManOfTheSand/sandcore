@@ -6,11 +6,11 @@ classes:
     material: "BLAZE_ROD"
   warrior:
     slot: 12
-    displayName: "<hex:#FF0000>Warrior</hex>"
+    displayName: "<hex:#FF0000>Warrior"
     lore: "<hex:#AAAAAA>A fearless fighter."
     material: "IRON_SWORD"
   rogue:
     slot: 14
-    displayName: "<hex:#00FF00>Rogue</hex>"
+    displayName: "<hex:#00FF00>Rogue"
     lore: "<hex:#AAAAAA>A stealthy assassin."
     material: "LEATHER_BOOTS"

@@ -36,6 +36,9 @@ public class ClassSelectionGUI implements Listener {
     // Map to keep track of which inventory (GUI) has which dynamic class items.
     // Key: the Inventory instance; Value: mapping from slot number to ClassDefinition.
     private Map<Inventory, Map<Integer, ClassDefinition>> guiMappings = new HashMap<>();
+    
+    // Map to record the fixed "close" button slot for each open inventory.
+    private Map<Inventory, Integer> closeMapping = new HashMap<>();
 
     public ClassSelectionGUI(JavaPlugin plugin, ClassManager classManager) {
         this.plugin = plugin;
@@ -146,6 +149,10 @@ public class ClassSelectionGUI implements Listener {
                             meta.setLore(translatedLore);
                             fixedItem.setItemMeta(meta);
                             guiInventory.setItem(slot, fixedItem);
+                            // If this fixed item is the close button, store its slot.
+                            if (key.equalsIgnoreCase("close")) {
+                                closeMapping.put(guiInventory, slot);
+                            }
                         }
                     }
                 }
@@ -199,7 +206,16 @@ public class ClassSelectionGUI implements Listener {
         Player player = (Player) event.getWhoClicked();
         int slot = event.getSlot();
 
-        // Look up the mapping for this GUI.
+        // Check if the clicked slot is the 'close' button.
+        Integer closeSlot = closeMapping.get(event.getInventory());
+        if (closeSlot != null && slot == closeSlot) {
+            player.closeInventory();
+            guiMappings.remove(event.getInventory());
+            closeMapping.remove(event.getInventory());
+            return;
+        }
+
+        // Look up the mapping for this GUI that holds dynamic class items.
         Map<Integer, ClassDefinition> mapping = guiMappings.get(event.getInventory());
         if (mapping == null) {
             return;
@@ -215,7 +231,8 @@ public class ClassSelectionGUI implements Listener {
         player.sendMessage(ColorUtils.translate("<hex:#00FF00>You have selected the " + selected.getDisplayName() + " class!"));
         plugin.getLogger().info("Player " + player.getName() + " selected class " + selected.getId());
         player.closeInventory();
-        // Optionally, remove the mapping for this closed inventory.
+        // Optionally, remove the mappings for this closed inventory.
         guiMappings.remove(event.getInventory());
+        closeMapping.remove(event.getInventory());
     }
 } 
