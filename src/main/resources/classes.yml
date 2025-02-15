@@ -18,7 +18,7 @@ classes:
     material: "IRON_SWORD"
     abilities:
       R:
-        skill: "Cleave"
+        skill: "spear_stab-exec"
         minLevel: 2
   rogue:
     slot: 14

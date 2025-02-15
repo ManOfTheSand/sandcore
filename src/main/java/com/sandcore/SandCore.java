@@ -19,6 +19,9 @@ import com.sandcore.hud.HUDManager;
 import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
 import com.sandcore.listeners.XPListener;
+import com.sandcore.casting.CastingManager;
+import com.sandcore.casting.listeners.CastingToggleListener;
+import com.sandcore.casting.listeners.CastingClickListener;
 
 public class SandCore extends JavaPlugin {
 
@@ -28,6 +31,7 @@ public class SandCore extends JavaPlugin {
     private XPSourceManager xpSourceManager;
     private PlayerDataManager playerDataManager;
     private HUDManager hudManager;
+    private CastingManager castingManager;
 
     @Override
     public void onEnable() {
@@ -59,6 +63,13 @@ public class SandCore extends JavaPlugin {
         
         // Initialize the ClassManager (loads classes from classes.yml).
         classManager = new ClassManager(this);
+
+        // Initialize the CastingManager, passing the necessary managers.
+        // (Ensure you have getters for your ClassManager, PlayerDataManager, and LevelManager.)
+        this.castingManager = new CastingManager(this, getClassManager(), playerDataManager, getLevelManager());
+        // Register the Casting listeners.
+        getServer().getPluginManager().registerEvents(new CastingToggleListener(this.castingManager), this);
+        getServer().getPluginManager().registerEvents(new CastingClickListener(this.castingManager), this);
 
         // Now that leveling system dependencies are initialized, register the commands.
         registerCommands();
@@ -271,5 +282,9 @@ public class SandCore extends JavaPlugin {
 
     public LevelManager getLevelManager() {
         return levelManager;
+    }
+
+    public CastingManager getCastingManager() {
+        return castingManager;
     }
 }

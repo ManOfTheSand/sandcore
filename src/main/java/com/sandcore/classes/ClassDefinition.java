@@ -1,11 +1,16 @@
 package com.sandcore.classes;
 
+import java.util.Map;
+
+import com.sandcore.casting.CastingManager;
+
 public class ClassDefinition {
     private String id;
     private String displayName;
     private String lore;
     private String material;
     private int slot;
+    private Map<String, CastingManager.CastingAbility> abilities;
 
     public ClassDefinition(String id, String displayName, String lore, String material, int slot) {
         this.id = id;
@@ -33,5 +38,13 @@ public class ClassDefinition {
 
     public int getSlot() {
         return slot;
+    }
+
+    public Map<String, CastingManager.CastingAbility> getAbilities() {
+        return abilities;
+    }
+
+    public void setAbilities(Map<String, CastingManager.CastingAbility> abilities) {
+        this.abilities = abilities;
     }
 } 
