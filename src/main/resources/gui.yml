@@ -1,0 +1,41 @@
+# General GUI Configuration for SandCore Plugin
+#
+# This file lets you customize the in-game GUI.
+# The GUI supports hex color codes using the '&' syntax.
+#
+# Settings:
+#   title: The GUI title (supports hex colors).
+#   rows: The number of rows in the inventory (each row has 9 slots).
+#
+# Background:
+#   You can define a background item to fill empty slots.
+#
+# Items:
+#   Define interactive items with a unique key.
+#   Each item can have a:
+#     - slot: an integer (0-indexed slot position; slots go from 0 to (rows*9)-1).
+#     - material: a valid Bukkit Material name.
+#     - displayName: the name shown for the item (supports hex color codes).
+#     - lore: a list of lines shown as additional information.
+#
+gui:
+  title: "&aCustom GUI Menu"
+  rows: 3
+  background:
+    material: "BLACK_STAINED_GLASS_PANE"
+    displayName: "&r"    # Reset color for background (no text)
+    lore: []             # No lore for the background
+  items:
+    item1:
+      slot: 10
+      material: "DIAMOND"
+      displayName: "&b&lClaim Reward"
+      lore:
+        - "&7Click here to claim your reward!"
+        - "&eRewards will be given upon confirmation."
+    item2:
+      slot: 16
+      material: "BARRIER"
+      displayName: "&cClose"
+      lore:
+        - "&7Click to close the GUI." 

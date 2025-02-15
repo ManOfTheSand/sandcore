@@ -32,12 +32,12 @@ public class MainCommandExecutor implements CommandExecutor {
             try {
                 // Reload config.yml.
                 plugin.reloadConfig();
-                
+                plugin.getLogger().info("config.yml reloaded successfully.");
+
                 // Reload classes.yml.
                 File classesFile = new File(plugin.getDataFolder(), "classes.yml");
                 if (classesFile.exists()) {
                     FileConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
-                    // Optionally, store or use classesConfig as needed.
                     plugin.getLogger().info("classes.yml reloaded successfully.");
                 } else {
                     sender.sendMessage("§cclasses.yml not found! Saving default resource.");
@@ -45,8 +45,19 @@ public class MainCommandExecutor implements CommandExecutor {
                     plugin.getLogger().info("Default classes.yml saved and loaded.");
                 }
                 
+                // Reload gui.yml.
+                File guiFile = new File(plugin.getDataFolder(), "gui.yml");
+                if (guiFile.exists()) {
+                    YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+                    plugin.getLogger().info("gui.yml reloaded successfully.");
+                } else {
+                    sender.sendMessage("§cgui.yml not found! Saving default resource.");
+                    plugin.saveResource("gui.yml", false);
+                    plugin.getLogger().info("Default gui.yml saved and loaded.");
+                }
+                
                 // Refresh GUIs.
-                // TODO: Add the actual GUI refresh logic, e.g., call your GUI handler's refresh method.
+                // TODO: Insert your GUI refresh logic here if needed.
                 plugin.getLogger().info("Refreshing all GUIs...");
                 
                 sender.sendMessage("§aConfiguration and GUIs reloaded successfully!");

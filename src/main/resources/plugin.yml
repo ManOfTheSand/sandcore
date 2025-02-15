@@ -11,8 +11,14 @@ commands:
   classes:
     description: "Opens the class selection GUI."
     usage: "/classes"
+  classinfo:
+    description: "Displays your current class or another player's class."
+    usage: "/classinfo [player]"
 
 permissions:
   sandmmo.admin.reload:
     description: "Allows the user to reload the plugin."
+    default: op
+  sandmmo.admin.classinfo:
+    description: "Allows the user to view other players' classes."
     default: op
