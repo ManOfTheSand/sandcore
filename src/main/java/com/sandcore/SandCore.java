@@ -1,6 +1,9 @@
 package com.sandcore;
 
+import java.io.File;
+
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sandcore.classes.ClassManager;
@@ -51,21 +54,28 @@ public class SandCore extends JavaPlugin {
                 // Load config.yml (automatically copied to the data folder if not present)
                 saveDefaultConfig();
                 getLogger().info("config.yml loaded successfully.");
-
+                
                 // Load classes.yml from the plugin's data folder.
                 // If not found, copy the default from the jar.
-                java.io.File classesFile = new java.io.File(getDataFolder(), "classes.yml");
+                File classesFile = new File(getDataFolder(), "classes.yml");
                 if (!classesFile.exists()) {
                     getLogger().info("classes.yml not found, saving default from resources...");
                     saveResource("classes.yml", false);
                 }
-                // Load the classes.yml using YamlConfiguration.
-                org.bukkit.configuration.file.FileConfiguration classesConfig =
-                        org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(classesFile);
+                YamlConfiguration.loadConfiguration(classesFile);
                 getLogger().info("classes.yml loaded successfully.");
-
+                
+                // NEW: Load gui.yml from the plugin's data folder.
+                // If not found, copy the default from the jar.
+                File guiFile = new File(getDataFolder(), "gui.yml");
+                if (!guiFile.exists()) {
+                    getLogger().info("gui.yml not found, saving default from resources...");
+                    saveResource("gui.yml", false);
+                }
+                getLogger().info("gui.yml loaded successfully.");
+                
                 // Schedule any sync-based operations (e.g., GUI refresh) on the main thread.
-                Bukkit.getScheduler().runTask(SandCore.this, () -> {
+                Bukkit.getScheduler().runTask(this, () -> {
                     // TODO: Add any post-configuration sync operations here (e.g., refresh GUIs).
                     getLogger().info("Post-configuration sync operations completed.");
                 });
