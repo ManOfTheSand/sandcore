@@ -1,0 +1,16 @@
+/**
+ * Reloads the casting configuration from the plugin's config.yml.
+ */
+public void reloadCastingConfig() {
+    FileConfiguration config = plugin.getConfig();
+    this.enterMessage = config.getString("casting.feedback.enterMessage", "You have entered casting mode!");
+    this.exitMessage = config.getString("casting.feedback.exitMessage", "You have exited casting mode.");
+    this.invalidComboMessage = config.getString("casting.feedback.invalidCombo", "Invalid casting combo: {combo}");
+    this.insufficientLevelMessage = config.getString("casting.feedback.insufficientLevel", "You must be at least level {minLevel} to cast {skill}.");
+    this.castMessage = config.getString("casting.feedback.castMessage", "Casting spell: {skill}!");
+    
+    this.enterSound = getSoundOrDefault(config.getString("casting.sounds.enter", "BLOCK_NOTE_BLOCK_PLING"), Sound.BLOCK_NOTE_BLOCK_PLING);
+    this.exitSound = getSoundOrDefault(config.getString("casting.sounds.exit", "BLOCK_NOTE_BLOCK_BASS"), Sound.BLOCK_NOTE_BLOCK_BASS);
+    this.castSound = getSoundOrDefault(config.getString("casting.sounds.cast", "ENTITY_ENDER_DRAGON_GROWL"), Sound.ENTITY_ENDER_DRAGON_GROWL);
+    logger.info("Casting configuration reloaded.");
+} 
