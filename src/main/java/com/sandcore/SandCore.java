@@ -78,6 +78,23 @@ public class SandCore extends JavaPlugin {
             }
         }, 1200L, 1200L); // 1200 ticks = 60 seconds at 20 tps
 
+        // Schedule a synchronous task to update XP bars every tick for smoother updates.
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            Bukkit.getOnlinePlayers().forEach(player -> {
+                // Update the XP bar from the plugin's internal data.
+                var data = playerDataManager.getPlayerData(player.getUniqueId());
+                int currentLevel = data.getLevel();
+                int xpForCurrent = levelManager.getXPForLevel(currentLevel);
+                int xpForNext = levelManager.getXPForLevel(currentLevel + 1);
+                float progress = 0f;
+                if (xpForNext - xpForCurrent > 0) {
+                    progress = (float)(data.getXP() - xpForCurrent) / (xpForNext - xpForCurrent);
+                }
+                player.setExp(progress);
+                player.setLevel(currentLevel);
+            });
+        }, 1L, 1L);
+
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
 
@@ -250,5 +267,9 @@ public class SandCore extends JavaPlugin {
 
     public ClassManager getClassManager() {
         return classManager;
+    }
+
+    public LevelManager getLevelManager() {
+        return levelManager;
     }
 }

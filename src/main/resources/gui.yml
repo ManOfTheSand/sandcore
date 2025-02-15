@@ -42,8 +42,8 @@ profileGUI:
     profileItem:
       slot: 4
       material: PAPER
-      displayName: "&aProfile Info"
+      displayName: "<gradient:#0099FF:#6600FF>Profile Info</gradient>"
       lore:
-        - "Selected Class: {selectedClass}"
-        - "Level: {level}"
-        - "XP: {xp}" 
+        - "<hex:#AAAAAA>Selected Class: {selectedClass}"
+        - "<hex:#AAAAAA>Level: {level}"
+        - "<hex:#AAAAAA>XP: {xp}" 

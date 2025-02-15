@@ -37,8 +37,8 @@ public class ProfileCommandExecutor implements CommandExecutor {
         File guiFile = new File(plugin.getDataFolder(), "gui.yml");
         YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
         
-        // Open the profile GUI.
-        ProfileGUI.open(player, data, guiConfig);
+        // Open the profile GUI and pass the LevelManager.
+        ProfileGUI.open(player, data, guiConfig, plugin.getLevelManager());
         return true;
     }
 } 

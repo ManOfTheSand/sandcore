@@ -12,10 +12,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.sandcore.data.PlayerData;
+import com.sandcore.levels.LevelManager;
 
 public class ProfileGUI {
     
-    public static void open(Player player, PlayerData data, YamlConfiguration guiConfig) {
+    public static void open(Player player, PlayerData data, YamlConfiguration guiConfig, LevelManager levelManager) {
         // Retrieve profile GUI parameters from gui.yml
         String section = "profileGUI";
         String rawTitle = guiConfig.getString(section + ".title", "&6Profile");
@@ -40,13 +41,26 @@ public class ProfileGUI {
         // Process lore text with placeholders for player's selected class, level, and XP.
         List<String> loreList = guiConfig.getStringList(itemPath + ".lore");
         List<String> processedLore = new ArrayList<>();
+        // Compute XP display: show "progress / required" xp
+        int currentLevel = data.getLevel();
+        int xpForCurrent = levelManager.getXPForLevel(currentLevel);
+        int xpForNext = levelManager.getXPForLevel(currentLevel + 1);
+        String xpDisplay;
+        if (currentLevel >= levelManager.getMaxLevel()) {
+            xpDisplay = "MAX";
+        } else {
+            int progressXP = data.getXP() - xpForCurrent;
+            int requiredXP = xpForNext - xpForCurrent;
+            xpDisplay = progressXP + " / " + requiredXP;
+        }
+
         for (String line : loreList) {
             // Process each line with our color translator.
             line = com.sandcore.util.ChatUtil.translateColors(line);
             String selected = data.getSelectedClass().isEmpty() ? "None" : data.getSelectedClass();
             line = line.replace("{selectedClass}", selected);
             line = line.replace("{level}", String.valueOf(data.getLevel()));
-            line = line.replace("{xp}", String.valueOf(data.getXP()));
+            line = line.replace("{xp}", xpDisplay);
             processedLore.add(line);
         }
         meta.setLore(processedLore);
