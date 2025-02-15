@@ -6,9 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.sandcore.casting.CastingListener;
-import com.sandcore.casting.CastingManager;
-import com.sandcore.casting.CastingToggleListener;
 import com.sandcore.classes.ClassManager;
 import com.sandcore.command.ClassInfoCommandExecutor;
 import com.sandcore.command.ClassesCommandExecutor;
@@ -31,7 +28,6 @@ public class SandCore extends JavaPlugin {
     private XPSourceManager xpSourceManager;
     private PlayerDataManager playerDataManager;
     private HUDManager hudManager;
-    private CastingManager castingManager;
 
     @Override
     public void onEnable() {
@@ -63,13 +59,6 @@ public class SandCore extends JavaPlugin {
         
         // Initialize the ClassManager (loads classes from classes.yml).
         classManager = new ClassManager(this);
-
-        // Initialize the CastingManager, passing the necessary managers.
-        // (Ensure you have getters for your ClassManager, PlayerDataManager, and LevelManager.)
-        castingManager = new CastingManager(this, classManager);
-        // Register the Casting listeners.
-        getServer().getPluginManager().registerEvents(new CastingToggleListener(castingManager), this);
-        getServer().getPluginManager().registerEvents(new CastingListener(castingManager), this);
 
         // Now that leveling system dependencies are initialized, register the commands.
         registerCommands();
@@ -178,7 +167,6 @@ public class SandCore extends JavaPlugin {
           .append("Modules Loaded:\n")
           .append(" - StatsManager\n")
           .append(" - ClassManager\n")
-          .append(" - CastingSystem\n")
           .append(" - GUI Handler\n")
           .append(" - Command Executor\n");
         getLogger().info(sb.toString());
@@ -195,10 +183,6 @@ public class SandCore extends JavaPlugin {
             getLogger().info("Registering ClassManager...");
             // ServiceRegistry.register(new ClassManager());
             getLogger().info("ClassManager registered successfully!");
-
-            getLogger().info("Registering CastingSystem...");
-            // ServiceRegistry.register(new CastingSystem());
-            getLogger().info("CastingSystem registered successfully!");
 
             getLogger().info("Registering GUI Handler...");
             // ServiceRegistry.register(new GUIHandler());
@@ -282,9 +266,5 @@ public class SandCore extends JavaPlugin {
 
     public LevelManager getLevelManager() {
         return levelManager;
-    }
-
-    public CastingManager getCastingManager() {
-        return castingManager;
     }
 }
