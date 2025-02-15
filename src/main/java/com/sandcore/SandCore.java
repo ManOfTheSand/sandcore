@@ -6,6 +6,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sandcore.casting.CastingClickListener;
+import com.sandcore.casting.CastingManager;
+import com.sandcore.casting.CastingToggleListener;
 import com.sandcore.classes.ClassManager;
 import com.sandcore.command.ClassInfoCommandExecutor;
 import com.sandcore.command.ClassesCommandExecutor;
@@ -19,9 +22,6 @@ import com.sandcore.hud.HUDManager;
 import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
 import com.sandcore.listeners.XPListener;
-import com.sandcore.casting.CastingManager;
-import com.sandcore.casting.listeners.CastingToggleListener;
-import com.sandcore.casting.listeners.CastingClickListener;
 
 public class SandCore extends JavaPlugin {
 
