@@ -12,6 +12,7 @@ import com.sandcore.data.PlayerData;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.hud.HUDManager;
 import com.sandcore.levels.LevelManager;
+import com.sandcore.util.ChatUtil;
 
 public class GiveXPCommandExecutor implements CommandExecutor {
     
@@ -69,7 +70,9 @@ public class GiveXPCommandExecutor implements CommandExecutor {
         if (leveledUp && data.getLevel() > oldLevel) {
             String msgTemplate = plugin.getConfig().getString("levelUp.message", 
                     "§aCongratulations, you have reached level {level}!");
-            String levelUpMessage = msgTemplate.replace("{level}", String.valueOf(data.getLevel()));
+            String levelUpMessage = ChatUtil.translateHexColorCodes(
+                    msgTemplate.replace("{level}", String.valueOf(data.getLevel()))
+            );
             target.sendMessage(levelUpMessage);
             
             String soundStr = plugin.getConfig().getString("levelUp.sound", "ENTITY_PLAYER_LEVELUP");

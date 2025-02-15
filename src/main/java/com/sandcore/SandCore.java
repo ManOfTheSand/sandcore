@@ -81,6 +81,15 @@ public class SandCore extends JavaPlugin {
         getLogger().info("SandCore disabled successfully!");
     }
 
+    public void reloadXPSources() {
+        File xpSourcesFile = new File(getDataFolder(), "xp-sources.yml");
+        if (!xpSourcesFile.exists()) {
+            saveResource("xp-sources.yml", false);
+        }
+        xpSourceManager.loadXPSources(xpSourcesFile);
+        getLogger().info("xp-sources.yml reloaded.");
+    }
+
     private void loadConfigurations() {
         getLogger().info("Starting asynchronous configuration loading...");
         // Run the configuration loading on a separate thread to keep the main thread responsive.

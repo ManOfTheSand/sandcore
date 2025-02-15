@@ -32,6 +32,7 @@ public class MainCommandExecutor implements CommandExecutor {
             try {
                 // Reload config.yml.
                 plugin.reloadConfig();
+                plugin.reloadXPSources();
                 plugin.getLogger().info("config.yml reloaded successfully.");
 
                 // Reload classes.yml.
