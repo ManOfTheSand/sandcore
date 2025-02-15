@@ -1,14 +1,15 @@
 package com.sandcore.casting;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
-import org.bukkit.ChatColor;
+
+import com.sandcore.classes.ClassManager;
 
 public class CastingListener implements Listener {
     private final CastingManager castingManager;
