@@ -41,15 +41,6 @@ public class SandCore extends JavaPlugin {
         // Register core services.
         registerServices();
 
-        // Initialize the ClassManager (loads classes from classes.yml).
-        classManager = new ClassManager(this);
-
-        // Register the main command executor.
-        registerCommands();
-
-        // Register global event listeners.
-        registerEventListeners();
-
         // Leveling system initialization:
         saveDefaultConfig();
         levelManager = new LevelManager(getLogger());
@@ -65,11 +56,19 @@ public class SandCore extends JavaPlugin {
         playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
         hudManager = new HUDManager(getLogger());
         
+        // Initialize the ClassManager (loads classes from classes.yml).
+        classManager = new ClassManager(this);
+
+        // Now that leveling system dependencies are initialized, register the commands.
+        registerCommands();
+
+        // Register global event listeners.
+        registerEventListeners();
+
         // Register the XP listener for awarding XP on mob kills.
         getServer().getPluginManager().registerEvents(
                 new XPListener(xpSourceManager, playerDataManager, levelManager, hudManager, getLogger()), this);
 
-        // Other initialization (e.g., class system integration) goes here.
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
 
