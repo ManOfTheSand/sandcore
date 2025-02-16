@@ -34,16 +34,17 @@ classes:
     keyCombos:
       RLR: "piercing_shot"
       RRL: "rain_of_arrows"
-  casting:
-     timeout: 6  # Timeout in seconds
-     cooldownMillis: 1000
-     activationMessage: "&x&F&F&C&C&C&C Casting Mode Activated!"
-     cancelMessage: "&x&F&F&3&3&3&3 Casting Cancelled!"
-     successMessage: "&x&A&A&D&D&F&F Skill Cast Successful!"
-     activationSound: "ENTITY_EXPERIENCE_ORB_PICKUP"
-     cancelSound: "ENTITY_BLAZE_HURT"
-     successSound: "ENTITY_PLAYER_LEVELUP"
+
+casting:
+  timeout: 6  # Timeout in seconds
+  cooldownMillis: 1000
+  activationMessage: "&x&F&F&C&C&C&C Casting Mode Activated!"
+  cancelMessage: "&x&F&F&3&3&3&3 Casting Cancelled!"
+  successMessage: "&x&A&A&D&D&F&F Skill Cast Successful!"
+  activationSound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  cancelSound: "ENTITY_BLAZE_HURT"
+  successSound: "ENTITY_PLAYER_LEVELUP"
   # New combo click sound configuration:
-     clickSound: "UI_BUTTON_CLICK"
-     clickSoundVolume: 1.0
-     clickSoundPitch: 1.0
+  clickSound: "UI_BUTTON_CLICK"
+  clickSoundVolume: 1.0
+  clickSoundPitch: 1.0
