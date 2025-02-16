@@ -267,4 +267,9 @@ public class SandCore extends JavaPlugin {
     public LevelManager getLevelManager() {
         return levelManager;
     }
+
+    // Newly added getter method for PlayerDataManager.
+    public PlayerDataManager getPlayerDataManager() {
+        return playerDataManager;
+    }
 }
