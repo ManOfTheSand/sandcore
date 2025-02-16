@@ -81,6 +81,8 @@ public class CastingSystem implements Listener {
                 plugin.saveResource("classes.yml", false);
             }
             YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
+            // DEBUG: Print the entire config file content for verification.
+            plugin.getLogger().info("Config file content: " + classesConfig.saveToString());
             plugin.getLogger().info("Loaded configuration top-level keys: " + classesConfig.getKeys(false));
             if (!classesConfig.contains("casting")) {
                 plugin.getLogger().warning("Casting section missing in classes.yml! Setting default casting configuration.");
