@@ -273,6 +273,8 @@ public class CastingSystem implements Listener {
             activeSessions.get(player.getUniqueId()).startCooldown();
             plugin.getLogger().info("Player " + player.getName() + " successfully cast " + skillName + " using combo " + combo);
         } else {
+            activeSessions.get(player.getUniqueId()).resetClicks();
+            activeSessions.get(player.getUniqueId()).startCooldown();
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
                 playSound(player, cancelSound);
