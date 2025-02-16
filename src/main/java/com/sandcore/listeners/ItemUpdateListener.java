@@ -19,14 +19,20 @@ import com.sandcore.SandCore;
 import com.sandcore.classes.ClassManager;
 import com.sandcore.items.CustomItem;
 import com.sandcore.items.ItemsManager;
+import com.sandcore.level.LevelManager;
+import com.sandcore.playerdata.PlayerDataManager;
 
 public class ItemUpdateListener implements Listener {
     private final ItemsManager itemsManager;
     private final ClassManager classManager;
+    private final LevelManager levelManager;
+    private final PlayerDataManager playerDataManager;
 
-    public ItemUpdateListener(SandCore plugin, ItemsManager itemsManager, ClassManager classManager) {
+    public ItemUpdateListener(SandCore plugin, ItemsManager itemsManager, ClassManager classManager, LevelManager levelManager, PlayerDataManager playerDataManager) {
         this.itemsManager = itemsManager;
         this.classManager = classManager;
+        this.levelManager = levelManager;
+        this.playerDataManager = playerDataManager;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -78,6 +84,17 @@ public class ItemUpdateListener implements Listener {
                                     String.join(", ", customItem.getRequiredClasses()));
                             }
                             
+                            int requiredLevel = customItem.getRequiredLevel();
+                            int playerLevel = levelManager.getLevelForXP(
+                                playerDataManager.getPlayerData(player.getUniqueId()).getXP()
+                            );
+                            
+                            if (requiredLevel > 0 && playerLevel < requiredLevel) {
+                                finalEvent.setCancelled(true);
+                                player.sendMessage(ChatColor.RED + "This item requires level " + requiredLevel + 
+                                                 " (Your level: " + playerLevel + ")");
+                            }
+                            
                             player.getInventory().setItem(
                                 player.getInventory().getHeldItemSlot(), 
                                 finalUpdated
@@ -117,6 +134,9 @@ public class ItemUpdateListener implements Listener {
                     .collect(Collectors.joining(ChatColor.GRAY + ", "));
                 
                 line = currentLine.replace("{classes}", classLine);
+            }
+            if (line.contains("{level}")) {
+                line = line.replace("{level}", String.valueOf(customItem.getRequiredLevel()));
             }
             newLore.add(line);
         }

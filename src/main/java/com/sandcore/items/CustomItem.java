@@ -35,6 +35,7 @@ public class CustomItem {
     private SandCore plugin;
     private final List<String> requiredClasses = new ArrayList<>();
     private boolean valid = false;
+    private int requiredLevel;
 
     public enum ItemType {
         WEAPON, ARMOR, TOOL, CHARM, OTHER
@@ -55,6 +56,7 @@ public class CustomItem {
             
             this.plugin = plugin;
             this.requiredClasses.addAll(config.getStringList("required_classes"));
+            this.requiredLevel = config.getInt("level", 0);
             loadFromConfig(config);
             validateItem();
             
@@ -115,6 +117,9 @@ public class CustomItem {
     public int getRecipeGiveAmount() { return recipeGiveAmount; }
     public String getSlot() { return slot; }
     public Rarity getRarity() { return rarity; }
+    public int getRequiredLevel() {
+        return requiredLevel;
+    }
     
     public double getAttribute(String key, int playerLevel) {
         Object value = attributes.get(key);
@@ -147,6 +152,9 @@ public class CustomItem {
                     if (line.contains("{classes}")) {
                         line = line.replace("{classes}", String.join(", ", requiredClasses));
                     }
+                    if (line.contains("{level}")) {
+                        line = line.replace("{level}", String.valueOf(requiredLevel));
+                    }
                     processedLore.add(ChatColor.translateAlternateColorCodes('&', line));
                 }
             }
@@ -157,6 +165,11 @@ public class CustomItem {
             pdc.set(new NamespacedKey(plugin, "required_classes"), 
                    PersistentDataType.STRING, 
                    String.join(",", requiredClasses));
+            
+            // Store level in PDC
+            pdc.set(new NamespacedKey(plugin, "required_level"), 
+                   PersistentDataType.INTEGER, 
+                   requiredLevel);
             
             item.setItemMeta(meta);
         }

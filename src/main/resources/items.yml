@@ -16,6 +16,7 @@ items:
       material: NETHERITE_SWORD
     display-name: "<g:#f953c6>Mithril Sword</g:#b91d73>"
     lore:
+      - "&7Level Requirement: {level}"
       - "&7Class Requirement: {classes}"
       - ""
       - "&7Damage: &c12❤"
@@ -45,6 +46,7 @@ items:
       material: SHIELD
     display-name: "&6Guardian Shield"
     lore:
+      - "&7Level Requirement: {level}"
       - "&7Defense: &a+15"
       - "&7Damage Reduction: &a10%"
       - ""
