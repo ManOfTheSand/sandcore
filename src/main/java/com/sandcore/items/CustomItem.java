@@ -18,7 +18,7 @@ import com.sandcore.SandCore;
 import com.sandcore.util.ColorParser;
 
 public class CustomItem {
-    private final String id;
+    private String id = "";
     private String displayName;
     private List<String> lore;
     private ItemType type;
@@ -45,14 +45,15 @@ public class CustomItem {
     }
 
     public CustomItem(SandCore plugin, String id, ConfigurationSection config) {
+        this.id = id;
         try {
             if(config == null) {
                 plugin.getLogger().warning("Null configuration section for item: " + id);
+                this.valid = false;
                 return;
             }
             
             this.plugin = plugin;
-            this.id = id;
             this.requiredClasses = config.getStringList("required_classes");
             loadFromConfig(config);
             validateItem();
@@ -60,6 +61,7 @@ public class CustomItem {
             this.valid = true;
         } catch (Exception e) {
             plugin.getLogger().severe("Error loading item " + id + ": " + e.getMessage());
+            this.valid = false;
         }
     }
 
