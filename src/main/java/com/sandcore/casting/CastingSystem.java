@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
 import com.sandcore.SandCore;
 import io.lumine.xikage.mythicmobs.MythicMobs;
+import io.lumine.mythic.bukkit.MythicBukkit;
 
 /**
  * CastingSystem emulates a Wynncraft-like skills casting system.
@@ -266,11 +267,8 @@ public class CastingSystem implements Listener {
      */
     private boolean castMythicMobSkill(Player player, String skillName) {
         try {
-            // Using the newest MythicMobs API (@MythicChanges), cast the skill as follows:
-            // Ensure you have MythicMobs 5 (or newer) installed.
-            // The API call below uses the helper to cast the specified skill on the player at their location.
-            MythicMobs mm = MythicMobs.inst();
-            boolean result = mm.getAPIHelper().castSkill(player, skillName, player.getLocation());
+            // Using the newest MythicMobs API (version 5.6.1+), we now use MythicBukkit.inst() for casting.
+            boolean result = io.lumine.mythic.bukkit.MythicBukkit.inst().getAPIHelper().castSkill(player, skillName, player.getLocation());
             if(result) {
                 plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
             } else {
