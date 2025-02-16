@@ -7,6 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.security.MessageDigest;
+import java.nio.ByteBuffer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -61,7 +66,10 @@ public class CastingSystem implements Listener {
     // Mapping: Player's class => combo pattern (e.g., "L,R,L") => MythicMob skill name.
     private Map<String, Map<String, String>> comboMappings;
     // Active casting sessions keyed by player UUID.
-    private final Map<UUID, CastingSession> activeSessions = new HashMap<>();
+    private final Map<UUID, CastingSession> activeSessions = new ConcurrentHashMap<>();
+    private final ExecutorService comboExecutor = Executors.newCachedThreadPool();
+    private CastingConfig cachedConfig;
+    private long lastConfigHash;
 
     /**
      * Constructor. Loads the casting configuration from classes.yml
@@ -80,107 +88,24 @@ public class CastingSystem implements Listener {
     private void loadConfiguration() {
         try {
             File classesFile = new File(plugin.getDataFolder(), "classes.yml");
+            long currentHash = getConfigHash(classesFile);
             
-            // DEBUG: Verify file existence and permissions
-            plugin.getLogger().info("Loading classes.yml from: " + classesFile.getAbsolutePath());
-            plugin.getLogger().info("File exists: " + classesFile.exists());
-            if (classesFile.exists()) {
-                plugin.getLogger().info("File size: " + classesFile.length() + " bytes");
-                plugin.getLogger().info("File readable: " + classesFile.canRead());
+            if (cachedConfig == null || currentHash != lastConfigHash) {
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(classesFile);
+                cachedConfig = new CastingConfig(config);
+                lastConfigHash = currentHash;
+                plugin.getLogger().info("Reloaded and cached casting configuration");
             }
             
-            if (!classesFile.exists()) {
-                plugin.saveResource("classes.yml", false);
-            }
-            YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
-            plugin.getLogger().info("Config file content: " + classesConfig.saveToString());
-            plugin.getLogger().info("Loaded configuration top-level keys: " + classesConfig.getKeys(false));
+            // Update runtime values from cache
+            comboTimeoutSeconds = cachedConfig.timeout;
+            comboCooldownMillis = cachedConfig.cooldownMillis;
+            leftClickLockTicks = cachedConfig.leftClickLock;
+            rightClickLockTicks = cachedConfig.rightClickLock;
+            comboMappings = cachedConfig.comboMappings;
             
-            // Reset only AFTER checking for casting section
-            this.activationSound = null;
-            this.cancelSound = null;
-            this.successSound = null;
-            this.clickSound = null;
-            this.comboTimeoutSeconds = 0;
-            this.comboCooldownMillis = 0;
-
-            if (!classesConfig.contains("casting")) {
-                plugin.getLogger().warning("Casting section missing in classes.yml! Setting default casting configuration.");
-                this.comboTimeoutSeconds = 6;
-                this.activationMessage = "&x&F&F&C&C&C&C Casting Mode Activated!";
-                this.cancelMessage = "&x&F&F&3&3&3&3 Casting Cancelled!";
-                this.successMessage = "&x&A&A&D&D&F&F Skill Cast Successful!";
-                this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
-                this.cancelSound = "ENTITY_BLAZE_HURT";
-                this.successSound = "ENTITY_PLAYER_LEVELUP";
-                this.comboCooldownMillis = 1000;
-                comboMappings = new HashMap<>();
-                return;
-            }
-
-            // Load casting section with explicit path validation
-            ConfigurationSection castingConf = classesConfig.getConfigurationSection("casting");
-            plugin.getLogger().info("Casting section keys: " + castingConf.getKeys(false));
-            
-            this.comboTimeoutSeconds = castingConf.getInt("timeout", 6);
-            this.activationMessage = castingConf.getString("activationMessage", "&x&F&F&C&C&C&C Casting Mode Activated!");
-            this.cancelMessage = castingConf.getString("cancelMessage", "&x&F&F&3&3&3&3 Casting Cancelled!");
-            this.successMessage = castingConf.getString("successMessage", "&x&A&A&D&D&F&F Skill Cast Successful!");
-            
-            this.activationSound = castingConf.getString("activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-            if (this.activationSound == null || this.activationSound.isEmpty()) {
-                this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
-            }
-            this.cancelSound = castingConf.getString("cancelSound", "ENTITY_BLAZE_HURT");
-            if (this.cancelSound == null || this.cancelSound.isEmpty()) {
-                this.cancelSound = "ENTITY_BLAZE_HURT";
-            }
-            this.successSound = castingConf.getString("successSound", "ENTITY_PLAYER_LEVELUP");
-            if (this.successSound == null || this.successSound.isEmpty()) {
-                this.successSound = "ENTITY_PLAYER_LEVELUP";
-            }
-            this.comboCooldownMillis = castingConf.getLong("cooldownMillis", 1000);
-
-            // Load combo click sound settings
-            this.clickSound = castingConf.getString("clickSound", "UI_BUTTON_CLICK");
-            if (this.clickSound == null || this.clickSound.isEmpty()) {
-                this.clickSound = "UI_BUTTON_CLICK";
-            }
-            this.clickSoundVolume = castingConf.getDouble("clickSoundVolume", 1.0);
-            this.clickSoundPitch = castingConf.getDouble("clickSoundPitch", 1.0);
-
-            // Load click lock durations
-            this.leftClickLockTicks = castingConf.getInt("leftClickLock", 1);
-            this.rightClickLockTicks = castingConf.getInt("rightClickLock", 4);
-
-            // Final validation
-            plugin.getLogger().info("Final sound values after loading:");
-            plugin.getLogger().info("- activationSound: " + this.activationSound);
-            plugin.getLogger().info("- cancelSound: " + this.cancelSound);
-            plugin.getLogger().info("- successSound: " + this.successSound);
-            plugin.getLogger().info("- clickSound: " + this.clickSound);
-            
-            // DEBUG: Verify values are set
-            plugin.getLogger().info("DEBUG: Loaded sound values: activationSound=" + this.activationSound +
-                ", cancelSound=" + this.cancelSound + ", successSound=" + this.successSound +
-                ", clickSound=" + this.clickSound);
-
-            comboMappings = new HashMap<>();
-            if (castingConf.contains("comboMappings")) {
-                // For each class (Mage, Warrior, Rogue, etc.) load its combo mappings.
-                for (String className : castingConf.getConfigurationSection("comboMappings").getKeys(false)) {
-                    Map<String, String> mapping = new HashMap<>();
-                    for (String combo : castingConf.getConfigurationSection("comboMappings." + className).getKeys(false)) {
-                        String skillName = castingConf.getString("comboMappings." + className + "." + combo);
-                        mapping.put(combo, skillName);
-                    }
-                    comboMappings.put(className, mapping);
-                }
-            }
-            plugin.getLogger().info("Casting configuration loaded successfully.");
         } catch (Exception e) {
-            plugin.getLogger().severe("Error loading casting configuration: " + e.getMessage());
-            e.printStackTrace();
+            plugin.getLogger().severe("Error loading casting config: " + e.getMessage());
         }
     }
 
@@ -445,20 +370,23 @@ public class CastingSystem implements Listener {
          * events when a key is held down.
          */
         public void addClick(String click) {
-            if (Instant.now().isBefore(cooldownEnd)) {
-                return; // Ignore clicks during cooldown
-            }
-            if (clickLock) return;
-            clickLock = true;
-            long lockDuration = click.equals("R") ? rightClickLockTicks : leftClickLockTicks;
-            Bukkit.getScheduler().runTaskLater(CastingSystem.this.plugin, () -> {
-                clickLock = false;
-            }, lockDuration);
-            if (clicks.size() < 3) {
-                clicks.add(click);
-            }
-            // Play the combo click sound every time a click is accepted.
-            CastingSystem.this.playComboClickSound(player);
+            comboExecutor.submit(() -> {
+                if (Instant.now().isBefore(cooldownEnd)) return;
+                if (clickLock) return;
+                
+                // Original logic wrapped in async task
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    clickLock = true;
+                    long lockDuration = click.equals("R") ? rightClickLockTicks : leftClickLockTicks;
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> clickLock = false, lockDuration);
+                    
+                    if (clicks.size() < 3) {
+                        clicks.add(click);
+                        checkForValidCombo();
+                    }
+                    playComboClickSound(player);
+                });
+            });
         }
 
         /**
@@ -523,7 +451,57 @@ public class CastingSystem implements Listener {
      * Call this method on /reload so the casting system picks up configuration changes.
      */
     public void reloadCastingConfiguration() {
-        loadConfiguration();
-        plugin.getLogger().info("Casting system configuration reloaded.");
+        comboExecutor.submit(() -> {
+            loadConfiguration();
+            plugin.getLogger().info("Casting config cache invalidated and reloaded");
+        });
+    }
+
+    private long getConfigHash(File file) throws Exception {
+        if (!file.exists()) return 0;
+        String input = file.lastModified() + "-" + file.length();
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        return ByteBuffer.wrap(md.digest(input.getBytes())).getLong();
+    }
+
+    private static class CastingConfig {
+        final int timeout;
+        final long cooldownMillis;
+        final int leftClickLock;
+        final int rightClickLock;
+        final Map<String, Map<String, String>> comboMappings;
+        
+        CastingConfig(YamlConfiguration config) {
+            this.timeout = config.getInt("casting.timeout", 5);
+            this.cooldownMillis = config.getLong("casting.cooldownMillis", 1000);
+            this.leftClickLock = config.getInt("casting.leftClickLock", 1);
+            this.rightClickLock = config.getInt("casting.rightClickLock", 4);
+            this.comboMappings = loadComboMappings(config);
+        }
+
+        private Map<String, Map<String, String>> loadComboMappings(YamlConfiguration config) {
+            Map<String, Map<String, String>> mappings = new HashMap<>();
+            if (config.contains("casting.comboMappings")) {
+                for (String className : config.getConfigurationSection("casting.comboMappings").getKeys(false)) {
+                    Map<String, String> mapping = new HashMap<>();
+                    for (String combo : config.getConfigurationSection("casting.comboMappings." + className).getKeys(false)) {
+                        String skillName = config.getString("casting.comboMappings." + className + "." + combo);
+                        mapping.put(combo, skillName);
+                    }
+                    mappings.put(className, mapping);
+                }
+            }
+            return mappings;
+        }
+    }
+
+    private void checkForValidCombo() {
+        if (clicks.size() == 3) {
+            String combo = String.join("", clicks);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                processCombo(player, combo);
+                resetClicks();
+            });
+        }
     }
 } 
