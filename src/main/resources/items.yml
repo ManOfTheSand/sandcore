@@ -1,5 +1,7 @@
 items:
   mithril_sword:
+    item:
+      material: NETHERITE_SWORD
     display-name: "<g:#f953c6>Mithril Sword</g:#b91d73>"
     lore:
       - "&7Damage: &c12❤"
