@@ -14,7 +14,7 @@ items:
     level: 5
     rarity: EPIC
     attributes:
-      damage: 15
+      damage: 15W
       critical_chance: 10
     effects:
       on_hit: ignite
