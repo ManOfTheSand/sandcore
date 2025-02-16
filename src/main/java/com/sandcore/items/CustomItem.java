@@ -1,5 +1,6 @@
 package com.sandcore.items;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,9 +40,11 @@ public class CustomItem {
         COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC
     }
 
-    public CustomItem(String id, ConfigurationSection config) {
+    public CustomItem(SandCore plugin, String id, ConfigurationSection config) {
+        this.plugin = plugin;
         this.id = id;
         loadFromConfig(config);
+        validateItem();
     }
 
     private void loadFromConfig(ConfigurationSection config) {
@@ -63,6 +66,22 @@ public class CustomItem {
         this.craftable = config.getBoolean("craftable", false);
         this.recipe = config.getStringList("recipe");
         this.recipeGiveAmount = config.getInt("recipe-give-amount", 1);
+    }
+
+    private void validateItem() {
+        if (material == null) {
+            plugin.getLogger().warning("Invalid material for item " + id + ", defaulting to STONE");
+            material = Material.STONE;
+        }
+        
+        if (displayName == null || displayName.isEmpty()) {
+            plugin.getLogger().warning("Missing display name for item " + id);
+            displayName = "Unnamed Item";
+        }
+        
+        if (lore == null) {
+            lore = new ArrayList<>();
+        }
     }
 
     // Getters and calculation methods

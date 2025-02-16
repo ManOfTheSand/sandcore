@@ -11,8 +11,8 @@ import com.sandcore.command.ClassInfoCommandExecutor;
 import com.sandcore.command.ClassesCommandExecutor;
 import com.sandcore.command.DebugXPCommandExecutor;
 import com.sandcore.command.GiveXPCommandExecutor;
-import com.sandcore.command.ItemTabCompleter;
 import com.sandcore.command.MainCommandExecutor;
+import com.sandcore.command.MainTabCompleter;
 import com.sandcore.command.ProfileCommandExecutor;
 import com.sandcore.command.SetLevelCommandExecutor;
 import com.sandcore.data.PlayerDataManager;
@@ -104,7 +104,7 @@ public class SandCore extends JavaPlugin {
         // Register commands
         MainCommandExecutor mainExecutor = new MainCommandExecutor(this);
         getCommand("sandcore").setExecutor(mainExecutor);
-        getCommand("sandcore").setTabCompleter(new ItemTabCompleter(itemsManager));
+        getCommand("sandcore").setTabCompleter(new MainTabCompleter(itemsManager));
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }

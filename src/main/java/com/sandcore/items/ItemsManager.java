@@ -42,7 +42,7 @@ public class ItemsManager {
                     items.clear();
                     
                     for (String itemId : config.getConfigurationSection("items").getKeys(false)) {
-                        CustomItem item = new CustomItem(itemId, 
+                        CustomItem item = new CustomItem((SandCore) plugin, itemId, 
                             config.getConfigurationSection("items." + itemId));
                         items.put(itemId, item);
                         registerCrafting(item);
