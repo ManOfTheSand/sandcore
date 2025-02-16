@@ -93,7 +93,7 @@ public class CastingSystem implements Listener {
             plugin.getLogger().info("Config file content: " + classesConfig.saveToString());
             plugin.getLogger().info("Loaded configuration top-level keys: " + classesConfig.getKeys(false));
             
-            // Reset all config values before loading
+            // Reset only AFTER checking for casting section
             this.activationSound = null;
             this.cancelSound = null;
             this.successSound = null;
