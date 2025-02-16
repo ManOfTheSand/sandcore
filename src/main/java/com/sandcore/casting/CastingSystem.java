@@ -448,7 +448,9 @@ public class CastingSystem implements Listener {
          */
         public String getComboString() {
             StringBuilder sb = new StringBuilder();
-            for (String click : clicks) {
+            // Create a copy of the combo list to prevent ConcurrentModificationException
+            List<String> currentCombo = new ArrayList<>(clicks);
+            for (String click : currentCombo) {
                 sb.append(click);
             }
             return sb.toString();
