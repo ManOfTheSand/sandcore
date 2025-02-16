@@ -129,13 +129,20 @@ public class CastingSystem implements Listener {
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
         Player player = event.getPlayer();
-        // If the player is already in a casting session, do nothing.
+        // Cancel the default item swap action to prevent vanilla behavior.
+        event.setCancelled(true);
+        // If the player is already in casting mode, cancel it.
         if (activeSessions.containsKey(player.getUniqueId())) {
+            CastingSession session = activeSessions.remove(player.getUniqueId());
+            session.cancelTimeout();
+            // Notify the player that casting mode has been deactivated.
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                player.sendActionBar("Casting mode deactivated!");
+                playSound(player, cancelSound);
+            });
             return;
         }
-        // Cancel the default item swap action.
-        event.setCancelled(true);
-        // Activate casting mode.
+        // Otherwise, activate casting mode.
         activateCastingMode(player);
     }
 
