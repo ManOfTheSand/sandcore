@@ -168,7 +168,6 @@ public class CastingSystem implements Listener {
         if (session.getComboSize() == 3) {
             session.cancelTimeout();
             processCombo(player, session.getComboString());
-            activeSessions.remove(player.getUniqueId());
         }
     }
 
@@ -203,7 +202,6 @@ public class CastingSystem implements Listener {
         if (session.getComboSize() == 3) {
             session.cancelTimeout();
             processCombo(player, session.getComboString());
-            activeSessions.remove(player.getUniqueId());
         }
     }
 
@@ -266,11 +264,8 @@ public class CastingSystem implements Listener {
         String skillName = mappings.get(combo);
         // Attempt to cast the MythicMob skill (integration with MythicMob API goes here).
         boolean castSuccess = castMythicMobSkill(player, skillName);
-        if (castSuccess) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                player.sendActionBar(translateHexColors(successMessage));
-                playSound(player, successSound);
-            });
+        if (castSuccess && activeSessions.containsKey(player.getUniqueId())) {
+            activeSessions.get(player.getUniqueId()).resetClicks();
             plugin.getLogger().info("Player " + player.getName() + " successfully cast " + skillName + " using combo " + combo);
         } else {
             Bukkit.getScheduler().runTask(plugin, () -> {
@@ -405,6 +400,13 @@ public class CastingSystem implements Listener {
             if (taskId != -1) {
                 Bukkit.getScheduler().cancelTask(taskId);
             }
+        }
+
+        /**
+         * Resets the click sequence while keeping the casting session active
+         */
+        public void resetClicks() {
+            clicks.clear();
         }
     }
 
