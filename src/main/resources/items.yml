@@ -42,4 +42,25 @@ items:
       defense: 20
       damage_reduction: 0.1
     effects:
-      on_block: damage_reflect 
+      on_block: damage_reflect
+
+  rainbow_sword:
+    display-name: "<g:#ff0000>R</g:#00ff00>a<g:#00ff00>i</g:#0000ff>nbow Sword"
+    lore:
+      - "<g:#ff0000>First line</g:#0000ff>"
+      - "&l<g:#00ff00>Bold Gradient</g:#ff0000> &#00ffffMix with hex!"
+    type: WEAPON
+    slot: mainhand
+    level: 5
+    rarity: EPIC
+    attributes:
+      damage: 15W
+      critical_chance: 10
+    effects:
+      on_hit: ignite
+    craftable: true
+    recipe:
+      - "  A"
+      - " A "
+      - "B  "
+    recipe-give-amount: 1 

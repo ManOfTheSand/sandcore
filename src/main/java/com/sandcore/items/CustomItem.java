@@ -15,6 +15,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.sandcore.SandCore;
+import com.sandcore.utils.ColorParser;
 
 public class CustomItem {
     private final String id;
@@ -55,9 +56,11 @@ public class CustomItem {
             this.material = Material.STONE;
         }
         
-        this.displayName = ChatColor.translateAlternateColorCodes('&', 
-            config.getString("display-name", "Unnamed Item"));
-        this.lore = config.getStringList("lore");
+        this.displayName = ColorParser.parseGradient(config.getString("display-name", ""));
+        this.lore = new ArrayList<>();
+        for (String line : config.getStringList("lore")) {
+            lore.add(ColorParser.parseGradient(line));
+        }
         this.type = ItemType.valueOf(config.getString("type", "OTHER").toUpperCase());
         this.level = config.getInt("level", 1);
         this.rarity = Rarity.valueOf(config.getString("rarity", "COMMON").toUpperCase());
