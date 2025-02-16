@@ -81,6 +81,7 @@ public class CastingSystem implements Listener {
                 plugin.saveResource("classes.yml", false);
             }
             YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
+            plugin.getLogger().info("Loaded configuration top-level keys: " + classesConfig.getKeys(false));
             if (!classesConfig.contains("casting")) {
                 plugin.getLogger().warning("Casting section missing in classes.yml! Setting default casting configuration.");
                 this.comboTimeoutSeconds = 6; // 6 seconds timeout.
@@ -96,6 +97,7 @@ public class CastingSystem implements Listener {
             }
             // Use the casting section for all configurable options.
             YamlConfiguration castingConf = (YamlConfiguration) classesConfig.getConfigurationSection("casting");
+            plugin.getLogger().info("Casting section keys: " + castingConf.getKeys(false));
             this.comboTimeoutSeconds = castingConf.getInt("timeout", 6);
             this.activationMessage = castingConf.getString("activationMessage", "&x&F&F&C&C&C&C Casting Mode Activated!");
             this.cancelMessage = castingConf.getString("cancelMessage", "&x&F&F&3&3&3&3 Casting Cancelled!");
@@ -123,7 +125,8 @@ public class CastingSystem implements Listener {
             this.clickSoundPitch = castingConf.getDouble("clickSoundPitch", 1.0);
 
             plugin.getLogger().info("Casting config loaded: activationSound=" + this.activationSound +
-                ", cancelSound=" + this.cancelSound + ", successSound=" + this.successSound);
+                ", cancelSound=" + this.cancelSound + ", successSound=" + this.successSound +
+                ", clickSound=" + this.clickSound);
 
             comboMappings = new HashMap<>();
             if (castingConf.contains("comboMappings")) {
