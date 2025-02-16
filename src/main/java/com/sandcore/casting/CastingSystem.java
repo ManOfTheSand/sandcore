@@ -124,7 +124,12 @@ public class CastingSystem implements Listener {
             this.clickSoundVolume = castingConf.getDouble("clickSoundVolume", 1.0);
             this.clickSoundPitch = castingConf.getDouble("clickSoundPitch", 1.0);
 
-            plugin.getLogger().info("Casting config loaded: activationSound=" + this.activationSound +
+            // DEBUG: Force test sound values for debugging purposes.
+            this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
+            this.cancelSound = "ENTITY_BLAZE_HURT";
+            this.successSound = "ENTITY_PLAYER_LEVELUP";
+            this.clickSound = "UI_BUTTON_CLICK";
+            plugin.getLogger().info("DEBUG: Forcing sound values: activationSound=" + this.activationSound +
                 ", cancelSound=" + this.cancelSound + ", successSound=" + this.successSound +
                 ", clickSound=" + this.clickSound);
 
@@ -240,6 +245,7 @@ public class CastingSystem implements Listener {
         Bukkit.getScheduler().runTask(plugin, () -> {
             player.sendActionBar(""); // Clear any previous message
             player.sendActionBar(translateHexColors(activationMessage));
+            plugin.getLogger().info("activateCastingMode: playing activation sound, sound parameter: '" + activationSound + "'");
             playSound(player, activationSound);
         });
         plugin.getLogger().info("Casting mode activated for player: " + player.getName());
@@ -343,9 +349,10 @@ public class CastingSystem implements Listener {
      */
     private void playSound(Player player, String soundName) {
         if (soundName == null || soundName.isEmpty()) {
-            plugin.getLogger().warning("Sound name is null or empty, skipping sound playback.");
+            plugin.getLogger().warning("playSound called with null or empty soundName!");
             return;
         }
+        plugin.getLogger().info("playSound: playing sound '" + soundName + "'");
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
             // Use default volume and pitch; these could also be made configurable.
