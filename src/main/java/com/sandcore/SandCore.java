@@ -98,6 +98,9 @@ public class SandCore extends JavaPlugin {
             });
         }, 1L, 1L);
 
+        // Initialize itemsManager
+        this.itemsManager = new ItemsManager(this);
+        
         // Register commands
         MainCommandExecutor mainExecutor = new MainCommandExecutor(this);
         getCommand("sandcore").setExecutor(mainExecutor);

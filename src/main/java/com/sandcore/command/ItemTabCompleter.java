@@ -20,13 +20,16 @@ public class ItemTabCompleter implements TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
+        if (itemsManager == null) return Collections.emptyList();
         
         if (args.length == 1) {
             return Collections.singletonList("give");
         }
         else if (args.length == 3) { // Item IDs
-            return StringUtil.copyPartialMatches(args[2], itemsManager.getItemIds(), new ArrayList<>());
+            List<String> ids = itemsManager.getItemIds() != null ? 
+                itemsManager.getItemIds() : 
+                Collections.emptyList();
+            return StringUtil.copyPartialMatches(args[2], ids, new ArrayList<>());
         }
         return Collections.emptyList();
     }

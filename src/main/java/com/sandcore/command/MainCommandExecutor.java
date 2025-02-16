@@ -88,7 +88,7 @@ public class MainCommandExecutor implements CommandExecutor {
                 return true;
             case "item":
                 if (args.length > 1) {
-                    // Pass the subcommand (give) and remaining arguments
+                    // Pass arguments after "item"
                     String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
                     return itemCommandExecutor.onCommand(sender, command, label, newArgs);
                 }

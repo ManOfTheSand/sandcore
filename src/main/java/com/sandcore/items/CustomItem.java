@@ -6,7 +6,6 @@ import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public class CustomItem {
     private final String id;
@@ -72,21 +71,10 @@ public class CustomItem {
     }
 
     public ItemStack buildItem() {
-        Material material = Material.matchMaterial(slot.toUpperCase());
+        Material material = Material.matchMaterial(this.type.name());
         if (material == null) {
             material = Material.STONE;
         }
-        
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        
-        if (meta != null) {
-            meta.setDisplayName(displayName);
-            meta.setLore(lore);
-            item.setItemMeta(meta);
-        }
-        
-        // TODO: Add NBT tags and attributes
-        return item;
+        return new ItemStack(material);
     }
 } 
