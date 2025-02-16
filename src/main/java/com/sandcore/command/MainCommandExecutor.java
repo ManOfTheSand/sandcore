@@ -86,6 +86,7 @@ public class MainCommandExecutor implements CommandExecutor {
         
         // Add item command handling
         if (args[0].equalsIgnoreCase("item")) {
+            // Delegate to ItemCommandExecutor
             String[] newArgs = new String[args.length - 1];
             System.arraycopy(args, 1, newArgs, 0, newArgs.length);
             return itemCommandExecutor.onCommand(sender, command, label, newArgs);

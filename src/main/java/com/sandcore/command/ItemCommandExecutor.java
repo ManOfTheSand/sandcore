@@ -22,13 +22,13 @@ public class ItemCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("sandmmo.command.item.give")) {
+        if (!sender.hasPermission("sandcore.command.item.give")) {
             sender.sendMessage("§cYou don't have permission to use this command!");
             return true;
         }
 
         if (args.length < 3) {
-            sender.sendMessage("§cUsage: /sandmmo item give <player> <itemID> [amount]");
+            sender.sendMessage("§cUsage: /sandcore item give <player> <itemID> [amount]");
             return true;
         }
 
