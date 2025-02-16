@@ -1,0 +1,41 @@
+items:
+  mithril_sword:
+    display-name: "<g:#f953c6>Mithril Sword</g:#b91d73>"
+    lore:
+      - "&7Damage: &c12❤"
+      - "&7Attack Speed: &c1.5"
+      - ""
+      - "<g:#f953c6>MITHRIL BONUS</g:#b91d73>"
+      - "&8» &#f953c6Deal 50% more damage in the nether"
+    type: WEAPON
+    slot: mainhand
+    level: 5
+    rarity: EPIC
+    attributes:
+      damage: 15
+      critical_chance: 10
+    effects:
+      on_hit: ignite
+    craftable: true
+    recipe:
+      - "  A"
+      - " A "
+      - "B  "
+    recipe-give-amount: 1
+
+  guardian_shield:
+    display-name: "&6Guardian Shield"
+    lore:
+      - "&7Defense: &a+15"
+      - "&7Damage Reduction: &a10%"
+      - ""
+      - "&bLegendary Guardian's Protection"
+    type: ARMOR
+    slot: offhand
+    level: 8
+    rarity: LEGENDARY
+    attributes:
+      defense: 20
+      damage_reduction: 0.1
+    effects:
+      on_block: damage_reflect 

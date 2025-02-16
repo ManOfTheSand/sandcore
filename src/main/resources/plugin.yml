@@ -28,11 +28,22 @@ commands:
   profile:
     description: "Opens your profile GUI displaying your selected class, level, and XP."
     usage: "/profile"
-    
+  sandmmo:
+    description: Main command for SandMMO
+    usage: /sandmmo [reload|help|item]
+    permission: sandmmo.command
+    permission-message: You don't have permission!
+
 permissions:
   sandmmo.admin.reload:
     description: "Allows the user to reload the plugin."
     default: op
   sandmmo.admin.classinfo:
     description: "Allows the user to view other players' classes."
+    default: op
+  sandmmo.command.item.give:
+    description: Allows giving custom items
+    default: op
+  sandmmo.command.reload:
+    description: Allows reloading plugin configs
     default: op

@@ -16,6 +16,7 @@ import com.sandcore.command.ProfileCommandExecutor;
 import com.sandcore.command.SetLevelCommandExecutor;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.hud.HUDManager;
+import com.sandcore.items.ItemsManager;
 import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
 import com.sandcore.listeners.XPListener;
@@ -28,6 +29,7 @@ public class SandCore extends JavaPlugin {
     private XPSourceManager xpSourceManager;
     private PlayerDataManager playerDataManager;
     private HUDManager hudManager;
+    private ItemsManager itemsManager;
 
     @Override
     public void onEnable() {
