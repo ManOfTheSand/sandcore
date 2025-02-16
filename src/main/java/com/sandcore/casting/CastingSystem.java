@@ -206,8 +206,22 @@ public class CastingSystem implements Listener {
             });
             return;
         }
-        // Find the combo mapping for this class.
+        // Try to get the combo mapping from the casting configuration.
         Map<String, String> mappings = comboMappings.get(selectedClass);
+        // If no mapping was loaded via the "casting" section,
+        // fall back to the keyCombos defined in classes.yml under "classes.<selectedClass>.keyCombos"
+        if (mappings == null || mappings.isEmpty()) {
+            File classesFile = new File(plugin.getDataFolder(), "classes.yml");
+            YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
+            String path = "classes." + selectedClass.toLowerCase() + ".keyCombos";
+            if (classesConfig.contains(path)) {
+                mappings = new HashMap<>();
+                for (String comboKey : classesConfig.getConfigurationSection(path).getKeys(false)) {
+                    String skill = classesConfig.getString(path + "." + comboKey);
+                    mappings.put(comboKey, skill);
+                }
+            }
+        }
         if (mappings == null || !mappings.containsKey(combo)) {
             plugin.getLogger().info("No valid skill mapping for combo " + combo + " for class " + selectedClass);
             Bukkit.getScheduler().runTask(plugin, () -> {
