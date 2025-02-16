@@ -306,9 +306,8 @@ public class CastingSystem implements Listener {
      */
     private boolean castMythicMobSkill(Player player, String skillName) {
         try {
-            // Adjust location to cast the skill as if the player is casting it.
-            // We subtract 1.0 from the Y-coordinate so the skill spawns at a lower, more appropriate height.
-            Location castLocation = player.getLocation().clone().subtract(0, 1.0, 0);
+            // Use the player's eye location and subtract a small offset so the skill is cast from near the player's hand.
+            Location castLocation = player.getEyeLocation().clone().subtract(0, 0.3, 0);
             boolean result = io.lumine.mythic.bukkit.MythicBukkit.inst().getAPIHelper().castSkill(player, skillName, castLocation);
             if(result) {
                 plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
