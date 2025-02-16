@@ -71,4 +71,16 @@ public class LevelManager {
         loadConfiguration(config);
         logger.info("Reloaded level configuration");
     }
+
+    public int getLevelForXP(int xp) {
+        int level = 0;
+        for (int i = 0; i < xpRequirements.size(); i++) {
+            if (xp >= xpRequirements.get(i)) {
+                level = i;
+            } else {
+                break;
+            }
+        }
+        return Math.min(level, maxLevel);
+    }
 } 
