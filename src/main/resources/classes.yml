@@ -6,7 +6,7 @@ classes:
     material: "BLAZE_ROD"
     # Define the casting key combos mapping to MythicMobs skill ids
     keyCombos:
-      LLL: "fireball"
+      LLL: "test-spiralshot-exec"
       RLL: "icebolt"
   warrior:
     slot: 12
@@ -14,7 +14,7 @@ classes:
     lore: "<hex:#AAAAAA>A fearless fighter."
     material: "IRON_SWORD"
     keyCombos:
-      LLL: "charge"
+      LLL: "spear_stab-exec"
       LRR: "smash"
   rogue:
     slot: 14
