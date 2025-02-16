@@ -11,25 +11,19 @@ items:
       damage: 10
       attack_speed: 1.6
 
-  warrior_sword:
-    material: IRON_SWORD
-    display_name: "&4Warrior's Blade"
-    required_classes: ["warrior"]
-    lore:
-      - "&7Only for true warriors"
-    attributes:
-      damage: 15
-
   mithril_sword:
     item:
       material: NETHERITE_SWORD
     display-name: "<g:#f953c6>Mithril Sword</g:#b91d73>"
     lore:
+      - "&7Class Requirement: {classes}"
+      - ""
       - "&7Damage: &c12❤"
       - "&7Attack Speed: &c1.5"
       - ""
       - "<g:#f953c6>MITHRIL BONUS</g:#b91d73>"
       - "&8» &#f953c6Deal 50% more damage in the nether"
+    required_classes: ["warrior"]
     type: WEAPON
     slot: mainhand
     level: 5

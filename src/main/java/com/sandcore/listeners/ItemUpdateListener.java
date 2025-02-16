@@ -1,5 +1,10 @@
 package com.sandcore.listeners;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -8,16 +13,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.ChatColor;
 
 import com.sandcore.SandCore;
-import com.sandcore.items.ItemsManager;
-import com.sandcore.items.CustomItem;
 import com.sandcore.classes.ClassManager;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.sandcore.items.CustomItem;
+import com.sandcore.items.ItemsManager;
 
 public class ItemUpdateListener implements Listener {
     private final ItemsManager itemsManager;
@@ -60,12 +60,19 @@ public class ItemUpdateListener implements Listener {
                 if (lore != null) {
                     List<String> newLore = new ArrayList<>();
                     for (String line : lore) {
-                        if (line.startsWith(ChatColor.GRAY + "Class: ")) {
-                            line = ChatColor.GRAY + "Class: " + customItem.getRequiredClasses().stream()
-                                .map(cls -> classManager.getFormattedClassName(cls) + 
-                                     (cls.equalsIgnoreCase(playerClass) ? 
-                                      ChatColor.GREEN : ChatColor.RED))
+                        if (line.contains("{classes}")) {
+                            // Replace {classes} with color-coded class names
+                            String classLine = customItem.getRequiredClasses().stream()
+                                .map(cls -> {
+                                    String formattedName = classManager.getFormattedClassName(cls);
+                                    ChatColor color = cls.equalsIgnoreCase(playerClass) 
+                                        ? ChatColor.GREEN 
+                                        : ChatColor.RED;
+                                    return color + formattedName;
+                                })
                                 .collect(Collectors.joining(ChatColor.GRAY + ", "));
+                                
+                            line = line.replace("{classes}", classLine);
                         }
                         newLore.add(line);
                     }
