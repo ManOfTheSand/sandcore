@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -15,6 +18,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 
 import com.sandcore.SandCore;
 
@@ -151,25 +156,30 @@ public class ItemsManager {
         }
     }
 
-    public ItemStack getUpdatedItem(ItemStack oldItem) {
-        CustomItem currentVersion = getItemFromStack(oldItem);
+    public ItemStack getUpdatedItem(ItemStack original) {
+        CustomItem currentVersion = getItemFromStack(original);
         if (currentVersion == null) return null;
         
         // Handle legacy items without version tags
-        int storedVersion = getItemVersion(oldItem);
+        int storedVersion = getItemVersion(original);
         if (storedVersion == -1) {
             plugin.getLogger().info("Updating legacy item: " + currentVersion.getId());
             ItemStack newItem = currentVersion.buildItem();
-            newItem.setAmount(oldItem.getAmount());
+            newItem.setAmount(original.getAmount());
             return newItem;
         }
         
         if (storedVersion < configVersion) {
             ItemStack newItem = currentVersion.buildItem();
-            newItem.setAmount(oldItem.getAmount());
+            newItem.setAmount(original.getAmount());
             return newItem;
         }
-        return null;
+
+        ItemMeta meta = original.getItemMeta();
+        if (meta != null) {
+            removeVanillaAttributes(meta);
+        }
+        return original;
     }
 
     private int getItemVersion(ItemStack item) {
@@ -184,5 +194,18 @@ public class ItemsManager {
 
     public SandCore getPlugin() {
         return plugin;
+    }
+
+    private void removeVanillaAttributes(ItemMeta meta) {
+        // Remove attack damage and speed attributes
+        meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, 
+            new AttributeModifier(UUID.randomUUID(), "vanilla_remove", 0, 
+                AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
+        meta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, 
+            new AttributeModifier(UUID.randomUUID(), "vanilla_remove", 0, 
+                AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
+        
+        // Hide vanilla attributes and unbreakable status
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
     }
 } 

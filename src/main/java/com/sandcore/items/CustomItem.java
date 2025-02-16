@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -13,6 +14,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 
 import com.sandcore.SandCore;
 import com.sandcore.util.ColorParser;
@@ -133,6 +138,21 @@ public class CustomItem {
     public ItemStack buildItem() {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
+        
+        // Add this block to handle vanilla attributes
+        if (meta != null) {
+            // Remove vanilla attributes
+            meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, 
+                new AttributeModifier(UUID.randomUUID(), "vanilla_remove", 0, 
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
+            meta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED, 
+                new AttributeModifier(UUID.randomUUID(), "vanilla_remove", 0, 
+                    AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
+            
+            // Hide attributes and unbreakable status
+            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
+            meta.setUnbreakable(true);
+        }
         
         // Store version and ID in persistent data
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
