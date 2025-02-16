@@ -74,7 +74,15 @@ public class CastingSystem implements Listener {
             }
             YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
             if (!classesConfig.contains("casting")) {
-                plugin.getLogger().warning("Casting section missing in classes.yml!");
+                plugin.getLogger().warning("Casting section missing in classes.yml! Setting default casting configuration.");
+                this.comboTimeoutSeconds = 6; // 6 seconds timeout.
+                this.activationMessage = "&x&F&F&C&C&C&C Casting Mode Activated!";
+                this.cancelMessage = "&x&F&F&3&3&3&3 Casting Cancelled!";
+                this.successMessage = "&x&A&A&D&D&F&F Skill Cast Successful!";
+                this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
+                this.cancelSound = "ENTITY_BLAZE_HURT";
+                this.successSound = "ENTITY_PLAYER_LEVELUP";
+                comboMappings = new HashMap<>();
                 return;
             }
             // Use the casting section for all configurable options.
