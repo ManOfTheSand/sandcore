@@ -102,19 +102,21 @@ public class ItemUpdateListener implements Listener {
     private List<String> processLoreAsync(List<String> lore, CustomItem customItem, String playerClass) {
         List<String> newLore = new ArrayList<>();
         for (String line : lore) {
-            if (line.contains("{classes}")) {
+            // Create final copy for lambda usage
+            final String currentLine = line;
+            if (currentLine.contains("{classes}")) {
                 String classLine = customItem.getRequiredClasses().stream()
                     .map(cls -> {
                         String formattedName = classManager.getFormattedClassName(cls);
                         ChatColor color = cls.equalsIgnoreCase(playerClass) 
                             ? ChatColor.GREEN 
                             : ChatColor.RED;
-                        // Preserve existing color context before adding class color
-                        return ChatColor.getLastColors(line.split("\\{classes}")[0]) + color + formattedName;
+                        // Use currentLine instead of line
+                        return ChatColor.getLastColors(currentLine.split("\\{classes}")[0]) + color + formattedName;
                     })
                     .collect(Collectors.joining(ChatColor.GRAY + ", "));
                 
-                line = line.replace("{classes}", classLine);
+                line = currentLine.replace("{classes}", classLine);
             }
             newLore.add(line);
         }
