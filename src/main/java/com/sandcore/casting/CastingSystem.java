@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
@@ -144,6 +145,31 @@ public class CastingSystem implements Listener {
         }
         // Otherwise, activate casting mode.
         activateCastingMode(player);
+    }
+
+    /**
+     * Handles left-click attacks on entities (mobs/players) while in casting mode
+     */
+    @EventHandler
+    public void onEntityDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player)) return;
+        
+        Player player = (Player) event.getDamager();
+        if (!activeSessions.containsKey(player.getUniqueId())) return;
+
+        // Record left-click attack as part of combo
+        CastingSession session = activeSessions.get(player.getUniqueId());
+        session.addClick("L");
+        
+        // Update action bar and check for combo completion
+        player.sendActionBar("Combo: " + session.getComboString());
+        plugin.getLogger().info("Player " + player.getName() + " entity left-click (Combo: " + session.getComboString() + ")");
+        
+        if (session.getComboSize() == 3) {
+            session.cancelTimeout();
+            processCombo(player, session.getComboString());
+            activeSessions.remove(player.getUniqueId());
+        }
     }
 
     /**
