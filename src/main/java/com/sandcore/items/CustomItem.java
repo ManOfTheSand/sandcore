@@ -15,7 +15,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.sandcore.SandCore;
-import com.sandcore.utils.ColorParser;
+import com.sandcore.util.ColorParser;
 
 public class CustomItem {
     private final String id;
