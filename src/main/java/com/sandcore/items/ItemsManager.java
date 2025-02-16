@@ -1,13 +1,14 @@
 package com.sandcore.items;
 
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class ItemsManager {
     private final JavaPlugin plugin;
@@ -58,5 +59,16 @@ public class ItemsManager {
 
     public void reloadItems() {
         loadItems();
+    }
+
+    public CustomItem getItemFromStack(ItemStack stack) {
+        if (stack == null || !stack.hasItemMeta()) return null;
+        
+        // Temporary implementation until NBT tagging is added
+        String displayName = stack.getItemMeta().getDisplayName();
+        return items.values().stream()
+            .filter(item -> item.getDisplayName().equals(displayName))
+            .findFirst()
+            .orElse(null);
     }
 } 

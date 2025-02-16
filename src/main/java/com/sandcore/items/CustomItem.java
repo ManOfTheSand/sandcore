@@ -54,6 +54,10 @@ public class CustomItem {
     public List<String> getLore() { return lore; }
     public ItemType getType() { return type; }
     public int getLevel() { return level; }
+    public boolean isCraftable() { return craftable; }
+    public List<String> getRecipe() { return recipe; }
+    public int getRecipeGiveAmount() { return recipeGiveAmount; }
+    public String getSlot() { return slot; }
     public Rarity getRarity() { return rarity; }
     
     public double getAttribute(String key, int playerLevel) {

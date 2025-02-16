@@ -276,4 +276,8 @@ public class SandCore extends JavaPlugin {
     public PlayerDataManager getPlayerDataManager() {
         return playerDataManager;
     }
+
+    public ItemsManager getItemsManager() {
+        return itemsManager;
+    }
 }
