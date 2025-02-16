@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -13,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import com.sandcore.SandCore;
 
@@ -62,7 +60,7 @@ public class ItemsManager {
         PersistentDataContainer pdc = stack.getItemMeta().getPersistentDataContainer();
         String itemId = pdc.get(new NamespacedKey(plugin, "item_id"), PersistentDataType.STRING);
         
-        return itemId != null ? items.get(itemId) : null;
+        return itemId != null ? itemMap.get(itemId.toLowerCase()) : null;
     }
 
     public List<String> getItemIds() {
