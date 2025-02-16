@@ -1,4 +1,25 @@
+# Example items configuration
 items:
+  example_sword:
+    material: DIAMOND_SWORD
+    display_name: "&6Example Sword"
+    lore:
+      - "&7A powerful example weapon"
+      - "Class: {classes}"
+    required_classes: []
+    attributes:
+      damage: 10
+      attack_speed: 1.6
+
+  warrior_sword:
+    material: IRON_SWORD
+    display_name: "&4Warrior's Blade"
+    required_classes: ["warrior"]
+    lore:
+      - "&7Only for true warriors"
+    attributes:
+      damage: 15
+
   mithril_sword:
     item:
       material: NETHERITE_SWORD
@@ -49,29 +70,6 @@ items:
     lore:
       - "<g:#ff0000>First line</g:#0000ff>"
       - "&l<g:#00ff00>Bold Gradient</g:#ff0000> &#00ffffMix with hex!"
-    type: WEAPON
-    slot: mainhand
-    level: 5
-    rarity: EPIC
-    attributes:
-      damage: 15
-      critical_chance: 10
-    effects:
-      on_hit: ignite
-    craftable: true
-    recipe:
-      - "  A"
-      - " A "
-      - "B  "
-    recipe-give-amount: 1
-
-  warrior_sword:
-    material: DIAMOND_SWORD
-    display_name: "&6Warrior's Greatsword"
-    required_classes: ["warrior"]
-    lore:
-      - "A mighty weapon for warriors only"
-      - "Class: {classes}"
     type: WEAPON
     slot: mainhand
     level: 5

@@ -31,7 +31,18 @@ public class ItemsManager {
 
     public void loadItems() {
         itemMap.clear();
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "items.yml"));
+        
+        // Ensure data folder exists
+        plugin.getDataFolder().mkdirs();
+        
+        // Create default items.yml if it doesn't exist
+        itemsFile = new File(plugin.getDataFolder(), "items.yml");
+        if (!itemsFile.exists()) {
+            plugin.saveResource("items.yml", false);
+            plugin.getLogger().info("Created default items.yml");
+        }
+        
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(itemsFile);
         ConfigurationSection itemsSection = config.getConfigurationSection("items");
         
         if(itemsSection != null) {
