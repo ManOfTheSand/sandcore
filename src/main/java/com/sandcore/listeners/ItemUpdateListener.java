@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -47,51 +48,42 @@ public class ItemUpdateListener implements Listener {
         ItemStack item = event.getItem();
         if (item == null) return;
 
+        Player player = event.getPlayer();
         ItemStack updated = itemsManager.getUpdatedItem(item);
+        
         if (updated != null) {
-            CustomItem customItem = itemsManager.getItemFromStack(updated);
-            if (customItem != null && !customItem.getRequiredClasses().isEmpty()) {
-                Player player = event.getPlayer();
-                String playerClass = classManager.getPlayerClass(player.getUniqueId());
-                
-                // Update lore colors
-                ItemMeta meta = updated.getItemMeta();
-                List<String> lore = meta.getLore();
-                if (lore != null) {
-                    List<String> newLore = new ArrayList<>();
-                    for (String line : lore) {
-                        if (line.contains("{classes}")) {
-                            // Replace {classes} with color-coded class names
-                            String classLine = customItem.getRequiredClasses().stream()
-                                .map(cls -> {
-                                    String formattedName = classManager.getFormattedClassName(cls);
-                                    ChatColor color = cls.equalsIgnoreCase(playerClass) 
-                                        ? ChatColor.GREEN 
-                                        : ChatColor.RED;
-                                    return color + formattedName;
-                                })
-                                .collect(Collectors.joining(ChatColor.GRAY + ", "));
-                                
-                            line = line.replace("{classes}", classLine);
-                        }
-                        newLore.add(line);
+            // Run async processing for lore updates
+            Bukkit.getScheduler().runTaskAsynchronously(itemsManager.getPlugin(), () -> {
+                CustomItem customItem = itemsManager.getItemFromStack(updated);
+                if (customItem != null && !customItem.getRequiredClasses().isEmpty()) {
+                    String playerClass = classManager.getPlayerClass(player.getUniqueId());
+                    ItemMeta meta = updated.getItemMeta();
+                    List<String> lore = meta.getLore();
+
+                    if (lore != null) {
+                        List<String> newLore = processLoreAsync(lore, customItem, playerClass);
+                        
+                        // Schedule sync task for inventory update
+                        Bukkit.getScheduler().runTask(itemsManager.getPlugin(), () -> {
+                            meta.setLore(newLore);
+                            updated.setItemMeta(meta);
+                            
+                            // Update class requirement check
+                            if (!customItem.getRequiredClasses().contains(playerClass)) {
+                                event.setCancelled(true);
+                                player.sendMessage(ChatColor.RED + "This item requires: " + 
+                                    String.join(", ", customItem.getRequiredClasses()));
+                            }
+                            
+                            // Update item in hand
+                            player.getInventory().setItem(
+                                player.getInventory().getHeldItemSlot(), 
+                                updated
+                            );
+                        });
                     }
-                    meta.setLore(newLore);
-                    updated.setItemMeta(meta);
                 }
-                
-                // Check class requirement
-                if (!customItem.getRequiredClasses().contains(playerClass)) {
-                    event.setCancelled(true);
-                    player.sendMessage(ChatColor.RED + "This item requires: " + 
-                        String.join(", ", customItem.getRequiredClasses()));
-                }
-            }
-            
-            event.getPlayer().getInventory().setItem(
-                event.getPlayer().getInventory().getHeldItemSlot(), 
-                updated
-            );
+            });
         }
     }
 
@@ -103,5 +95,26 @@ public class ItemUpdateListener implements Listener {
         if (updated != null) {
             event.getItem().setItemStack(updated);
         }
+    }
+
+    private List<String> processLoreAsync(List<String> lore, CustomItem customItem, String playerClass) {
+        List<String> newLore = new ArrayList<>();
+        for (String line : lore) {
+            if (line.contains("{classes}")) {
+                String classLine = customItem.getRequiredClasses().stream()
+                    .map(cls -> {
+                        String formattedName = classManager.getFormattedClassName(cls);
+                        ChatColor color = cls.equalsIgnoreCase(playerClass) 
+                            ? ChatColor.GREEN 
+                            : ChatColor.RED;
+                        return color + formattedName;
+                    })
+                    .collect(Collectors.joining(ChatColor.GRAY + ", "));
+                
+                line = line.replace("{classes}", classLine);
+            }
+            newLore.add(line);
+        }
+        return newLore;
     }
 } 
