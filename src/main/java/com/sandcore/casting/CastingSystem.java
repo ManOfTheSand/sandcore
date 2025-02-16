@@ -110,9 +110,9 @@ public class CastingSystem implements Listener {
             comboMappings = cachedConfig.comboMappings;
             
             // Load messages and other sound config
-            activationMessage = config.getString("casting.activationMessage", "&aCasting Mode Activated!");
-            cancelMessage = config.getString("casting.cancelMessage", "&cCasting Cancelled!");
-            successMessage = config.getString("casting.successMessage", "&bSkill Cast Successful!");
+            activationMessage = cachedConfig.activationMessage;
+            cancelMessage = cachedConfig.cancelMessage;
+            successMessage = cachedConfig.successMessage;
             
         } catch (Exception e) {
             plugin.getLogger().severe("Error loading casting config: " + e.getMessage());
@@ -496,6 +496,9 @@ public class CastingSystem implements Listener {
         final String clickSound;
         final double clickSoundVolume;
         final double clickSoundPitch;
+        final String activationMessage;
+        final String cancelMessage;
+        final String successMessage;
         
         CastingConfig(YamlConfiguration config) {
             this.timeout = config.getInt("casting.timeout", 5);
@@ -509,6 +512,9 @@ public class CastingSystem implements Listener {
             this.clickSound = config.getString("casting.clickSound", "UI_BUTTON_CLICK");
             this.clickSoundVolume = config.getDouble("casting.clickSoundVolume", 1.0);
             this.clickSoundPitch = config.getDouble("casting.clickSoundPitch", 1.0);
+            this.activationMessage = config.getString("casting.activationMessage", "&aCasting Mode Activated!");
+            this.cancelMessage = config.getString("casting.cancelMessage", "&cCasting Cancelled!");
+            this.successMessage = config.getString("casting.successMessage", "&bSkill Cast Successful!");
         }
 
         private Map<String, Map<String, String>> loadComboMappings(YamlConfiguration config) {
