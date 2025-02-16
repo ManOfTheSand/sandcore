@@ -2,10 +2,17 @@ package com.sandcore.items;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class CustomItem {
     private final String id;
@@ -21,6 +28,8 @@ public class CustomItem {
     private boolean craftable;
     private List<String> recipe;
     private int recipeGiveAmount;
+    private Material material;
+    private JavaPlugin plugin;
 
     public enum ItemType {
         WEAPON, ARMOR, TOOL, CHARM, OTHER
@@ -36,7 +45,14 @@ public class CustomItem {
     }
 
     private void loadFromConfig(ConfigurationSection config) {
-        this.displayName = config.getString("display-name");
+        String materialName = config.getString("item.material", "STONE");
+        this.material = Material.matchMaterial(materialName);
+        if (this.material == null) {
+            this.material = Material.STONE;
+        }
+        
+        this.displayName = ChatColor.translateAlternateColorCodes('&', 
+            config.getString("display-name", "Unnamed Item"));
         this.lore = config.getStringList("lore");
         this.type = ItemType.valueOf(config.getString("type", "OTHER").toUpperCase());
         this.level = config.getInt("level", 1);
@@ -71,10 +87,21 @@ public class CustomItem {
     }
 
     public ItemStack buildItem() {
-        Material material = Material.matchMaterial(this.type.name());
-        if (material == null) {
-            material = Material.STONE;
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        
+        if (meta != null) {
+            meta.setDisplayName(displayName);
+            meta.setLore(lore.stream()
+                .map(line -> ChatColor.translateAlternateColorCodes('&', line))
+                .collect(Collectors.toList()));
+            
+            PersistentDataContainer pdc = meta.getPersistentDataContainer();
+            pdc.set(new NamespacedKey(plugin, "item_id"), PersistentDataType.STRING, id);
+            
+            item.setItemMeta(meta);
         }
-        return new ItemStack(material);
+        
+        return item;
     }
 } 

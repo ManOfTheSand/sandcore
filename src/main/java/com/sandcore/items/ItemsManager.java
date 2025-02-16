@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -69,12 +72,10 @@ public class ItemsManager {
     public CustomItem getItemFromStack(ItemStack stack) {
         if (stack == null || !stack.hasItemMeta()) return null;
         
-        // Temporary implementation until NBT tagging is added
-        String displayName = stack.getItemMeta().getDisplayName();
-        return items.values().stream()
-            .filter(item -> item.getDisplayName().equals(displayName))
-            .findFirst()
-            .orElse(null);
+        PersistentDataContainer pdc = stack.getItemMeta().getPersistentDataContainer();
+        String itemId = pdc.get(new NamespacedKey(plugin, "item_id"), PersistentDataType.STRING);
+        
+        return itemId != null ? items.get(itemId) : null;
     }
 
     public List<String> getItemIds() {
