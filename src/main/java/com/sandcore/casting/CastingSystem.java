@@ -19,8 +19,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
 import com.sandcore.SandCore;
-import io.lumine.xikage.mythicmobs.MythicMobs;
-import io.lumine.mythic.bukkit.MythicBukkit;
 
 /**
  * CastingSystem emulates a Wynncraft-like skills casting system.
