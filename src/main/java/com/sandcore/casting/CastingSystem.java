@@ -77,16 +77,33 @@ public class CastingSystem implements Listener {
     private void loadConfiguration() {
         try {
             File classesFile = new File(plugin.getDataFolder(), "classes.yml");
+            
+            // DEBUG: Verify file existence and permissions
+            plugin.getLogger().info("Loading classes.yml from: " + classesFile.getAbsolutePath());
+            plugin.getLogger().info("File exists: " + classesFile.exists());
+            if (classesFile.exists()) {
+                plugin.getLogger().info("File size: " + classesFile.length() + " bytes");
+                plugin.getLogger().info("File readable: " + classesFile.canRead());
+            }
+            
             if (!classesFile.exists()) {
                 plugin.saveResource("classes.yml", false);
             }
             YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
-            // DEBUG: Print the entire config file content for verification.
             plugin.getLogger().info("Config file content: " + classesConfig.saveToString());
             plugin.getLogger().info("Loaded configuration top-level keys: " + classesConfig.getKeys(false));
+            
+            // Reset all config values before loading
+            this.activationSound = null;
+            this.cancelSound = null;
+            this.successSound = null;
+            this.clickSound = null;
+            this.comboTimeoutSeconds = 0;
+            this.comboCooldownMillis = 0;
+
             if (!classesConfig.contains("casting")) {
                 plugin.getLogger().warning("Casting section missing in classes.yml! Setting default casting configuration.");
-                this.comboTimeoutSeconds = 6; // 6 seconds timeout.
+                this.comboTimeoutSeconds = 6;
                 this.activationMessage = "&x&F&F&C&C&C&C Casting Mode Activated!";
                 this.cancelMessage = "&x&F&F&3&3&3&3 Casting Cancelled!";
                 this.successMessage = "&x&A&A&D&D&F&F Skill Cast Successful!";
@@ -97,13 +114,16 @@ public class CastingSystem implements Listener {
                 comboMappings = new HashMap<>();
                 return;
             }
-            // Use the casting section for all configurable options.
+
+            // Load casting section with explicit path validation
             YamlConfiguration castingConf = (YamlConfiguration) classesConfig.getConfigurationSection("casting");
             plugin.getLogger().info("Casting section keys: " + castingConf.getKeys(false));
+            
             this.comboTimeoutSeconds = castingConf.getInt("timeout", 6);
             this.activationMessage = castingConf.getString("activationMessage", "&x&F&F&C&C&C&C Casting Mode Activated!");
             this.cancelMessage = castingConf.getString("cancelMessage", "&x&F&F&3&3&3&3 Casting Cancelled!");
             this.successMessage = castingConf.getString("successMessage", "&x&A&A&D&D&F&F Skill Cast Successful!");
+            
             this.activationSound = castingConf.getString("activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
             if (this.activationSound == null || this.activationSound.isEmpty()) {
                 this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
@@ -126,12 +146,15 @@ public class CastingSystem implements Listener {
             this.clickSoundVolume = castingConf.getDouble("clickSoundVolume", 1.0);
             this.clickSoundPitch = castingConf.getDouble("clickSoundPitch", 1.0);
 
-            // DEBUG: Force test sound values for debugging purposes.
-            this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
-            this.cancelSound = "ENTITY_BLAZE_HURT";
-            this.successSound = "ENTITY_PLAYER_LEVELUP";
-            this.clickSound = "UI_BUTTON_CLICK";
-            plugin.getLogger().info("DEBUG: Forcing sound values: activationSound=" + this.activationSound +
+            // Final validation
+            plugin.getLogger().info("Final sound values after loading:");
+            plugin.getLogger().info("- activationSound: " + this.activationSound);
+            plugin.getLogger().info("- cancelSound: " + this.cancelSound);
+            plugin.getLogger().info("- successSound: " + this.successSound);
+            plugin.getLogger().info("- clickSound: " + this.clickSound);
+            
+            // DEBUG: Verify values are set
+            plugin.getLogger().info("DEBUG: Loaded sound values: activationSound=" + this.activationSound +
                 ", cancelSound=" + this.cancelSound + ", successSound=" + this.successSound +
                 ", clickSound=" + this.clickSound);
 
@@ -243,6 +266,12 @@ public class CastingSystem implements Listener {
     private void activateCastingMode(Player player) {
         CastingSession session = new CastingSession(player);
         activeSessions.put(player.getUniqueId(), session);
+        
+        // Final null check before using
+        if (activationSound == null) {
+            plugin.getLogger().severe("CRITICAL ERROR: activationSound is null when activating casting mode!");
+        }
+
         // Show the activation action bar message and play sound on the main thread.
         Bukkit.getScheduler().runTask(plugin, () -> {
             player.sendActionBar(""); // Clear any previous message
