@@ -107,7 +107,8 @@ public class ItemUpdateListener implements Listener {
                         ChatColor color = cls.equalsIgnoreCase(playerClass) 
                             ? ChatColor.GREEN 
                             : ChatColor.RED;
-                        return color + formattedName;
+                        // Preserve existing color context before adding class color
+                        return ChatColor.getLastColors(line.split("\\{classes}")[0]) + color + formattedName;
                     })
                     .collect(Collectors.joining(ChatColor.GRAY + ", "));
                 
