@@ -110,7 +110,13 @@ public class SandCore extends JavaPlugin {
         getCommand("sandcore").setTabCompleter(new MainTabCompleter(itemsManager));
 
         // Register item update listener
-        new ItemUpdateListener(this, itemsManager, classManager);
+        new ItemUpdateListener(
+            this, 
+            itemsManager, 
+            classManager,
+            levelManager,
+            playerDataManager
+        );
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }

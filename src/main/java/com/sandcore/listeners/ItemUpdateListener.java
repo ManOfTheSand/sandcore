@@ -19,8 +19,8 @@ import com.sandcore.SandCore;
 import com.sandcore.classes.ClassManager;
 import com.sandcore.items.CustomItem;
 import com.sandcore.items.ItemsManager;
-import com.sandcore.level.LevelManager;
-import com.sandcore.playerdata.PlayerDataManager;
+import com.sandcore.data.PlayerDataManager;
+import com.sandcore.levels.LevelManager;
 
 public class ItemUpdateListener implements Listener {
     private final ItemsManager itemsManager;
