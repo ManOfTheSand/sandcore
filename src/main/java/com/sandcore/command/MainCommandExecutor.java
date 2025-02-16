@@ -1,6 +1,7 @@
 package com.sandcore.command;
 
 import java.io.File;
+import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -23,8 +24,17 @@ public class MainCommandExecutor implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            // Handle the /reload command.
-            if (command.getName().equalsIgnoreCase("reload")) {
+            // Show help menu
+            sender.sendMessage("§6SandCore Commands:");
+            sender.sendMessage("§a/sandcore reload §7- Reload plugin configs");
+            sender.sendMessage("§a/sandcore item give <player> <item> [amount] §7- Give custom items");
+            return true;
+        }
+
+        String subCommand = args[0].toLowerCase();
+        switch (subCommand) {
+            case "reload":
+                // Handle reload
                 if (!sender.hasPermission("sandmmo.admin.reload")) {
                     sender.sendMessage("§cYou do not have permission to reload the plugin.");
                     return true;
@@ -76,22 +86,19 @@ public class MainCommandExecutor implements CommandExecutor {
                     e.printStackTrace();
                 }
                 return true;
-            }
-            if (args[0].equalsIgnoreCase("reloadcast")) {
+            case "item":
+                if (args.length > 1) {
+                    // Pass the subcommand (give) and remaining arguments
+                    String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
+                    return itemCommandExecutor.onCommand(sender, command, label, newArgs);
+                }
+                break;
+            case "reloadcast":
                 sender.sendMessage("Casting system has been removed.");
                 return true;
-            }
-            return false;
+            default:
+                sender.sendMessage("§cUnknown command. Use /sandcore for help");
         }
-        
-        // Add item command handling
-        if (args[0].equalsIgnoreCase("item")) {
-            // Delegate to ItemCommandExecutor
-            String[] newArgs = new String[args.length - 1];
-            System.arraycopy(args, 1, newArgs, 0, newArgs.length);
-            return itemCommandExecutor.onCommand(sender, command, label, newArgs);
-        }
-
-        return false;
+        return true;
     }
 } 

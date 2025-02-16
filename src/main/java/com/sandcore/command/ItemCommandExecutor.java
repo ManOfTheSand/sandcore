@@ -22,8 +22,8 @@ public class ItemCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("sandcore.command.item.give")) {
-            sender.sendMessage("§cYou don't have permission to use this command!");
+        if (args.length < 1 || !args[0].equalsIgnoreCase("give")) {
+            sender.sendMessage("§cUsage: /sandcore item give <player> <itemID> [amount]");
             return true;
         }
 
@@ -32,13 +32,8 @@ public class ItemCommandExecutor implements CommandExecutor {
             return true;
         }
 
-        if (args[0].equalsIgnoreCase("give")) {
-            handleGiveCommand(sender, args);
-            return true;
-        }
-
-        sender.sendMessage("§cUnknown subcommand!");
-        return false;
+        handleGiveCommand(sender, args);
+        return true;
     }
 
     private void handleGiveCommand(CommandSender sender, String[] args) {

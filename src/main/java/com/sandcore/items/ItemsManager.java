@@ -1,7 +1,9 @@
 package com.sandcore.items;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -70,5 +72,9 @@ public class ItemsManager {
             .filter(item -> item.getDisplayName().equals(displayName))
             .findFirst()
             .orElse(null);
+    }
+
+    public List<String> getItemIds() {
+        return new ArrayList<>(items.keySet());
     }
 } 
