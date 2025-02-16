@@ -33,7 +33,7 @@ public class CustomItem {
     private int recipeGiveAmount;
     private Material material;
     private SandCore plugin;
-    private final List<String> requiredClasses;
+    private final List<String> requiredClasses = new ArrayList<>();
     private boolean valid = false;
 
     public enum ItemType {
@@ -54,7 +54,7 @@ public class CustomItem {
             }
             
             this.plugin = plugin;
-            this.requiredClasses = config.getStringList("required_classes");
+            this.requiredClasses.addAll(config.getStringList("required_classes"));
             loadFromConfig(config);
             validateItem();
             
