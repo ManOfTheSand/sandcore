@@ -14,7 +14,7 @@ classes:
       RLL: "icebolt"
   warrior:
     slot: 12
-    displayName: "<hex:#FF0000>Warrior</hex>"
+    displayName: "<hex:#FF0000>Warrior"
     lore: "<hex:#AAAAAA>A fearless fighter."
     material: "IRON_SWORD"
     comboClickSoundName: "BLOCK_ANVIL_LAND"
