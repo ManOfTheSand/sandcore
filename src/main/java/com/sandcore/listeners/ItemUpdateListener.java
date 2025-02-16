@@ -17,9 +17,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.sandcore.SandCore;
 import com.sandcore.classes.ClassManager;
+import com.sandcore.data.PlayerDataManager;
 import com.sandcore.items.CustomItem;
 import com.sandcore.items.ItemsManager;
-import com.sandcore.data.PlayerDataManager;
 import com.sandcore.levels.LevelManager;
 
 public class ItemUpdateListener implements Listener {

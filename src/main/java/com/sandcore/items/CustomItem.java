@@ -170,7 +170,11 @@ public class CustomItem {
             if (this.lore != null) {
                 for (String line : this.lore) {
                     if (line.contains("{classes}")) {
-                        line = line.replace("{classes}", String.join(", ", requiredClasses));
+                        // Use formatted class names from ClassManager
+                        String formattedClasses = requiredClasses.stream()
+                            .map(cls -> plugin.getClassManager().getFormattedClassName(cls))
+                            .collect(Collectors.joining(", "));
+                        line = line.replace("{classes}", formattedClasses);
                     }
                     if (line.contains("{level}")) {
                         line = line.replace("{level}", String.valueOf(requiredLevel));
