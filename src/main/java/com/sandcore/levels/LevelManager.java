@@ -68,9 +68,8 @@ public class LevelManager {
     }
 
     public void loadConfig() {
-        // Existing configuration loading logic
-        loadLevelData();
-        loadXPData();
+        // Replace with actual configuration loading
+        loadConfiguration(getConfig()); // Assuming getConfig() returns the FileConfiguration
         logger.info("Loaded level configuration");
     }
 } 

@@ -210,7 +210,7 @@ public class SandCore extends JavaPlugin {
         try {
             getLogger().info("Registering commands...");
             // Register reload command.
-            getCommand("reload").setExecutor(new MainCommandExecutor(this));
+            getCommand("reload").setExecutor(mainCommandExecutor);
             
             // Existing commands
             if (getCommand("classes") != null) {
