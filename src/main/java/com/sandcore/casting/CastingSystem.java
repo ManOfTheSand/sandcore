@@ -261,6 +261,7 @@ public class CastingSystem implements Listener {
             plugin.getLogger().info("No valid skill mapping for combo " + combo + " for class " + selectedClass);
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
+                player.sendActionBar(""); // Clear previous combo display
                 playSound(player, cancelSound);
             });
             return;
@@ -277,6 +278,7 @@ public class CastingSystem implements Listener {
             activeSessions.get(player.getUniqueId()).startCooldown();
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
+                player.sendActionBar(""); // Clear previous combo display
                 playSound(player, cancelSound);
             });
             plugin.getLogger().warning("Failed to cast skill " + skillName + " for player " + player.getName());
@@ -419,6 +421,7 @@ public class CastingSystem implements Listener {
          * Resets the click sequence while keeping the casting session active
          */
         public void resetClicks() {
+            player.sendActionBar(""); // Immediately clear combo display
             clicks.clear();
         }
 
