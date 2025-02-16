@@ -369,6 +369,7 @@ public class CastingSystem implements Listener {
         private int taskId = -1;
         // Remove timestamp-based filtering; we now use a click lock.
         private boolean clickLock = false;
+        private Instant lastClickTime = Instant.MIN;
 
         public CastingSession(Player player) {
             this.player = player;
@@ -382,19 +383,39 @@ public class CastingSystem implements Listener {
         public void addClick(String click) {
             comboExecutor.submit(() -> {
                 if (Instant.now().isBefore(cooldownEnd)) return;
-                if (clickLock) return;
                 
-                // Original logic wrapped in async task
+                clicks.add(click);
+                lastClickTime = Instant.now();
+                
+                // Check if we have a valid combo
+                if (clicks.size() == 3) {
+                    String combo = String.join("", clicks);
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        processCombo(player, combo);
+                        resetClicks();
+                    });
+                }
+                
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     clickLock = true;
-                    long lockDuration = click.equals("R") ? rightClickLockTicks : leftClickLockTicks;
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> clickLock = false, lockDuration);
-                    
-                    if (clicks.size() < 3) {
-                        clicks.add(click);
-                        checkForValidCombo();
+                    playSound(player, clickSound, (float) clickSoundVolume, (float) clickSoundPitch);
+                    player.sendActionBar(translateHexColors("&eCombo: &b" + String.join(",", clicks)));
+                });
+                
+                // Start timeout check
+                comboExecutor.submit(() -> {
+                    try {
+                        Thread.sleep(comboTimeoutSeconds * 1000);
+                        if (Instant.now().isAfter(lastClickTime.plusSeconds(comboTimeoutSeconds))) {
+                            Bukkit.getScheduler().runTask(plugin, () -> {
+                                player.sendActionBar(translateHexColors(cancelMessage));
+                                playSound(player, cancelSound);
+                                resetClicks();
+                            });
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
-                    playComboClickSound(player);
                 });
             });
         }
@@ -453,16 +474,6 @@ public class CastingSystem implements Listener {
          */
         public void startCooldown() {
             cooldownEnd = Instant.now().plusMillis(comboCooldownMillis);
-        }
-
-        private void checkForValidCombo() {
-            if (clicks.size() == 3) {
-                String combo = String.join("", clicks);
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    processCombo(player, combo);
-                    resetClicks();
-                });
-            }
         }
     }
 
