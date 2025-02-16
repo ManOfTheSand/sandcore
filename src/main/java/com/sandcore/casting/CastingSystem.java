@@ -338,21 +338,7 @@ public class CastingSystem implements Listener {
         }
         String skillName = mappings.get(combo);
         // Attempt to cast the MythicMob skill (integration with MythicMob API goes here).
-        boolean castSuccess = castMythicMobSkill(player, skillName);
-        if (castSuccess && activeSessions.containsKey(player.getUniqueId())) {
-            activeSessions.get(player.getUniqueId()).resetClicks();
-            activeSessions.get(player.getUniqueId()).startCooldown();
-            plugin.getLogger().info("Player " + player.getName() + " successfully cast " + skillName + " using combo " + combo);
-        } else {
-            activeSessions.get(player.getUniqueId()).resetClicks();
-            activeSessions.get(player.getUniqueId()).startCooldown();
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                player.sendActionBar(translateHexColors(cancelMessage));
-                player.sendActionBar(""); // Clear previous combo display
-                playSound(player, cancelSound);
-            });
-            plugin.getLogger().warning("Failed to cast skill " + skillName + " for player " + player.getName());
-        }
+        castMythicMobSkill(player, skillName);
     }
 
     /**
@@ -362,22 +348,22 @@ public class CastingSystem implements Listener {
      * @param player    The player casting the skill.
      * @param skillName Name of the MythicMob skill to cast.
      */
-    private boolean castMythicMobSkill(Player player, String skillName) {
-        try {
-            // Use the player's eye location as the casting location.
-            Location castLocation = player.getEyeLocation().clone();
-            boolean result = io.lumine.mythic.bukkit.MythicBukkit.inst().getAPIHelper().castSkill(player, skillName, castLocation);
-            if (result) {
-                plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
-            } else {
-                plugin.getLogger().warning("MythicMob skill '" + skillName + "' was not successfully cast for player " + player.getName());
+    private void castMythicMobSkill(Player player, String skillName) {
+        Location castLocation = player.getEyeLocation().clone();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            try {
+                // MythicMobs resolves placeholders automatically when cast through the main thread
+                boolean result = io.lumine.mythic.bukkit.MythicBukkit.inst().getAPIHelper().castSkill(player, skillName, castLocation);
+                if(result) {
+                    plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
+                } else {
+                    plugin.getLogger().warning("MythicMob skill '" + skillName + "' failed to cast for player " + player.getName());
+                }
+            } catch (Exception e) {
+                plugin.getLogger().severe("Error casting MythicMob skill: " + e.getMessage());
+                e.printStackTrace();
             }
-            return result;
-        } catch (Exception e) {
-            plugin.getLogger().severe("Error casting MythicMob skill: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
+        }, 1L); // 1 tick delay ensures proper math/placeholder resolution
     }
 
     /**
