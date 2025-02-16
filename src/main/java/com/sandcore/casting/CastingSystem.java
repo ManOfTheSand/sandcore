@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
 import com.sandcore.SandCore;
+import io.lumine.xikage.mythicmobs.MythicMobs;
 
 /**
  * CastingSystem emulates a Wynncraft-like skills casting system.
@@ -265,19 +266,17 @@ public class CastingSystem implements Listener {
      */
     private boolean castMythicMobSkill(Player player, String skillName) {
         try {
-            // Integration with MythicMobs API:
-            // For example, if you're using MythicMobs API 4.0+, you can do something like:
-            //
-            // import io.lumine.xikage.mythicmobs.MythicMobs;
-            //
-            // MythicMobs mm = MythicMobs.inst();
-            // boolean result = mm.getAPIHelper().castSkill(player, skillName, player.getLocation());
-            //
-            // return result;
-
-            // TODO: Replace the below placeholder with your actual MythicMob API call.
-            plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
-            return true;
+            // Using the newest MythicMobs API (@MythicChanges), cast the skill as follows:
+            // Ensure you have MythicMobs 5 (or newer) installed.
+            // The API call below uses the helper to cast the specified skill on the player at their location.
+            MythicMobs mm = MythicMobs.inst();
+            boolean result = mm.getAPIHelper().castSkill(player, skillName, player.getLocation());
+            if(result) {
+                plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
+            } else {
+                plugin.getLogger().warning("MythicMob skill '" + skillName + "' was not successfully cast for player " + player.getName());
+            }
+            return result;
         } catch (Exception e) {
             plugin.getLogger().severe("Error casting MythicMob skill: " + e.getMessage());
             e.printStackTrace();
