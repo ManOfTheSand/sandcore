@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -18,7 +19,7 @@ import com.sandcore.SandCore;
 
 public class ItemsManager {
     private final SandCore plugin;
-    private final Map<String, CustomItem> items = new HashMap<>();
+    private final Map<String, CustomItem> itemMap = new HashMap<>();
     private File itemsFile;
 
     public ItemsManager(SandCore plugin) {
@@ -27,33 +28,17 @@ public class ItemsManager {
     }
 
     public void loadItems() {
-        // First check/create file synchronously
-        itemsFile = new File(plugin.getDataFolder(), "items.yml");
-        if (!itemsFile.exists()) {
-            plugin.saveResource("items.yml", false);
-            plugin.getLogger().info("Created default items.yml");
-        }
-
-        // Then load content async
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    YamlConfiguration config = YamlConfiguration.loadConfiguration(itemsFile);
-                    items.clear();
-                    
-                    for (String itemId : config.getConfigurationSection("items").getKeys(false)) {
-                        CustomItem item = new CustomItem(plugin, itemId, 
-                            config.getConfigurationSection("items." + itemId));
-                        items.put(itemId, item);
-                        registerCrafting(item);
-                    }
-                    plugin.getLogger().log(Level.INFO, "Loaded " + items.size() + " custom items");
-                } catch (Exception e) {
-                    plugin.getLogger().log(Level.SEVERE, "Error loading items.yml", e);
-                }
+        itemMap.clear();
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "items.yml"));
+        ConfigurationSection itemsSection = config.getConfigurationSection("items");
+        
+        if(itemsSection != null) {
+            for(String itemId : itemsSection.getKeys(false)) {
+                // Store original case in map but allow lowercase lookup
+                itemMap.put(itemId.toLowerCase(), new CustomItem(plugin, itemId, itemsSection.getConfigurationSection(itemId)));
+                plugin.getLogger().info("Loaded item: " + itemId);
             }
-        }.runTaskAsynchronously(plugin);
+        }
     }
 
     private void registerCrafting(CustomItem item) {
@@ -63,7 +48,8 @@ public class ItemsManager {
     }
 
     public CustomItem getItem(String id) {
-        return items.get(id.toLowerCase());
+        // Case-insensitive lookup
+        return itemMap.get(id.toLowerCase());
     }
 
     public void reloadItems() {
@@ -80,6 +66,6 @@ public class ItemsManager {
     }
 
     public List<String> getItemIds() {
-        return new ArrayList<>(items.keySet());
+        return new ArrayList<>(itemMap.keySet());
     }
 } 
