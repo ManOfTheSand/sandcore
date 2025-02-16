@@ -101,7 +101,18 @@ public class CastingSystem implements Listener {
             comboCooldownMillis = cachedConfig.cooldownMillis;
             leftClickLockTicks = cachedConfig.leftClickLock;
             rightClickLockTicks = cachedConfig.rightClickLock;
+            activationSound = cachedConfig.activationSound;
+            cancelSound = cachedConfig.cancelSound;
+            successSound = cachedConfig.successSound;
+            clickSound = cachedConfig.clickSound;
+            clickSoundVolume = cachedConfig.clickSoundVolume;
+            clickSoundPitch = cachedConfig.clickSoundPitch;
             comboMappings = cachedConfig.comboMappings;
+            
+            // Load messages and other sound config
+            activationMessage = config.getString("casting.activationMessage", "&aCasting Mode Activated!");
+            cancelMessage = config.getString("casting.cancelMessage", "&cCasting Cancelled!");
+            successMessage = config.getString("casting.successMessage", "&bSkill Cast Successful!");
             
         } catch (Exception e) {
             plugin.getLogger().severe("Error loading casting config: " + e.getMessage());
@@ -307,7 +318,7 @@ public class CastingSystem implements Listener {
      * The sound is obtained via its name from configuration.
      */
     private void playSound(Player player, String soundName) {
-        if (soundName == null || soundName.isEmpty()) {
+        if (soundName == null || soundName.trim().isEmpty()) {
             plugin.getLogger().warning("playSound called with null or empty soundName!");
             return;
         }
@@ -479,6 +490,12 @@ public class CastingSystem implements Listener {
         final int leftClickLock;
         final int rightClickLock;
         final Map<String, Map<String, String>> comboMappings;
+        final String activationSound;
+        final String cancelSound;
+        final String successSound;
+        final String clickSound;
+        final double clickSoundVolume;
+        final double clickSoundPitch;
         
         CastingConfig(YamlConfiguration config) {
             this.timeout = config.getInt("casting.timeout", 5);
@@ -486,6 +503,12 @@ public class CastingSystem implements Listener {
             this.leftClickLock = config.getInt("casting.leftClickLock", 1);
             this.rightClickLock = config.getInt("casting.rightClickLock", 4);
             this.comboMappings = loadComboMappings(config);
+            this.activationSound = config.getString("casting.activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+            this.cancelSound = config.getString("casting.cancelSound", "ENTITY_BLAZE_HURT");
+            this.successSound = config.getString("casting.successSound", "ENTITY_PLAYER_LEVELUP");
+            this.clickSound = config.getString("casting.clickSound", "UI_BUTTON_CLICK");
+            this.clickSoundVolume = config.getDouble("casting.clickSoundVolume", 1.0);
+            this.clickSoundPitch = config.getDouble("casting.clickSoundPitch", 1.0);
         }
 
         private Map<String, Map<String, String>> loadComboMappings(YamlConfiguration config) {
