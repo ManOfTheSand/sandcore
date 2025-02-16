@@ -1,13 +1,10 @@
 package com.sandcore.command;
 
-import java.io.File;
 import java.util.Arrays;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.sandcore.SandCore;
 import com.sandcore.items.ItemsManager;
@@ -65,7 +62,7 @@ public class MainCommandExecutor implements CommandExecutor {
             
             // Then reload other components
             plugin.reloadConfig();
-            plugin.getLevelManager().loadConfig();
+            plugin.getLevelManager().loadConfig(plugin.getConfig());
             plugin.getClassManager().reloadClasses();
             
             sender.sendMessage("§aConfigurations reloaded successfully!");

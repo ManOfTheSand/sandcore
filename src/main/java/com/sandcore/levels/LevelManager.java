@@ -67,9 +67,8 @@ public class LevelManager {
         return xpRequirements;
     }
 
-    public void loadConfig() {
-        // Replace with actual configuration loading
-        loadConfiguration(getConfig()); // Assuming getConfig() returns the FileConfiguration
-        logger.info("Loaded level configuration");
+    public void loadConfig(FileConfiguration config) {
+        loadConfiguration(config);
+        logger.info("Reloaded level configuration");
     }
 } 
