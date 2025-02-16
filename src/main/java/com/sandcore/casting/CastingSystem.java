@@ -366,7 +366,7 @@ public class CastingSystem implements Listener {
     private boolean castMythicMobSkill(Player player, String skillName) {
         try {
             // Resolve placeholders before casting
-            String parsedSkillName = io.lumine.mythic.bukkit.MythicBukkit.inst().getPlaceholderAPI().parsePlaceholders(player, skillName);
+            String parsedSkillName = io.lumine.mythic.bukkit.MythicBukkit.inst().getAPI().getPlaceholderAPI().parse(player, skillName);
             
             // Get precise casting location
             Location castLocation = player.getEyeLocation().clone();
