@@ -13,7 +13,7 @@ import org.bukkit.ChatColor;
 import com.sandcore.SandCore;
 import com.sandcore.items.ItemsManager;
 import com.sandcore.items.CustomItem;
-import com.sandcore.classmanager.ClassManager;
+import com.sandcore.classes.ClassManager;
 
 import java.util.ArrayList;
 import java.util.List;
