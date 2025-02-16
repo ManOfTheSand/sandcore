@@ -14,8 +14,8 @@ classes:
     lore: "<hex:#AAAAAA>A fearless fighter."
     material: "IRON_SWORD"
     keyCombos:
-      LLL: "spear_stab-exec"
-      LRR: "smash"
+      LLL: "spear_stab-multi-exec"
+      LRR: "spear_stab-uppercut"
   rogue:
     slot: 14
     displayName: "<hex:#00FF00>Rogue"
