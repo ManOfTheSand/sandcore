@@ -3,7 +3,7 @@ main: com.sandcore.SandCore
 version: 1.0.0
 description: A Minecraft MMORPG Plugin - SandCore
 author: Sandman
-api-version: 1.13
+api-version: "1.21"
 softdepend: [MythicMobs]
 
 commands:
