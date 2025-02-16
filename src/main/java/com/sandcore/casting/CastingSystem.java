@@ -17,7 +17,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sandcore.SandCore;
 
@@ -253,8 +252,12 @@ public class CastingSystem implements Listener {
 
     /**
      * Helper method to translate hex color codes (using & as the prefix) to Bukkit ChatColor.
+     * If the provided message is null, returns an empty string.
      */
     private String translateHexColors(String message) {
+        if(message == null) {
+            return "";
+        }
         return ChatColor.translateAlternateColorCodes('&', message);
     }
 
