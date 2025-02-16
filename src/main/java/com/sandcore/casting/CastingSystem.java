@@ -135,7 +135,7 @@ public class CastingSystem implements Listener {
             // Notify the player that casting mode has been deactivated.
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar("Casting mode deactivated!");
-                playSound(player, cancelSound);
+                playSound(player, cancelSound, 1.0f, 1.0f);
             });
             return;
         }
@@ -219,7 +219,7 @@ public class CastingSystem implements Listener {
             player.sendActionBar(""); // Clear any previous message
             player.sendActionBar(translateHexColors(activationMessage));
             plugin.getLogger().info("activateCastingMode: playing activation sound, sound parameter: '" + activationSound + "'");
-            playSound(player, activationSound);
+            playSound(player, activationSound, 1.0f, 1.0f);
         });
         plugin.getLogger().info("Casting mode activated for player: " + player.getName());
         // Schedule a timeout task that cancels the combo if not completed in time.
@@ -237,7 +237,7 @@ public class CastingSystem implements Listener {
             plugin.getLogger().warning("Player " + player.getName() + " does not have a selected class.");
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar("§cNo class selected!");
-                playSound(player, cancelSound);
+                playSound(player, cancelSound, 1.0f, 1.0f);
             });
             return;
         }
@@ -267,7 +267,7 @@ public class CastingSystem implements Listener {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
                 player.sendActionBar(""); // Clear previous combo display
-                playSound(player, cancelSound);
+                playSound(player, cancelSound, 1.0f, 1.0f);
             });
             return;
         }
@@ -283,7 +283,7 @@ public class CastingSystem implements Listener {
             activeSessions.get(player.getUniqueId()).startCooldown();
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
-                playSound(player, cancelSound);
+                playSound(player, cancelSound, 1.0f, 1.0f);
             });
         }
     }
@@ -314,21 +314,22 @@ public class CastingSystem implements Listener {
     }
 
     /**
-     * Helper method to play a sound at the player's location.
-     * The sound is obtained via its name from configuration.
+     * Plays a sound to the player at their location.
+     * @param player The player to play the sound to.
+     * @param soundName The name of the sound to play
      */
-    private void playSound(Player player, String soundName) {
-        if (soundName == null || soundName.trim().isEmpty()) {
+    private void playSound(Player player, String soundName, float volume, float pitch) {
+        if (soundName == null || soundName.isEmpty()) {
             plugin.getLogger().warning("playSound called with null or empty soundName!");
             return;
         }
         plugin.getLogger().info("playSound: playing sound '" + soundName + "'");
         try {
             Sound sound = Sound.valueOf(soundName.toUpperCase());
-            // Use default volume and pitch; these could also be made configurable.
-            player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Invalid sound name: " + soundName);
+            Location loc = player.getLocation();
+            player.playSound(loc, sound, volume, pitch);
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid sound name in config: " + soundName);
         }
     }
 
@@ -409,7 +410,7 @@ public class CastingSystem implements Listener {
                         if (Instant.now().isAfter(lastClickTime.plusSeconds(comboTimeoutSeconds))) {
                             Bukkit.getScheduler().runTask(plugin, () -> {
                                 player.sendActionBar(translateHexColors(cancelMessage));
-                                playSound(player, cancelSound);
+                                playSound(player, cancelSound, 1.0f, 1.0f);
                                 resetClicks();
                             });
                         }
@@ -448,7 +449,7 @@ public class CastingSystem implements Listener {
                 activeSessions.remove(player.getUniqueId());
                 plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
                 player.sendActionBar(translateHexColors(cancelMessage));
-                playSound(player, cancelSound);
+                playSound(player, cancelSound, 1.0f, 1.0f);
             }, timeoutSeconds * 20L).getTaskId();
         }
 
