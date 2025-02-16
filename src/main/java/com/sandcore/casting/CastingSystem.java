@@ -51,6 +51,10 @@ public class CastingSystem implements Listener {
     private String cancelSound;
     private String successSound;
     private long comboCooldownMillis = 1000; // 1 second cooldown between combos
+    // New configuration for combo click sound
+    private String clickSound;
+    private double clickSoundVolume;
+    private double clickSoundPitch;
     // Mapping: Player's class => combo pattern (e.g., "L,R,L") => MythicMob skill name.
     private Map<String, Map<String, String>> comboMappings;
     // Active casting sessions keyed by player UUID.
@@ -109,6 +113,14 @@ public class CastingSystem implements Listener {
                 this.successSound = "ENTITY_PLAYER_LEVELUP";
             }
             this.comboCooldownMillis = castingConf.getLong("cooldownMillis", 1000);
+
+            // Load combo click sound settings
+            this.clickSound = castingConf.getString("clickSound", "UI_BUTTON_CLICK");
+            if (this.clickSound == null || this.clickSound.isEmpty()) {
+                this.clickSound = "UI_BUTTON_CLICK";
+            }
+            this.clickSoundVolume = castingConf.getDouble("clickSoundVolume", 1.0);
+            this.clickSoundPitch = castingConf.getDouble("clickSoundPitch", 1.0);
 
             plugin.getLogger().info("Casting config loaded: activationSound=" + this.activationSound +
                 ", cancelSound=" + this.cancelSound + ", successSound=" + this.successSound);
@@ -341,6 +353,21 @@ public class CastingSystem implements Listener {
     }
 
     /**
+     * Plays the combo click sound for a player's casting click.
+     */
+    private void playComboClickSound(Player player) {
+        if (clickSound == null || clickSound.isEmpty()) {
+            return;
+        }
+        try {
+            Sound sound = Sound.valueOf(clickSound.toUpperCase());
+            player.playSound(player.getLocation(), sound, (float) clickSoundVolume, (float) clickSoundPitch);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid combo click sound: " + clickSound);
+        }
+    }
+
+    /**
      * Helper method to translate hex color codes (using & as the prefix) to Bukkit ChatColor.
      * If the provided message is null, returns an empty string.
      */
@@ -376,16 +403,18 @@ public class CastingSystem implements Listener {
             if (Instant.now().isBefore(cooldownEnd)) {
                 return; // Ignore clicks during cooldown
             }
-            
             if (clickLock) return;
             clickLock = true;
-            // Reset the lock after 2 ticks (approx 100ms).
+            // Use a longer lock for right clicks (e.g., 8 ticks) than for left clicks (2 ticks)
+            long lockDuration = click.equals("R") ? 8L : 2L;
             Bukkit.getScheduler().runTaskLater(CastingSystem.this.plugin, () -> {
                 clickLock = false;
-            }, 2L);
+            }, lockDuration);
             if (clicks.size() < 3) {
                 clicks.add(click);
             }
+            // Play the combo click sound every time a click is accepted.
+            CastingSystem.this.playComboClickSound(player);
         }
 
         /**
