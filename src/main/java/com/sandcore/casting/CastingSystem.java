@@ -163,6 +163,8 @@ public class CastingSystem implements Listener {
         // Record the click in the player's casting session.
         CastingSession session = activeSessions.get(player.getUniqueId());
         session.addClick(clickType);
+        // Update the action bar with the current combo.
+        player.sendActionBar("Combo: " + session.getComboString());
         plugin.getLogger().info("Player " + player.getName() + " clicked: " + clickType + " (Combo: " + session.getComboString() + ")");
         // When exactly three clicks have been recorded, process the combo.
         if (session.getComboSize() == 3) {
@@ -290,9 +292,8 @@ public class CastingSystem implements Listener {
         private final Player player;
         private final List<String> clicks = new ArrayList<>();
         private int taskId = -1;
-        private long lastClickTime = 0;
-        // Minimum interval (in milliseconds) to consider a new click.
-        private static final long MIN_CLICK_INTERVAL = 200;
+        // Remove timestamp-based filtering; we now use a click lock.
+        private boolean clickLock = false;
 
         public CastingSession(Player player) {
             this.player = player;
@@ -300,16 +301,16 @@ public class CastingSystem implements Listener {
 
         /**
          * Adds a click (either "L" or "R") to the current combo.
-         * This method checks the time of the last click and ignores events
-         * that occur within a short interval (to filter out duplicate events).
+         * Uses a short click lock (approx 2 ticks ~100ms) to filter out repeated
+         * events when a key is held down.
          */
         public void addClick(String click) {
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastClickTime < MIN_CLICK_INTERVAL) {
-                // Ignore this click as it occurred too quickly after the previous one.
-                return;
-            }
-            lastClickTime = currentTime;
+            if (clickLock) return;
+            clickLock = true;
+            // Reset the lock after 2 ticks (approx 100ms).
+            Bukkit.getScheduler().runTaskLater(CastingSystem.this.plugin, () -> {
+                clickLock = false;
+            }, 2L);
             if (clicks.size() < 3) {
                 clicks.add(click);
             }
@@ -323,10 +324,14 @@ public class CastingSystem implements Listener {
         }
 
         /**
-         * Returns the combo as a comma-separated string (e.g., "L,R,L").
+         * Returns the combo as a concatenated string without commas.
          */
         public String getComboString() {
-            return String.join(",", clicks);
+            StringBuilder sb = new StringBuilder();
+            for (String click : clicks) {
+                sb.append(click);
+            }
+            return sb.toString();
         }
 
         /**
