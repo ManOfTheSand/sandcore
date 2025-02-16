@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -305,8 +306,10 @@ public class CastingSystem implements Listener {
      */
     private boolean castMythicMobSkill(Player player, String skillName) {
         try {
-            // Using the newest MythicMobs API (version 5.6.1+), we now use MythicBukkit.inst() for casting.
-            boolean result = io.lumine.mythic.bukkit.MythicBukkit.inst().getAPIHelper().castSkill(player, skillName, player.getLocation());
+            // Adjust location to cast the skill as if the player is casting it.
+            // We subtract 0.5 from the Y-coordinate so the skill spawns from the proper height.
+            Location castLocation = player.getLocation().clone().subtract(0, 0.5, 0);
+            boolean result = io.lumine.mythic.bukkit.MythicBukkit.inst().getAPIHelper().castSkill(player, skillName, castLocation);
             if(result) {
                 plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
             } else {
