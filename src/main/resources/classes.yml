@@ -34,3 +34,5 @@ classes:
     keyCombos:
       RLR: "piercing_shot"
       RRL: "rain_of_arrows"
+casting:
+  cooldownMillis: 1000 # Cooldown in milliseconds between combos

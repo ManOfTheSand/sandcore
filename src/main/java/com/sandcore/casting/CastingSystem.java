@@ -1,6 +1,7 @@
 package com.sandcore.casting;
 
 import java.io.File;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +49,7 @@ public class CastingSystem implements Listener {
     private String activationSound;
     private String cancelSound;
     private String successSound;
+    private long comboCooldownMillis = 1000; // 1 second cooldown between combos
     // Mapping: Player's class => combo pattern (e.g., "L,R,L") => MythicMob skill name.
     private Map<String, Map<String, String>> comboMappings;
     // Active casting sessions keyed by player UUID.
@@ -83,6 +85,7 @@ public class CastingSystem implements Listener {
                 this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
                 this.cancelSound = "ENTITY_BLAZE_HURT";
                 this.successSound = "ENTITY_PLAYER_LEVELUP";
+                this.comboCooldownMillis = 1000;
                 comboMappings = new HashMap<>();
                 return;
             }
@@ -104,6 +107,7 @@ public class CastingSystem implements Listener {
             if(this.successSound == null || this.successSound.isEmpty()){
                 this.successSound = "ENTITY_PLAYER_LEVELUP";
             }
+            this.comboCooldownMillis = castingConf.getLong("cooldownMillis", 1000);
             comboMappings = new HashMap<>();
             if (castingConf.contains("comboMappings")) {
                 // For each class (Mage, Warrior, Rogue, etc.) load its combo mappings.
@@ -266,6 +270,7 @@ public class CastingSystem implements Listener {
         boolean castSuccess = castMythicMobSkill(player, skillName);
         if (castSuccess && activeSessions.containsKey(player.getUniqueId())) {
             activeSessions.get(player.getUniqueId()).resetClicks();
+            activeSessions.get(player.getUniqueId()).startCooldown();
             plugin.getLogger().info("Player " + player.getName() + " successfully cast " + skillName + " using combo " + combo);
         } else {
             Bukkit.getScheduler().runTask(plugin, () -> {
@@ -337,6 +342,7 @@ public class CastingSystem implements Listener {
     private class CastingSession {
         private final Player player;
         private final List<String> clicks = new ArrayList<>();
+        private Instant cooldownEnd = Instant.MIN;
         private int taskId = -1;
         // Remove timestamp-based filtering; we now use a click lock.
         private boolean clickLock = false;
@@ -351,6 +357,10 @@ public class CastingSystem implements Listener {
          * events when a key is held down.
          */
         public void addClick(String click) {
+            if (Instant.now().isBefore(cooldownEnd)) {
+                return; // Ignore clicks during cooldown
+            }
+            
             if (clickLock) return;
             clickLock = true;
             // Reset the lock after 2 ticks (approx 100ms).
@@ -386,6 +396,7 @@ public class CastingSystem implements Listener {
          */
         public void startTimeoutTask(int timeoutSeconds) {
             taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                resetClicks();
                 activeSessions.remove(player.getUniqueId());
                 plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
                 player.sendActionBar(translateHexColors(cancelMessage));
@@ -407,6 +418,13 @@ public class CastingSystem implements Listener {
          */
         public void resetClicks() {
             clicks.clear();
+        }
+
+        /**
+         * Starts the cooldown period between combos
+         */
+        public void startCooldown() {
+            cooldownEnd = Instant.now().plusMillis(comboCooldownMillis);
         }
     }
 
