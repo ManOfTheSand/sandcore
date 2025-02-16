@@ -50,11 +50,10 @@ public class ClassSelectionListener implements Listener {
             // Save the player data so that it persists.
             playerDataManager.savePlayerData();
             player.closeInventory();
-            player.sendMessage(ChatColor.GREEN + "You have selected the " + className + " class.");
         }
     }
 
     public void onClassSelect(Player player, String selectedClass) {
-        player.sendMessage("You have selected " + selectedClass + "!");
+        player.sendMessage(ChatColor.GREEN + "Successfully selected class: " + ChatColor.BOLD + selectedClass);
     }
 } 
