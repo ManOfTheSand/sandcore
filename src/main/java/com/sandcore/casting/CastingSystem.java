@@ -178,8 +178,8 @@ public class CastingSystem implements Listener {
      * MythicMob skill mapping, and attempts to cast the skill.
      */
     private void processCombo(Player player, String combo) {
-        // Retrieve the player's selected class via the ClassManager.
-        String selectedClass = plugin.getClassManager().getSelectedClass(player);
+        // Retrieve the player's selected class from the player's data.
+        String selectedClass = plugin.getPlayerDataManager().getPlayerData(player.getUniqueId()).getSelectedClass();
         if (selectedClass == null) {
             plugin.getLogger().warning("Player " + player.getName() + " does not have a selected class.");
             Bukkit.getScheduler().runTask(plugin, () -> {
