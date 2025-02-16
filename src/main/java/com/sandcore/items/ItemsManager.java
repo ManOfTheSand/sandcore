@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -74,7 +75,29 @@ public class ItemsManager {
         PersistentDataContainer pdc = stack.getItemMeta().getPersistentDataContainer();
         String itemId = pdc.get(new NamespacedKey(plugin, "item_id"), PersistentDataType.STRING);
         
-        return itemId != null ? itemMap.get(itemId.toLowerCase()) : null;
+        // Add null check and fallback to display name matching
+        if (itemId == null) {
+            return findItemByDisplayProperties(stack);
+        }
+        
+        return itemMap.get(itemId.toLowerCase());
+    }
+
+    private CustomItem findItemByDisplayProperties(ItemStack stack) {
+        ItemMeta meta = stack.getItemMeta();
+        String displayName = meta.getDisplayName();
+        List<String> lore = meta.getLore();
+
+        // Match against all registered items
+        for (CustomItem item : itemMap.values()) {
+            if (item.matchesVisualIdentity(displayName, lore)) {
+                // Update legacy items with proper NBT tags
+                ItemStack updated = item.buildItem();
+                updated.setAmount(stack.getAmount());
+                return item;
+            }
+        }
+        return null;
     }
 
     public List<String> getItemIds() {
@@ -113,10 +136,18 @@ public class ItemsManager {
 
     public ItemStack getUpdatedItem(ItemStack oldItem) {
         CustomItem currentVersion = getItemFromStack(oldItem);
-        if(currentVersion == null) return null;
+        if (currentVersion == null) return null;
         
+        // Handle legacy items without version tags
         int storedVersion = getItemVersion(oldItem);
-        if(storedVersion < configVersion) {
+        if (storedVersion == -1) {
+            plugin.getLogger().info("Updating legacy item: " + currentVersion.getId());
+            ItemStack newItem = currentVersion.buildItem();
+            newItem.setAmount(oldItem.getAmount());
+            return newItem;
+        }
+        
+        if (storedVersion < configVersion) {
             ItemStack newItem = currentVersion.buildItem();
             newItem.setAmount(oldItem.getAmount());
             return newItem;

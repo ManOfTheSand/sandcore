@@ -129,4 +129,21 @@ public class CustomItem {
         
         return item;
     }
+
+    public boolean matchesVisualIdentity(String displayName, List<String> lore) {
+        // Compare parsed display names
+        String parsedName = ColorParser.parseGradient(this.displayName);
+        if (!parsedName.equals(displayName)) return false;
+        
+        // Compare parsed lore line-by-line
+        if (this.lore.size() != (lore != null ? lore.size() : 0)) return false;
+        
+        for (int i = 0; i < this.lore.size(); i++) {
+            String configuredLine = ColorParser.parseGradient(this.lore.get(i));
+            String itemLine = lore.get(i);
+            if (!configuredLine.equals(itemLine)) return false;
+        }
+        
+        return true;
+    }
 } 
