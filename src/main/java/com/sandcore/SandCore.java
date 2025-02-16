@@ -258,6 +258,8 @@ public class SandCore extends JavaPlugin {
             getLogger().severe("Error registering event listeners: " + e.getMessage());
             e.printStackTrace();
         }
+        // Instantiate the CastingSystem to register its event listeners.
+        new com.sandcore.casting.CastingSystem(this);
     }
 
     public ClassManager getClassManager() {
