@@ -26,6 +26,8 @@ items:
     recipe-give-amount: 1
 
   guardian_shield:
+    item:
+      material: SHIELD
     display-name: "&6Guardian Shield"
     lore:
       - "&7Defense: &a+15"
