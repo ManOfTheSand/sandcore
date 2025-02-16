@@ -21,6 +21,7 @@ import com.sandcore.hud.HUDManager;
 import com.sandcore.items.ItemsManager;
 import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
+import com.sandcore.listeners.ItemUpdateListener;
 import com.sandcore.listeners.XPListener;
 
 public class SandCore extends JavaPlugin {
@@ -107,6 +108,9 @@ public class SandCore extends JavaPlugin {
         this.mainCommandExecutor = new MainCommandExecutor(this, itemsManager);
         Objects.requireNonNull(getCommand("sandcore")).setExecutor(mainCommandExecutor);
         getCommand("sandcore").setTabCompleter(new MainTabCompleter(itemsManager));
+
+        // Register item update listener
+        getServer().getPluginManager().registerEvents(new ItemUpdateListener(this), this);
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }

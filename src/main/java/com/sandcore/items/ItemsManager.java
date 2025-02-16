@@ -129,4 +129,8 @@ public class ItemsManager {
         return item.getItemMeta().getPersistentDataContainer()
             .getOrDefault(new NamespacedKey(plugin, "item_version"), PersistentDataType.INTEGER, -1);
     }
+
+    public boolean isSandCoreItem(ItemStack stack) {
+        return getItemFromStack(stack) != null;
+    }
 } 
