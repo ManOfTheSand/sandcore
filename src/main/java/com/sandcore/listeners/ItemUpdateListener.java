@@ -53,7 +53,7 @@ public class ItemUpdateListener implements Listener {
         
         if (updated != null) {
             // Run async processing for lore updates
-            Bukkit.getScheduler().runTaskAsynchronously(itemsManager.getPlugin(), () -> {
+            Bukkit.getScheduler().runTaskAsynchronously(itemsManager.getPlugin().getServer().getPluginManager().getPlugin("SandCore"), () -> {
                 CustomItem customItem = itemsManager.getItemFromStack(updated);
                 if (customItem != null && !customItem.getRequiredClasses().isEmpty()) {
                     String playerClass = classManager.getPlayerClass(player.getUniqueId());
@@ -64,7 +64,7 @@ public class ItemUpdateListener implements Listener {
                         List<String> newLore = processLoreAsync(lore, customItem, playerClass);
                         
                         // Schedule sync task for inventory update
-                        Bukkit.getScheduler().runTask(itemsManager.getPlugin(), () -> {
+                        Bukkit.getScheduler().runTask(itemsManager.getPlugin().getServer().getPluginManager().getPlugin("SandCore"), () -> {
                             meta.setLore(newLore);
                             updated.setItemMeta(meta);
                             

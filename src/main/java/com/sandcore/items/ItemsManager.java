@@ -181,4 +181,8 @@ public class ItemsManager {
     public boolean isSandCoreItem(ItemStack stack) {
         return getItemFromStack(stack) != null;
     }
+
+    public SandCore getPlugin() {
+        return plugin;
+    }
 } 
