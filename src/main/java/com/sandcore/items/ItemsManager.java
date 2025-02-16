@@ -51,7 +51,13 @@ public class ItemsManager {
     }
 
     public void reloadItems() {
-        loadItems();
+        try {
+            loadItems();
+            plugin.getLogger().info("Successfully reloaded " + itemMap.size() + " items");
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to reload items: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public CustomItem getItemFromStack(ItemStack stack) {
@@ -65,5 +71,9 @@ public class ItemsManager {
 
     public List<String> getItemIds() {
         return new ArrayList<>(itemMap.keySet());
+    }
+
+    public int getItemCount() {
+        return itemMap.size();
     }
 } 
