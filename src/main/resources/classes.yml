@@ -10,7 +10,7 @@ classes:
     comboClickSoundPitch: 1.0
     # Define the casting key combos mapping to MythicMobs skill ids
     keyCombos:
-      LRL: "fireball"
+      LLL: "fireball"
       RLL: "icebolt"
   warrior:
     slot: 12

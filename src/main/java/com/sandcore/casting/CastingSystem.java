@@ -290,6 +290,9 @@ public class CastingSystem implements Listener {
         private final Player player;
         private final List<String> clicks = new ArrayList<>();
         private int taskId = -1;
+        private long lastClickTime = 0;
+        // Minimum interval (in milliseconds) to consider a new click.
+        private static final long MIN_CLICK_INTERVAL = 200;
 
         public CastingSession(Player player) {
             this.player = player;
@@ -297,8 +300,16 @@ public class CastingSystem implements Listener {
 
         /**
          * Adds a click (either "L" or "R") to the current combo.
+         * This method checks the time of the last click and ignores events
+         * that occur within a short interval (to filter out duplicate events).
          */
         public void addClick(String click) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastClickTime < MIN_CLICK_INTERVAL) {
+                // Ignore this click as it occurred too quickly after the previous one.
+                return;
+            }
+            lastClickTime = currentTime;
             if (clicks.size() < 3) {
                 clicks.add(click);
             }
