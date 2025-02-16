@@ -218,6 +218,7 @@ public class CastingSystem implements Listener {
         activeSessions.put(player.getUniqueId(), session);
         // Show the activation action bar message and play sound on the main thread.
         Bukkit.getScheduler().runTask(plugin, () -> {
+            player.sendActionBar(""); // Clear any previous message
             player.sendActionBar(translateHexColors(activationMessage));
             playSound(player, activationSound);
         });

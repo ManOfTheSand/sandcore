@@ -36,3 +36,6 @@ classes:
       RRL: "rain_of_arrows"
 casting:
   cooldownMillis: 1000 # Cooldown in milliseconds between combos
+  activationSound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  cancelSound: "ENTITY_BLAZE_HURT"
+  successSound: "ENTITY_PLAYER_LEVELUP"
