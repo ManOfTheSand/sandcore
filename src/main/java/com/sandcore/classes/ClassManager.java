@@ -221,4 +221,8 @@ public class ClassManager {
         loadClasses();
         plugin.getLogger().info("Reloaded " + classes.size() + " classes");
     }
+
+    public String getPlayerClass(UUID playerId) {
+        return playerClasses.getOrDefault(playerId, "none");
+    }
 } 

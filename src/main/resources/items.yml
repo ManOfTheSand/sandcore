@@ -63,4 +63,27 @@ items:
       - "  A"
       - " A "
       - "B  "
+    recipe-give-amount: 1
+
+  warrior_sword:
+    material: DIAMOND_SWORD
+    display_name: "&6Warrior's Greatsword"
+    required_classes: ["warrior"]
+    lore:
+      - "A mighty weapon for warriors only"
+      - "Class: {classes}"
+    type: WEAPON
+    slot: mainhand
+    level: 5
+    rarity: EPIC
+    attributes:
+      damage: 15
+      critical_chance: 10
+    effects:
+      on_hit: ignite
+    craftable: true
+    recipe:
+      - "  A"
+      - " A "
+      - "B  "
     recipe-give-amount: 1 

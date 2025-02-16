@@ -33,6 +33,7 @@ public class CustomItem {
     private int recipeGiveAmount;
     private Material material;
     private SandCore plugin;
+    private final List<String> requiredClasses;
 
     public enum ItemType {
         WEAPON, ARMOR, TOOL, CHARM, OTHER
@@ -45,6 +46,7 @@ public class CustomItem {
     public CustomItem(SandCore plugin, String id, ConfigurationSection config) {
         this.plugin = plugin;
         this.id = id;
+        this.requiredClasses = config.getStringList("required_classes");
         loadFromConfig(config);
         validateItem();
     }
@@ -124,6 +126,29 @@ public class CustomItem {
                 .map(line -> ChatColor.translateAlternateColorCodes('&', line))
                 .collect(Collectors.toList()));
             
+            // Add class requirement lore
+            List<String> lore = new ArrayList<>();
+            if (this.lore != null) {
+                for (String line : this.lore) {
+                    if (line.contains("{classes}")) {
+                        line = line.replace("{classes}", String.join(", ", requiredClasses));
+                    }
+                    lore.add(ChatColor.translateAlternateColorCodes('&', line));
+                }
+            }
+            
+            // Add class requirement line if not empty
+            if (!requiredClasses.isEmpty()) {
+                lore.add(ChatColor.GRAY + "Class: " + String.join(", ", requiredClasses));
+            }
+            
+            meta.setLore(lore);
+            
+            // Store requirements in PDC
+            pdc.set(new NamespacedKey(plugin, "required_classes"), 
+                   PersistentDataType.STRING, 
+                   String.join(",", requiredClasses));
+            
             item.setItemMeta(meta);
         }
         
@@ -145,5 +170,9 @@ public class CustomItem {
         }
         
         return true;
+    }
+
+    public List<String> getRequiredClasses() {
+        return requiredClasses;
     }
 } 
