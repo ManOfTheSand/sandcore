@@ -1,6 +1,8 @@
 package com.sandcore.casting;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,14 +12,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.security.MessageDigest;
-import java.nio.ByteBuffer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -444,6 +443,16 @@ public class CastingSystem implements Listener {
         public void startCooldown() {
             cooldownEnd = Instant.now().plusMillis(comboCooldownMillis);
         }
+
+        private void checkForValidCombo() {
+            if (clicks.size() == 3) {
+                String combo = String.join("", clicks);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    processCombo(player, combo);
+                    resetClicks();
+                });
+            }
+        }
     }
 
     /**
@@ -492,16 +501,6 @@ public class CastingSystem implements Listener {
                 }
             }
             return mappings;
-        }
-    }
-
-    private void checkForValidCombo() {
-        if (clicks.size() == 3) {
-            String combo = String.join("", clicks);
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                processCombo(player, combo);
-                resetClicks();
-            });
         }
     }
 } 
