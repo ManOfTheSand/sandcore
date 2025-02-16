@@ -35,11 +35,12 @@ public class ItemsManager {
         // Ensure data folder exists
         plugin.getDataFolder().mkdirs();
         
-        // Create default items.yml if it doesn't exist
         itemsFile = new File(plugin.getDataFolder(), "items.yml");
         if (!itemsFile.exists()) {
             plugin.saveResource("items.yml", false);
             plugin.getLogger().info("Created default items.yml");
+            // Reload after creating
+            itemsFile = new File(plugin.getDataFolder(), "items.yml"); 
         }
         
         YamlConfiguration config = YamlConfiguration.loadConfiguration(itemsFile);
@@ -47,9 +48,14 @@ public class ItemsManager {
         
         if(itemsSection != null) {
             for(String itemId : itemsSection.getKeys(false)) {
-                // Store original case in map but allow lowercase lookup
-                itemMap.put(itemId.toLowerCase(), new CustomItem(plugin, itemId, itemsSection.getConfigurationSection(itemId)));
-                plugin.getLogger().info("Loaded item: " + itemId);
+                ConfigurationSection itemSection = itemsSection.getConfigurationSection(itemId);
+                if(itemSection != null) { // Add null check
+                    CustomItem item = new CustomItem(plugin, itemId, itemSection);
+                    if(item.isValid()) { // Add validation check
+                        itemMap.put(itemId.toLowerCase(), item);
+                        plugin.getLogger().info("Loaded item: " + itemId);
+                    }
+                }
             }
         }
     }

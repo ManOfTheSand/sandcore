@@ -34,6 +34,7 @@ public class CustomItem {
     private Material material;
     private SandCore plugin;
     private final List<String> requiredClasses;
+    private boolean valid = false;
 
     public enum ItemType {
         WEAPON, ARMOR, TOOL, CHARM, OTHER
@@ -44,11 +45,22 @@ public class CustomItem {
     }
 
     public CustomItem(SandCore plugin, String id, ConfigurationSection config) {
-        this.plugin = plugin;
-        this.id = id;
-        this.requiredClasses = config.getStringList("required_classes");
-        loadFromConfig(config);
-        validateItem();
+        try {
+            if(config == null) {
+                plugin.getLogger().warning("Null configuration section for item: " + id);
+                return;
+            }
+            
+            this.plugin = plugin;
+            this.id = id;
+            this.requiredClasses = config.getStringList("required_classes");
+            loadFromConfig(config);
+            validateItem();
+            
+            this.valid = true;
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error loading item " + id + ": " + e.getMessage());
+        }
     }
 
     private void loadFromConfig(ConfigurationSection config) {
@@ -174,5 +186,9 @@ public class CustomItem {
 
     public List<String> getRequiredClasses() {
         return requiredClasses;
+    }
+
+    public boolean isValid() {
+        return valid;
     }
 } 
