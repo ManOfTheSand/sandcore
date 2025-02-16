@@ -23,15 +23,18 @@ public class ItemsManager {
     }
 
     public void loadItems() {
+        // First check/create file synchronously
+        itemsFile = new File(plugin.getDataFolder(), "items.yml");
+        if (!itemsFile.exists()) {
+            plugin.saveResource("items.yml", false);
+            plugin.getLogger().info("Created default items.yml");
+        }
+
+        // Then load content async
         new BukkitRunnable() {
             @Override
             public void run() {
                 try {
-                    itemsFile = new File(plugin.getDataFolder(), "items.yml");
-                    if (!itemsFile.exists()) {
-                        plugin.saveResource("items.yml", false);
-                    }
-                    
                     YamlConfiguration config = YamlConfiguration.loadConfiguration(itemsFile);
                     items.clear();
                     

@@ -47,3 +47,6 @@ permissions:
   sandcore.command.reload:
     description: Allows reloading plugin configs
     default: op
+
+resources:
+  - items.yml

@@ -3,8 +3,10 @@ package com.sandcore.items;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class CustomItem {
     private final String id;
@@ -70,7 +72,21 @@ public class CustomItem {
     }
 
     public ItemStack buildItem() {
-        // TODO: Implement item construction with NBT tags
-        return new ItemStack(org.bukkit.Material.DIAMOND_SWORD);
+        Material material = Material.matchMaterial(slot.toUpperCase());
+        if (material == null) {
+            material = Material.STONE;
+        }
+        
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        
+        if (meta != null) {
+            meta.setDisplayName(displayName);
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        
+        // TODO: Add NBT tags and attributes
+        return item;
     }
 } 
