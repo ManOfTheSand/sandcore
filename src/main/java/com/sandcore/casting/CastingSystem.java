@@ -377,4 +377,13 @@ public class CastingSystem implements Listener {
             }
         }
     }
+
+    /**
+     * Reloads the casting configuration from classes.yml.
+     * Call this method on /reload so the casting system picks up configuration changes.
+     */
+    public void reloadCastingConfiguration() {
+        loadConfiguration();
+        plugin.getLogger().info("Casting system configuration reloaded.");
+    }
 } 
