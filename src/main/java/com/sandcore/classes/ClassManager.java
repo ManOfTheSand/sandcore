@@ -216,4 +216,9 @@ public class ClassManager {
         }
         return classKey;
     }
+
+    public void reloadClasses() {
+        loadClassDefinitions();
+        plugin.getLogger().info("Reloaded " + classDefinitions.size() + " classes");
+    }
 } 

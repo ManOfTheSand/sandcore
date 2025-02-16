@@ -1,6 +1,7 @@
 package com.sandcore;
 
 import java.io.File;
+import java.util.Objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -31,6 +32,7 @@ public class SandCore extends JavaPlugin {
     private PlayerDataManager playerDataManager;
     private HUDManager hudManager;
     private ItemsManager itemsManager;
+    private MainCommandExecutor mainCommandExecutor;
 
     @Override
     public void onEnable() {
@@ -102,8 +104,8 @@ public class SandCore extends JavaPlugin {
         this.itemsManager = new ItemsManager(this);
         
         // Register commands
-        MainCommandExecutor mainExecutor = new MainCommandExecutor(this);
-        getCommand("sandcore").setExecutor(mainExecutor);
+        this.mainCommandExecutor = new MainCommandExecutor(this, itemsManager);
+        Objects.requireNonNull(getCommand("sandcore")).setExecutor(mainCommandExecutor);
         getCommand("sandcore").setTabCompleter(new MainTabCompleter(itemsManager));
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");

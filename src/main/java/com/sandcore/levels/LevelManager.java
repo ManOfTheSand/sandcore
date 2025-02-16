@@ -66,4 +66,11 @@ public class LevelManager {
     public List<Integer> getXpRequirements() {
         return xpRequirements;
     }
+
+    public void loadConfig() {
+        // Existing configuration loading logic
+        loadLevelData();
+        loadXPData();
+        logger.info("Loaded level configuration");
+    }
 } 
