@@ -69,7 +69,7 @@ public class ColorParser {
             
             java.awt.Color color = java.awt.Color.getHSBColor(hue, saturation, brightness);
             String hex = String.format("%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
-            result.append(ChatColor.of("#").toString()).append(hex).append(text.charAt(i));
+            result.append(ChatColor.of("#" + hex)).append(text.charAt(i));
         }
         
         return result.toString();
