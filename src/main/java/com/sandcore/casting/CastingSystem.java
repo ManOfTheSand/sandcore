@@ -69,6 +69,8 @@ public class CastingSystem implements Listener {
     private final ExecutorService comboExecutor = Executors.newCachedThreadPool();
     private CastingConfig cachedConfig;
     private long lastConfigHash;
+    // Cooldown tracking for mode toggling (1 second)
+    private final Map<UUID, Instant> toggleCooldowns = new ConcurrentHashMap<>();
 
     /**
      * Constructor. Loads the casting configuration from classes.yml
@@ -126,6 +128,16 @@ public class CastingSystem implements Listener {
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
         Player player = event.getPlayer();
+        
+        // Check cooldown
+        if (toggleCooldowns.containsKey(player.getUniqueId())) {
+            if (Instant.now().isBefore(toggleCooldowns.get(player.getUniqueId()))) {
+                player.sendActionBar(translateHexColors("&cYou must wait before toggling casting mode again!"));
+                event.setCancelled(true);
+                return;
+            }
+        }
+        
         // Cancel the default item swap action to prevent vanilla behavior.
         event.setCancelled(true);
         // If the player is already in casting mode, cancel it.
@@ -136,10 +148,13 @@ public class CastingSystem implements Listener {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar("Casting mode deactivated!");
                 playSound(player, cancelSound, 1.0f, 1.0f);
+                // Set cooldown
+                toggleCooldowns.put(player.getUniqueId(), Instant.now().plusSeconds(1));
             });
             return;
         }
         // Otherwise, activate casting mode.
+        toggleCooldowns.put(player.getUniqueId(), Instant.now().plusSeconds(1));
         activateCastingMode(player);
     }
 
