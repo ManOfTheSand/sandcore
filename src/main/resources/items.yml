@@ -1,23 +1,14 @@
 # Example items configuration
 items:
-  example_sword:
-    material: DIAMOND_SWORD
-    display_name: "&6Example Sword"
-    lore:
-      - "&7A powerful example weapon"
-      - "Class: {classes}"
-    required_classes: []
-    attributes:
-      damage: 10
-      attack_speed: 1.6
-
   mithril_sword:
     item:
       material: NETHERITE_SWORD
     display-name: "<g:#f953c6>Mithril Sword</g:#b91d73>"
     lore:
-      - "&7Level Requirement: {level}"
-      - "&7Class Requirement: {classes}"
+      - ""
+      - "&7&lRequirement"
+      - "&7Level: &#f953c6{level}"
+      - "&7Class: &#f953c6{classes}"
       - ""
       - "&7Damage: &c12❤"
       - "&7Attack Speed: &c1.5"
