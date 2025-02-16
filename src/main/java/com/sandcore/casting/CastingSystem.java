@@ -51,7 +51,9 @@ public class CastingSystem implements Listener {
     private String activationSound;
     private String cancelSound;
     private String successSound;
-    private long comboCooldownMillis = 1000; // 1 second cooldown between combos
+    private int leftClickLockTicks = 1;  // Default values if not in config
+    private int rightClickLockTicks = 4;
+    private long comboCooldownMillis = 1000;
     // New configuration for combo click sound
     private String clickSound;
     private double clickSoundVolume;
@@ -146,6 +148,10 @@ public class CastingSystem implements Listener {
             }
             this.clickSoundVolume = castingConf.getDouble("clickSoundVolume", 1.0);
             this.clickSoundPitch = castingConf.getDouble("clickSoundPitch", 1.0);
+
+            // Load click lock durations
+            this.leftClickLockTicks = castingConf.getInt("leftClickLock", 1);
+            this.rightClickLockTicks = castingConf.getInt("rightClickLock", 4);
 
             // Final validation
             plugin.getLogger().info("Final sound values after loading:");
@@ -447,8 +453,7 @@ public class CastingSystem implements Listener {
             }
             if (clickLock) return;
             clickLock = true;
-            // Use a longer lock for right clicks (e.g., 8 ticks) than for left clicks (2 ticks)
-            long lockDuration = click.equals("R") ? 8L : 2L;
+            long lockDuration = click.equals("R") ? rightClickLockTicks : leftClickLockTicks;
             Bukkit.getScheduler().runTaskLater(CastingSystem.this.plugin, () -> {
                 clickLock = false;
             }, lockDuration);

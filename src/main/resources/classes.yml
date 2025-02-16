@@ -28,6 +28,9 @@ classes:
 casting:
   timeout: 6  # Timeout in seconds
   cooldownMillis: 1000
+  # Click lock durations in ticks (20 ticks = 1 second)
+  leftClickLock: 1    # Default 1 tick (0.05s)
+  rightClickLock: 4   # Default 4 ticks (0.2s)
   activationMessage: "&x&F&F&C&C&C&C Casting Mode Activated!"
   cancelMessage: "&x&F&F&3&3&3&3 Casting Cancelled!"
   successMessage: "&x&A&A&D&D&F&F Skill Cast Successful!"
