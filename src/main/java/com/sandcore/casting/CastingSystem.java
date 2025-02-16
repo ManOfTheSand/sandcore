@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -116,7 +117,7 @@ public class CastingSystem implements Listener {
             }
 
             // Load casting section with explicit path validation
-            YamlConfiguration castingConf = (YamlConfiguration) classesConfig.getConfigurationSection("casting");
+            ConfigurationSection castingConf = classesConfig.getConfigurationSection("casting");
             plugin.getLogger().info("Casting section keys: " + castingConf.getKeys(false));
             
             this.comboTimeoutSeconds = castingConf.getInt("timeout", 6);
