@@ -57,28 +57,30 @@ public class ItemUpdateListener implements Listener {
                 CustomItem customItem = itemsManager.getItemFromStack(updated);
                 if (customItem != null && !customItem.getRequiredClasses().isEmpty()) {
                     String playerClass = classManager.getPlayerClass(player.getUniqueId());
-                    ItemMeta meta = updated.getItemMeta();
-                    List<String> lore = meta.getLore();
+                    
+                    // Create final copies for use in lambda
+                    final ItemMeta finalMeta = updated.getItemMeta();
+                    final ItemStack finalUpdated = updated.clone();
+                    final PlayerInteractEvent finalEvent = event;
 
+                    List<String> lore = finalMeta.getLore();
                     if (lore != null) {
                         List<String> newLore = processLoreAsync(lore, customItem, playerClass);
                         
-                        // Schedule sync task for inventory update
+                        // Schedule sync task with final variables
                         Bukkit.getScheduler().runTask(itemsManager.getPlugin().getServer().getPluginManager().getPlugin("SandCore"), () -> {
-                            meta.setLore(newLore);
-                            updated.setItemMeta(meta);
+                            finalMeta.setLore(newLore);
+                            finalUpdated.setItemMeta(finalMeta);
                             
-                            // Update class requirement check
                             if (!customItem.getRequiredClasses().contains(playerClass)) {
-                                event.setCancelled(true);
+                                finalEvent.setCancelled(true);
                                 player.sendMessage(ChatColor.RED + "This item requires: " + 
                                     String.join(", ", customItem.getRequiredClasses()));
                             }
                             
-                            // Update item in hand
                             player.getInventory().setItem(
                                 player.getInventory().getHeldItemSlot(), 
-                                updated
+                                finalUpdated
                             );
                         });
                     }
