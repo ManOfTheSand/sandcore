@@ -93,6 +93,9 @@ public class CastingSystem implements Listener {
             YamlConfiguration castingConf = (YamlConfiguration) classesConfig.getConfigurationSection("casting");
             this.comboTimeoutSeconds = castingConf.getInt("timeout", 6); // Default 6 seconds timeout.
             this.activationMessage = castingConf.getString("activationMessage", "&x&F&F&C&C&C&C Casting Mode Activated!");
+            this.activationSound = castingConf.getString("activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+            this.cancelSound = castingConf.getString("cancelSound", "ENTITY_BLAZE_HURT");
+            this.successSound = castingConf.getString("successSound", "ENTITY_PLAYER_LEVELUP");
             this.cancelMessage = castingConf.getString("cancelMessage", "&x&F&F&3&3&3&3 Casting Cancelled!");
             this.successMessage = castingConf.getString("successMessage", "&x&A&A&D&D&F&F Skill Cast Successful!");
             this.activationSound = castingConf.getString("activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");

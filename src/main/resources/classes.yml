@@ -35,7 +35,11 @@ classes:
       RLR: "piercing_shot"
       RRL: "rain_of_arrows"
 casting:
-  cooldownMillis: 1000 # Cooldown in milliseconds between combos
+  timeout: 6  # Timeout in seconds
+  cooldownMillis: 1000
+  activationMessage: "&x&F&F&C&C&C&C Casting Mode Activated!"
+  cancelMessage: "&x&F&F&3&3&3&3 Casting Cancelled!"
+  successMessage: "&x&A&A&D&D&F&F Skill Cast Successful!"
   activationSound: "ENTITY_EXPERIENCE_ORB_PICKUP"
   cancelSound: "ENTITY_BLAZE_HURT"
   successSound: "ENTITY_PLAYER_LEVELUP"
