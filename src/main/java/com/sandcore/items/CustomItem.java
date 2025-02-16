@@ -13,7 +13,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import com.sandcore.SandCore;
 
 public class CustomItem {
     private final String id;
@@ -30,7 +31,7 @@ public class CustomItem {
     private List<String> recipe;
     private int recipeGiveAmount;
     private Material material;
-    private JavaPlugin plugin;
+    private SandCore plugin;
 
     public enum ItemType {
         WEAPON, ARMOR, TOOL, CHARM, OTHER

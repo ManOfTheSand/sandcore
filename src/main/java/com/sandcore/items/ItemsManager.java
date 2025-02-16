@@ -12,15 +12,16 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.sandcore.SandCore;
+
 public class ItemsManager {
-    private final JavaPlugin plugin;
+    private final SandCore plugin;
     private final Map<String, CustomItem> items = new HashMap<>();
     private File itemsFile;
 
-    public ItemsManager(JavaPlugin plugin) {
+    public ItemsManager(SandCore plugin) {
         this.plugin = plugin;
         loadItems();
     }
@@ -42,7 +43,7 @@ public class ItemsManager {
                     items.clear();
                     
                     for (String itemId : config.getConfigurationSection("items").getKeys(false)) {
-                        CustomItem item = new CustomItem((SandCore) plugin, itemId, 
+                        CustomItem item = new CustomItem(plugin, itemId, 
                             config.getConfigurationSection("items." + itemId));
                         items.put(itemId, item);
                         registerCrafting(item);
