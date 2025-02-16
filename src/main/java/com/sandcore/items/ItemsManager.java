@@ -9,6 +9,8 @@ import java.util.Map;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -19,6 +21,7 @@ public class ItemsManager {
     private final SandCore plugin;
     private final Map<String, CustomItem> itemMap = new HashMap<>();
     private File itemsFile;
+    private int configVersion = 0;
 
     public ItemsManager(SandCore plugin) {
         this.plugin = plugin;
@@ -52,12 +55,17 @@ public class ItemsManager {
 
     public void reloadItems() {
         try {
+            configVersion++;
             loadItems();
-            plugin.getLogger().info("Successfully reloaded " + itemMap.size() + " items");
+            plugin.getLogger().info("Successfully reloaded " + itemMap.size() + " items (v" + configVersion + ")");
         } catch (Exception e) {
             plugin.getLogger().severe("Failed to reload items: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public int getConfigVersion() {
+        return configVersion;
     }
 
     public CustomItem getItemFromStack(ItemStack stack) {
@@ -75,5 +83,50 @@ public class ItemsManager {
 
     public int getItemCount() {
         return itemMap.size();
+    }
+
+    public void updateAllItemsInWorld() {
+        // Update player inventories
+        for(Player player : plugin.getServer().getOnlinePlayers()) {
+            updatePlayerItems(player);
+        }
+        
+        // TODO: Add logic to update items in chests/other containers
+    }
+
+    private void updatePlayerItems(Player player) {
+        updateInventoryItems(player.getInventory());
+        updateInventoryItems(player.getEnderChest());
+    }
+
+    private void updateInventoryItems(Inventory inventory) {
+        for(int i = 0; i < inventory.getSize(); i++) {
+            ItemStack item = inventory.getItem(i);
+            if(item != null) {
+                ItemStack updated = getUpdatedItem(item);
+                if(updated != null) {
+                    inventory.setItem(i, updated);
+                }
+            }
+        }
+    }
+
+    public ItemStack getUpdatedItem(ItemStack oldItem) {
+        CustomItem currentVersion = getItemFromStack(oldItem);
+        if(currentVersion == null) return null;
+        
+        int storedVersion = getItemVersion(oldItem);
+        if(storedVersion < configVersion) {
+            ItemStack newItem = currentVersion.buildItem();
+            newItem.setAmount(oldItem.getAmount());
+            return newItem;
+        }
+        return null;
+    }
+
+    private int getItemVersion(ItemStack item) {
+        if(!item.hasItemMeta()) return -1;
+        return item.getItemMeta().getPersistentDataContainer()
+            .getOrDefault(new NamespacedKey(plugin, "item_version"), PersistentDataType.INTEGER, -1);
     }
 } 

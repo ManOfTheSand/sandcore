@@ -113,14 +113,16 @@ public class CustomItem {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         
+        // Store version and ID in persistent data
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(new NamespacedKey(plugin, "item_id"), PersistentDataType.STRING, id);
+        pdc.set(new NamespacedKey(plugin, "item_version"), PersistentDataType.INTEGER, plugin.getItemsManager().getConfigVersion());
+        
         if (meta != null) {
             meta.setDisplayName(displayName);
             meta.setLore(lore.stream()
                 .map(line -> ChatColor.translateAlternateColorCodes('&', line))
                 .collect(Collectors.toList()));
-            
-            PersistentDataContainer pdc = meta.getPersistentDataContainer();
-            pdc.set(new NamespacedKey(plugin, "item_id"), PersistentDataType.STRING, id);
             
             item.setItemMeta(meta);
         }

@@ -57,15 +57,14 @@ public class MainCommandExecutor implements CommandExecutor {
         }
 
         try {
-            // Reload items first
             itemsManager.reloadItems();
-            
-            // Then reload other components
+            itemsManager.updateAllItemsInWorld();
             plugin.reloadConfig();
             plugin.getLevelManager().loadConfig(plugin.getConfig());
             plugin.getClassManager().reloadClasses();
             
             sender.sendMessage("§aConfigurations reloaded successfully!");
+            sender.sendMessage("§aUpdated " + itemsManager.getItemCount() + " items in player inventories");
         } catch (Exception e) {
             sender.sendMessage("§cReload failed! Check console for errors.");
             plugin.getLogger().severe("Reload error: " + e.getMessage());
