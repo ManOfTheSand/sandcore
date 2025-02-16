@@ -259,6 +259,11 @@ public class CastingSystem implements Listener {
         }
         if (mappings == null || !mappings.containsKey(combo)) {
             plugin.getLogger().info("No valid skill mapping for combo " + combo + " for class " + selectedClass);
+            // Reset clicks and start cooldown for invalid combos
+            if (activeSessions.containsKey(player.getUniqueId())) {
+                activeSessions.get(player.getUniqueId()).resetClicks();
+                activeSessions.get(player.getUniqueId()).startCooldown();
+            }
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
                 player.sendActionBar(""); // Clear previous combo display
