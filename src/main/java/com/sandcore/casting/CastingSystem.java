@@ -91,26 +91,27 @@ public class CastingSystem implements Listener {
             }
             // Use the casting section for all configurable options.
             YamlConfiguration castingConf = (YamlConfiguration) classesConfig.getConfigurationSection("casting");
-            this.comboTimeoutSeconds = castingConf.getInt("timeout", 6); // Default 6 seconds timeout.
+            this.comboTimeoutSeconds = castingConf.getInt("timeout", 6);
             this.activationMessage = castingConf.getString("activationMessage", "&x&F&F&C&C&C&C Casting Mode Activated!");
-            this.activationSound = castingConf.getString("activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-            this.cancelSound = castingConf.getString("cancelSound", "ENTITY_BLAZE_HURT");
-            this.successSound = castingConf.getString("successSound", "ENTITY_PLAYER_LEVELUP");
             this.cancelMessage = castingConf.getString("cancelMessage", "&x&F&F&3&3&3&3 Casting Cancelled!");
             this.successMessage = castingConf.getString("successMessage", "&x&A&A&D&D&F&F Skill Cast Successful!");
             this.activationSound = castingConf.getString("activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-            if(this.activationSound == null || this.activationSound.isEmpty()){
+            if (this.activationSound == null || this.activationSound.isEmpty()) {
                 this.activationSound = "ENTITY_EXPERIENCE_ORB_PICKUP";
             }
             this.cancelSound = castingConf.getString("cancelSound", "ENTITY_BLAZE_HURT");
-            if(this.cancelSound == null || this.cancelSound.isEmpty()){
+            if (this.cancelSound == null || this.cancelSound.isEmpty()) {
                 this.cancelSound = "ENTITY_BLAZE_HURT";
             }
             this.successSound = castingConf.getString("successSound", "ENTITY_PLAYER_LEVELUP");
-            if(this.successSound == null || this.successSound.isEmpty()){
+            if (this.successSound == null || this.successSound.isEmpty()) {
                 this.successSound = "ENTITY_PLAYER_LEVELUP";
             }
             this.comboCooldownMillis = castingConf.getLong("cooldownMillis", 1000);
+
+            plugin.getLogger().info("Casting config loaded: activationSound=" + this.activationSound +
+                ", cancelSound=" + this.cancelSound + ", successSound=" + this.successSound);
+
             comboMappings = new HashMap<>();
             if (castingConf.contains("comboMappings")) {
                 // For each class (Mage, Warrior, Rogue, etc.) load its combo mappings.
