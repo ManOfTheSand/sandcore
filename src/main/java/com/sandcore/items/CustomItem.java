@@ -140,23 +140,18 @@ public class CustomItem {
                 .map(line -> ChatColor.translateAlternateColorCodes('&', line))
                 .collect(Collectors.toList()));
             
-            // Add class requirement lore
-            List<String> lore = new ArrayList<>();
+            // Process class placeholder in existing lore
+            List<String> processedLore = new ArrayList<>();
             if (this.lore != null) {
                 for (String line : this.lore) {
                     if (line.contains("{classes}")) {
                         line = line.replace("{classes}", String.join(", ", requiredClasses));
                     }
-                    lore.add(ChatColor.translateAlternateColorCodes('&', line));
+                    processedLore.add(ChatColor.translateAlternateColorCodes('&', line));
                 }
             }
             
-            // Add class requirement line if not empty
-            if (!requiredClasses.isEmpty()) {
-                lore.add(ChatColor.GRAY + "Class: " + String.join(", ", requiredClasses));
-            }
-            
-            meta.setLore(lore);
+            meta.setLore(processedLore);
             
             // Store requirements in PDC
             pdc.set(new NamespacedKey(plugin, "required_classes"), 
