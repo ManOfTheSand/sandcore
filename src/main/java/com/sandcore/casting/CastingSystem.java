@@ -265,12 +265,21 @@ public class CastingSystem implements Listener {
      */
     private boolean castMythicMobSkill(Player player, String skillName) {
         try {
-            // Example (pseudo-code): MythicMobs.inst().getSkillManager().castSkill(player, skillName, player.getLocation());
+            // Integration with MythicMobs API:
+            // For example, if you're using MythicMobs API 4.0+, you can do something like:
+            //
+            // import io.lumine.xikage.mythicmobs.MythicMobs;
+            //
+            // MythicMobs mm = MythicMobs.inst();
+            // boolean result = mm.getAPIHelper().castSkill(player, skillName, player.getLocation());
+            //
+            // return result;
+
+            // TODO: Replace the below placeholder with your actual MythicMob API call.
             plugin.getLogger().info("Casting MythicMob skill '" + skillName + "' for player " + player.getName());
-            // Simulate a successful cast.
             return true;
         } catch (Exception e) {
-            plugin.getLogger().severe("Error casting skill: " + e.getMessage());
+            plugin.getLogger().severe("Error casting MythicMob skill: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
