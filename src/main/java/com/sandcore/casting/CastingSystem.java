@@ -1,6 +1,7 @@
 package com.sandcore.casting;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.time.Duration;
@@ -22,6 +23,7 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -56,7 +58,7 @@ public class CastingSystem implements Listener {
     private String activationMessage;
     private String cancelMessage;
     private String successMessage;
-    private String activationSound;
+    private String activationSound = "block.note_block.harp"; // Default fallback sound
     private String cancelSound;
     private String successSound;
     private int leftClickLockTicks = 1;  // Default values if not in config
@@ -339,17 +341,15 @@ public class CastingSystem implements Listener {
      * @param soundName The name of the sound to play
      */
     private void playSound(Player player, String soundName, float volume, float pitch) {
-        if (soundName == null || soundName.isEmpty()) {
-            plugin.getLogger().warning("playSound called with null or empty soundName!");
-            return;
-        }
-        plugin.getLogger().info("playSound: playing sound '" + soundName + "'");
+        String useSound = soundName != null && !soundName.isEmpty() ? soundName : "block.note_block.harp";
+        
         try {
-            Sound sound = Sound.valueOf(soundName.toUpperCase());
+            Sound sound = Sound.valueOf(useSound.toUpperCase());
             Location loc = player.getLocation();
             player.playSound(loc, sound, volume, pitch);
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Invalid sound name in config: " + soundName);
+            plugin.getLogger().warning("Falling back to default sound. Invalid sound: " + useSound);
+            player.playSound(loc, Sound.BLOCK_NOTE_BLOCK_HARP, volume, pitch);
         }
     }
 
@@ -636,21 +636,49 @@ public class CastingSystem implements Listener {
             return mappings;
         }
 
-        public void reloadConfig(YamlConfiguration config) {
-            this.timeout = config.getInt("casting.timeout", 5);
-            this.comboCooldownMillis = config.getLong("casting.comboCooldownMillis", 1000);
-            this.leftClickLock = config.getInt("casting.leftClickLock", 1);
-            this.rightClickLock = config.getInt("casting.rightClickLock", 4);
-            this.comboMappings = loadComboMappings(config);
-            this.activationSound = config.getString("casting.activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-            this.cancelSound = config.getString("casting.cancelSound", "ENTITY_BLAZE_HURT");
-            this.successSound = config.getString("casting.successSound", "ENTITY_PLAYER_LEVELUP");
-            this.clickSound = config.getString("casting.clickSound", "UI_BUTTON_CLICK");
-            this.clickSoundVolume = config.getDouble("casting.clickSoundVolume", 1.0);
-            this.clickSoundPitch = config.getDouble("casting.clickSoundPitch", 1.0);
-            this.activationMessage = config.getString("casting.activationMessage", "&aCasting Mode Activated!");
-            this.cancelMessage = config.getString("casting.cancelMessage", "&cCasting Cancelled!");
-            this.successMessage = config.getString("casting.successMessage", "&bSkill Cast Successful!");
+        public void reloadConfig() {
+            // Get the main classes config that contains both classes and casting settings
+            File configFile = new File(plugin.getDataFolder(), "classes.yml");
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+            
+            // Load casting configuration with defaults
+            ConfigurationSection castingSection = config.getConfigurationSection("casting");
+            if (castingSection == null) {
+                plugin.getLogger().warning("No 'casting' section found in classes.yml!");
+                return;
+            }
+
+            this.timeout = castingSection.getInt("timeout", 5);
+            this.comboCooldownMillis = castingSection.getLong("comboCooldownMillis", 9000);
+            this.leftClickLock = castingSection.getInt("leftClickLock", 2);
+            this.rightClickLock = castingSection.getInt("rightClickLock", 8);
+            
+            // Sound configuration with validation
+            this.activationSound = validateSound(castingSection.getString("activationSound"), "ENTITY_EXPERIENCE_ORB_PICKUP");
+            this.cancelSound = validateSound(castingSection.getString("cancelSound"), "ENTITY_BLAZE_HURT");
+            this.successSound = validateSound(castingSection.getString("successSound"), "ENTITY_PLAYER_LEVELUP");
+            this.clickSound = validateSound(castingSection.getString("clickSound"), "UI_BUTTON_CLICK");
+            
+            // Messages
+            this.activationMessage = ChatColor.translateAlternateColorCodes('&', 
+                castingSection.getString("activationMessage", "&eCasting Mode Activated!"));
+            this.cancelMessage = ChatColor.translateAlternateColorCodes('&',
+                castingSection.getString("cancelMessage", "&cCasting Cancelled!"));
+            this.successMessage = ChatColor.translateAlternateColorCodes('&',
+                castingSection.getString("successMessage", "&aSkill Cast Successful!"));
+        }
+
+        private String validateSound(String soundName, String defaultSound) {
+            if (soundName == null || soundName.isEmpty()) {
+                return defaultSound;
+            }
+            try {
+                Sound.valueOf(soundName.toUpperCase());
+                return soundName;
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid sound name in config: " + soundName);
+                return defaultSound;
+            }
         }
     }
 
@@ -673,6 +701,15 @@ public class CastingSystem implements Listener {
                 player.sendActionBar(translateHexColors(cancelMessage));
                 playSound(player, cancelSound, 1.0f, 1.0f);
             });
+        }
+    }
+
+    private boolean isValidSound(String soundName) {
+        try {
+            Sound.valueOf(soundName.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 } 
