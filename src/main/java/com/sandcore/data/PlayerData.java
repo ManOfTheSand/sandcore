@@ -11,6 +11,7 @@ public class PlayerData {
     private int xp;
     private int level;
     private String selectedClass;
+    private int statPoints;
     
     public PlayerData(UUID playerUUID) {
         this.playerUUID = playerUUID;
@@ -46,6 +47,10 @@ public class PlayerData {
     public void setSelectedClass(String selectedClass) {
         this.selectedClass = selectedClass;
     }
+    
+    public int getStatPoints() { return statPoints; }
+    public void setStatPoints(int points) { this.statPoints = points; }
+    public void addStatPoints(int points) { this.statPoints += points; }
     
     /**
      * Adds XP to the player's current total. If the total XP exceeds the threshold
