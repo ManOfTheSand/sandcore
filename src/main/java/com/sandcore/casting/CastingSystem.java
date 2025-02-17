@@ -253,7 +253,7 @@ public class CastingSystem implements Listener {
         boolean castSuccess = false;
         String playerClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
         
-        // Single declaration at method start
+        // Single declaration here (remove any others)
         CastingSession session = activeSessions.get(player.getUniqueId());
         if (session == null) return;
 
@@ -301,13 +301,11 @@ public class CastingSystem implements Listener {
             String skillName = mappings.get(combo);
             // Attempt to cast the MythicMob skill
             castSuccess = castMythicMobSkill(player, skillName);
-            if (castSuccess && activeSessions.containsKey(player.getUniqueId())) {
-                CastingSession session = activeSessions.get(player.getUniqueId());
+            if (castSuccess) {
                 session.resetClicks();
                 session.startCooldown(true);
-                session.restartTimeout();  // Reset timeout on success
+                session.restartTimeout();
                 
-                // Visual feedback
                 long formattedTime = Duration.between(session.getLastClickTime(), Instant.now()).toMillis();
                 player.sendTitle("", translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 5, 20, 5);
                 player.spawnParticle(Particle.HAPPY_VILLAGER, player.getEyeLocation(), 5, 0.2, 0.5, 0.2, 0.1);
