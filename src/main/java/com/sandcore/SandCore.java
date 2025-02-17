@@ -132,7 +132,7 @@ public class SandCore extends JavaPlugin {
         // Load gui.yml configuration
         FileConfiguration guiConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "gui.yml"));
 
-        // Replace old ProfileGUIListener registration with:
+        // Create the listener with required parameters and set the PlayerDataManager
         ProfileGUIListener profileGUIListener = new ProfileGUIListener(statManager, guiConfig);
         profileGUIListener.setPlayerDataManager(playerDataManager);
         getServer().getPluginManager().registerEvents(profileGUIListener, this);
