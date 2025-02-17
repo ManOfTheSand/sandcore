@@ -3,6 +3,7 @@ package com.sandcore.listeners;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,6 +14,12 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.sandcore.data.PlayerData;
+import com.sandcore.data.PlayerDataManager;
+import com.sandcore.stat.StatManager;
+import com.sandcore.stat.StatManager.PlayerStats;
+import com.sandcore.utils.ItemBuilder;
 
 public class ProfileGUIListener implements Listener {
 
