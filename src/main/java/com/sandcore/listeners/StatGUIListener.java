@@ -12,8 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import com.sandcore.data.PlayerData;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.levels.LevelManager;
-import com.sandcore.stats.StatManager;
-import com.sandcore.stats.StatManager.PlayerStats;
+import com.sandcore.stat.StatManager;
+import com.sandcore.stat.StatManager.PlayerStats;
 
 public class StatGUIListener implements Listener {
     
