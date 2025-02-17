@@ -149,19 +149,16 @@ public class CastingSystem implements Listener {
         // If the player is already in casting mode, cancel it.
         if (activeSessions.containsKey(player.getUniqueId())) {
             CastingSession session = activeSessions.remove(player.getUniqueId());
-            plugin.getLogger().warning("Manual exit - invalidating session for " + player.getName());
+            plugin.getLogger().warning("MANUAL EXIT - KILLING SESSION FOR " + player.getName());
             session.invalidate();
-            session.cancelTimeout();
+            session.cancelAllTimeouts();
             session.resetClicks();
             
             Bukkit.getScheduler().runTask(plugin, () -> {
-                // Force remove any residual session
-                if (activeSessions.containsKey(player.getUniqueId())) {
-                    activeSessions.remove(player.getUniqueId());
-                }
+                // Nuclear cleanup
+                activeSessions.values().removeIf(s -> s.player.equals(player));
                 player.sendActionBar("Casting mode deactivated!");
                 playSound(player, cancelSound, 1.0f, 1.0f);
-                toggleCooldowns.put(player.getUniqueId(), Instant.now().plusSeconds(1));
             });
             return;
         }
@@ -410,7 +407,7 @@ public class CastingSystem implements Listener {
         private final Player player;
         private final List<String> clicks = new ArrayList<>();
         private Instant cooldownEnd = Instant.MIN;
-        private int taskId = -1;
+        private final List<Integer> taskIds = new ArrayList<>();
         // Remove timestamp-based filtering; we now use a click lock.
         private boolean clickLock = false;
         private Instant lastClickTime = Instant.MIN;
@@ -524,23 +521,23 @@ public class CastingSystem implements Listener {
          * does not complete the three-click combo within the specified timeout.
          */
         public void startTimeoutTask(int timeoutSeconds) {
-            taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            taskIds.add(Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 resetClicks();
                 activeSessions.remove(player.getUniqueId());
                 plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
                 player.sendActionBar(translateHexColors(cancelMessage));
                 playSound(player, cancelSound, 1.0f, 1.0f);
-            }, timeoutSeconds * 20L).getTaskId();
+            }, timeoutSeconds * 20L).getTaskId());
         }
 
         /**
          * Cancels the previously scheduled timeout for this casting session.
          */
         public void cancelTimeout() {
-            if (taskId != -1) {
-                Bukkit.getScheduler().cancelTask(taskId);
-                taskId = -1;  // Reset task ID after cancellation
+            for (int id : taskIds) {
+                Bukkit.getScheduler().cancelTask(id);
             }
+            taskIds.clear();
         }
 
         /**
@@ -577,26 +574,34 @@ public class CastingSystem implements Listener {
         }
 
         public void restartTimeout() {
-            plugin.getLogger().info("Restarting timeout for " + player.getName() + " (valid: " + valid + ")");
-            cancelTimeout();
+            cancelAllTimeouts();
+            plugin.getLogger().warning("Scheduling NEW timeout for " + player.getName());
             
-            taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                plugin.getLogger().info("Timeout check for " + player.getName() + 
+            int newTaskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                plugin.getLogger().warning("Timeout CHECK for " + player.getName() + 
                     " | Valid: " + valid + 
-                    " | Active: " + activeSessions.containsKey(player.getUniqueId()) + 
-                    " | Session match: " + (activeSessions.get(player.getUniqueId()) == this));
+                    " | Active: " + activeSessions.containsKey(player.getUniqueId()));
                 
-                if (!valid || !activeSessions.containsKey(player.getUniqueId()) || 
-                    activeSessions.get(player.getUniqueId()) != this) {
-                    plugin.getLogger().info("Aborting timeout for " + player.getName() + " - session invalid");
+                if (!valid || !activeSessions.containsKey(player.getUniqueId())) {
+                    plugin.getLogger().warning("Aborting timeout - session dead");
                     return;
                 }
                 
-                plugin.getLogger().warning("Casting timeout triggered for " + player.getName());
+                plugin.getLogger().warning("TIMEOUT TRIGGERED FOR " + player.getName());
                 activeSessions.remove(player.getUniqueId());
                 player.sendActionBar(translateHexColors(cancelMessage));
                 playSound(player, cancelSound, 1.0f, 1.0f);
             }, comboTimeoutSeconds * 20L).getTaskId();
+            
+            taskIds.add(newTaskId);
+        }
+
+        public void cancelAllTimeouts() {
+            plugin.getLogger().warning("Cancelling " + taskIds.size() + " timeouts for " + player.getName());
+            for (int id : taskIds) {
+                Bukkit.getScheduler().cancelTask(id);
+            }
+            taskIds.clear();
         }
 
         public void markComboUsed() {
