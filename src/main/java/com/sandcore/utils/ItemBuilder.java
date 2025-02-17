@@ -1,3 +1,8 @@
 package com.sandcore.utils;
 
-// ... rest of the ItemBuilder class remains the same ... 
+import org.bukkit.Material;
+// ... rest of imports ...
+
+public class ItemBuilder {
+    // ... class implementation ...
+} 
