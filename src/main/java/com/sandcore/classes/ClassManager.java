@@ -212,7 +212,7 @@ public class ClassManager {
         if (classes != null && classes.containsKey(classKey)) {
             // Assume ClassDefinition has a method getDisplayName() returning the raw display name.
             String rawName = classes.get(classKey).getDisplayName();
-            return ChatUtil.translateColors(rawName);
+            return ChatUtil.translateGradientsAndHex(rawName);
         }
         return classKey;
     }
