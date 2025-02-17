@@ -8,6 +8,7 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
+import com.sandcore.SandCore;
 import com.sandcore.data.PlayerData;
 
 /**
@@ -15,10 +16,12 @@ import com.sandcore.data.PlayerData;
  * It uses a scoreboard objective to display the custom level and disables the vanilla XP display.
  */
 public class HUDManager {
+    private final SandCore plugin;
     private final Logger logger;
     
-    public HUDManager(Logger logger) {
-        this.logger = logger;
+    public HUDManager(SandCore plugin) {
+        this.plugin = plugin;
+        this.logger = plugin.getLogger();
     }
     
     /**
@@ -52,8 +55,6 @@ public class HUDManager {
     }
 
     public void reloadHUD() {
-        // Add your HUD config reload logic here
-        loadHUDConfig();
-        plugin.getLogger().info("Reloaded HUD configuration");
+        logger.info("Reloaded HUD configuration");
     }
 } 

@@ -82,9 +82,8 @@ public class XPSourceManager {
         return 0;
     }
 
-    public void reloadXPSources() {
-        // Add your XP sources reload logic here
-        loadXPSources();
-        logger.info("Reloaded XP sources");
+    public void reloadXPSources(File file) {
+        loadXPSources(file);
+        logger.info("Reloaded XP sources from file");
     }
 } 

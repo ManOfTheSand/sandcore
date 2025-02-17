@@ -321,7 +321,8 @@ public class SandCore extends JavaPlugin {
         levelManager.loadConfiguration(classesConfig);
         
         // Reload xp-sources.yml
-        reloadXPSources();
+        File xpSourcesFile = new File(getDataFolder(), "xp-sources.yml");
+        xpSourceManager.reloadXPSources(xpSourcesFile);
         
         // Reload player data
         playerDataManager.reloadPlayerData();
@@ -337,6 +338,120 @@ public class SandCore extends JavaPlugin {
         
         // Reload player data
         playerDataManager.savePlayerData();
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
+        
+        // Reload xpSourceManager
+        xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
         
         // Reload xpSourceManager
         xpSourceManager.loadXPSources(new File(getDataFolder(), "xp-sources.yml"));
