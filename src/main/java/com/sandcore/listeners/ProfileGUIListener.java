@@ -47,19 +47,12 @@ public class ProfileGUIListener implements Listener {
         StatManager.PlayerStats stats = statManager.getPlayerStats(player);
         PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
         
-        // Load attribute items
-        loadGuiItem(inv, "strength", stats, data);
-        loadGuiItem(inv, "dexterity", stats, data);
-        loadGuiItem(inv, "intelligence", stats, data);
-        
-        // Load stat points
-        ConfigurationSection pointsSection = guiConfig.getConfigurationSection("profileGUI.items.stat_points");
-        if (pointsSection != null) {
-            ItemStack pointsItem = new ItemBuilder(Material.matchMaterial(pointsSection.getString("material")))
-                .name(replacePlaceholders(pointsSection.getString("name"), data))
-                .lore(replacePlaceholders(pointsSection.getStringList("lore"), data))
-                .build();
-            inv.setItem(pointsSection.getInt("slot"), pointsItem);
+        // Load ALL items from config
+        ConfigurationSection itemsSection = guiConfig.getConfigurationSection("profileGUI.items");
+        if (itemsSection != null) {
+            for (String itemKey : itemsSection.getKeys(false)) {
+                loadGuiItem(inv, itemKey, stats, data);
+            }
         }
         
         return inv;

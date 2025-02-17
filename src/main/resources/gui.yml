@@ -40,7 +40,7 @@ profileGUI:
   size: 27
   items:
     profileItem:
-      slot: 4  # Center of first row
+      slot: 4
       material: PAPER
       name: "<gradient:#0099FF:#6600FF>Profile Info</gradient>"
       lore:
