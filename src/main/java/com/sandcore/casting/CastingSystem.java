@@ -567,11 +567,12 @@ public class CastingSystem implements Listener {
             cancelTimeout();
             
             taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (!activeSessions.containsKey(player.getUniqueId())) return;
+                
                 plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
                 resetClicks();
                 activeSessions.remove(player.getUniqueId());
                 player.sendActionBar(translateHexColors(cancelMessage));
-                // Keep sound play only in timeout handler
                 playSound(player, cancelSound, 1.0f, 1.0f);
             }, comboTimeoutSeconds * 20L).getTaskId();
         }
