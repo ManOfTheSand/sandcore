@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sandcore.casting.CastingSystem;
 import com.sandcore.classes.ClassManager;
 import com.sandcore.command.ClassInfoCommandExecutor;
 import com.sandcore.command.ClassesCommandExecutor;
@@ -34,6 +35,7 @@ public class SandCore extends JavaPlugin {
     private HUDManager hudManager;
     private ItemsManager itemsManager;
     private MainCommandExecutor mainCommandExecutor;
+    private CastingSystem castingSystem;
 
     @Override
     public void onEnable() {
@@ -117,6 +119,9 @@ public class SandCore extends JavaPlugin {
             levelManager,
             playerDataManager
         );
+
+        // Initialize casting system
+        this.castingSystem = new CastingSystem(this);
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
@@ -310,7 +315,7 @@ public class SandCore extends JavaPlugin {
         YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
         
         // Reload casting system with new config
-        castingSystem.reloadConfig(classesConfig);
+        castingSystem.reloadCastingConfiguration();
         
         // ... rest of reload logic ...
     }

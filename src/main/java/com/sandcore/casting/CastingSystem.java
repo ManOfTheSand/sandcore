@@ -104,24 +104,7 @@ public class CastingSystem implements Listener {
                 plugin.getLogger().info("Reloaded and cached casting configuration");
             }
             
-            // Update runtime values from cache
-            comboTimeoutSeconds = cachedConfig.timeout;
-            comboCooldownMillis = cachedConfig.comboCooldownMillis;
-            leftClickLockTicks = cachedConfig.leftClickLock;
-            rightClickLockTicks = cachedConfig.rightClickLock;
-            activationSound = cachedConfig.activationSound;
-            cancelSound = cachedConfig.cancelSound;
-            successSound = cachedConfig.successSound;
-            clickSound = cachedConfig.clickSound;
-            clickSoundVolume = cachedConfig.clickSoundVolume;
-            clickSoundPitch = cachedConfig.clickSoundPitch;
-            comboMappings = cachedConfig.comboMappings;
-            
-            // Load messages and other sound config
-            activationMessage = cachedConfig.activationMessage;
-            cancelMessage = cachedConfig.cancelMessage;
-            successMessage = cachedConfig.successMessage;
-            
+            // Directly use cachedConfig instead of copying fields
         } catch (Exception e) {
             plugin.getLogger().severe("Error loading casting config: " + e.getMessage());
         }
@@ -606,20 +589,20 @@ public class CastingSystem implements Listener {
     }
 
     private static class CastingConfig {
-        final int timeout;
-        final long comboCooldownMillis;
-        final int leftClickLock;
-        final int rightClickLock;
-        final Map<String, Map<String, String>> comboMappings;
-        final String activationSound;
-        final String cancelSound;
-        final String successSound;
-        final String clickSound;
-        final double clickSoundVolume;
-        final double clickSoundPitch;
-        final String activationMessage;
-        final String cancelMessage;
-        final String successMessage;
+        int timeout;
+        long comboCooldownMillis;
+        int leftClickLock;
+        int rightClickLock;
+        Map<String, Map<String, String>> comboMappings;
+        String activationSound;
+        String cancelSound;
+        String successSound;
+        String clickSound;
+        double clickSoundVolume;
+        double clickSoundPitch;
+        String activationMessage;
+        String cancelMessage;
+        String successMessage;
         
         CastingConfig(YamlConfiguration config) {
             this.timeout = config.getInt("casting.timeout", 5);
