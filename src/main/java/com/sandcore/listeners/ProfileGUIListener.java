@@ -1,5 +1,8 @@
 package com.sandcore.listeners;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,11 +13,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.InventoryView;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import org.bukkit.inventory.ItemStack;
 
 import com.sandcore.data.PlayerData;
 import com.sandcore.data.PlayerDataManager;
@@ -39,8 +39,8 @@ public class ProfileGUIListener implements Listener {
 
     public Inventory createProfileGUI(Player player) {
         String title = ChatColor.translateAlternateColorCodes('&', 
-            guiConfig.getString("profile.title", "Player Profile"));
-        int size = guiConfig.getInt("profile.size", 27);
+            guiConfig.getString("profileGUI.title", "Player Profile"));
+        int size = guiConfig.getInt("profileGUI.size", 27);
         
         Inventory inv = Bukkit.createInventory(null, size, title);
         
@@ -53,7 +53,7 @@ public class ProfileGUIListener implements Listener {
         loadGuiItem(inv, "intelligence", stats, data);
         
         // Load stat points
-        ConfigurationSection pointsSection = guiConfig.getConfigurationSection("profile.items.stat_points");
+        ConfigurationSection pointsSection = guiConfig.getConfigurationSection("profileGUI.items.stat_points");
         if (pointsSection != null) {
             ItemStack pointsItem = new ItemBuilder(Material.matchMaterial(pointsSection.getString("material")))
                 .name(replacePlaceholders(pointsSection.getString("name"), data))
@@ -66,7 +66,7 @@ public class ProfileGUIListener implements Listener {
     }
 
     private void loadGuiItem(Inventory inv, String attribute, PlayerStats stats, PlayerData data) {
-        ConfigurationSection section = guiConfig.getConfigurationSection("profile.items." + attribute);
+        ConfigurationSection section = guiConfig.getConfigurationSection("profileGUI.items." + attribute);
         if (section == null) return;
 
         ItemStack item = new ItemBuilder(Material.matchMaterial(section.getString("material")))
