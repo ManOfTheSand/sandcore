@@ -149,11 +149,16 @@ public class CastingSystem implements Listener {
         // If the player is already in casting mode, cancel it.
         if (activeSessions.containsKey(player.getUniqueId())) {
             CastingSession session = activeSessions.remove(player.getUniqueId());
-            session.invalidate();  // Mark session as invalid
+            plugin.getLogger().warning("Manual exit - invalidating session for " + player.getName());
+            session.invalidate();
             session.cancelTimeout();
             session.resetClicks();
             
             Bukkit.getScheduler().runTask(plugin, () -> {
+                // Force remove any residual session
+                if (activeSessions.containsKey(player.getUniqueId())) {
+                    activeSessions.remove(player.getUniqueId());
+                }
                 player.sendActionBar("Casting mode deactivated!");
                 playSound(player, cancelSound, 1.0f, 1.0f);
                 toggleCooldowns.put(player.getUniqueId(), Instant.now().plusSeconds(1));
@@ -572,15 +577,22 @@ public class CastingSystem implements Listener {
         }
 
         public void restartTimeout() {
+            plugin.getLogger().info("Restarting timeout for " + player.getName() + " (valid: " + valid + ")");
             cancelTimeout();
             
             taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                // Triple validation check
-                if (!valid || !activeSessions.containsKey(player.getUniqueId()) || activeSessions.get(player.getUniqueId()) != this) {
+                plugin.getLogger().info("Timeout check for " + player.getName() + 
+                    " | Valid: " + valid + 
+                    " | Active: " + activeSessions.containsKey(player.getUniqueId()) + 
+                    " | Session match: " + (activeSessions.get(player.getUniqueId()) == this));
+                
+                if (!valid || !activeSessions.containsKey(player.getUniqueId()) || 
+                    activeSessions.get(player.getUniqueId()) != this) {
+                    plugin.getLogger().info("Aborting timeout for " + player.getName() + " - session invalid");
                     return;
                 }
                 
-                plugin.getLogger().info("Casting timeout for " + player.getName());
+                plugin.getLogger().warning("Casting timeout triggered for " + player.getName());
                 activeSessions.remove(player.getUniqueId());
                 player.sendActionBar(translateHexColors(cancelMessage));
                 playSound(player, cancelSound, 1.0f, 1.0f);
