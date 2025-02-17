@@ -53,6 +53,7 @@ import com.sandcore.SandCore;
 public class CastingSystem implements Listener {
 
     private final SandCore plugin;
+    private Location loc;
     // Configurable options for casting
     private int comboTimeoutSeconds;
     private String activationMessage;
@@ -345,11 +346,10 @@ public class CastingSystem implements Listener {
         
         try {
             Sound sound = Sound.valueOf(useSound.toUpperCase());
-            Location loc = player.getLocation();
-            player.playSound(loc, sound, volume, pitch);
+            player.playSound(player.getLocation(), sound, volume, pitch);
         } catch (IllegalArgumentException e) {
             plugin.getLogger().warning("Falling back to default sound. Invalid sound: " + useSound);
-            player.playSound(loc, Sound.BLOCK_NOTE_BLOCK_HARP, volume, pitch);
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, volume, pitch);
         }
     }
 
@@ -637,7 +637,6 @@ public class CastingSystem implements Listener {
         }
 
         public void reloadConfig() {
-            // Get the main classes config that contains both classes and casting settings
             File configFile = new File(plugin.getDataFolder(), "classes.yml");
             YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
             
