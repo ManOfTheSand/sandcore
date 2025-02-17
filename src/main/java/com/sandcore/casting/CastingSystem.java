@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -81,6 +82,8 @@ public class CastingSystem implements Listener {
     private final Map<UUID, Long> lastClickTimes = new HashMap<>();
     private final Map<UUID, List<String>> clickSequences = new HashMap<>();
     private final Map<UUID, Instant> lastCastTimes = new HashMap<>();
+    private final Map<UUID, Instant> lastActivationTimes = new ConcurrentHashMap<>();
+    private final Map<UUID, List<String>> activeCasters = new ConcurrentHashMap<>();
 
     /**
      * Constructor. Loads the casting configuration from classes.yml
@@ -198,32 +201,36 @@ public class CastingSystem implements Listener {
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        // Add these checks at the start of the handler
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && 
+            event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        
         Player player = event.getPlayer();
-        if (!activeSessions.containsKey(player.getUniqueId())) {
+        UUID playerId = player.getUniqueId();
+        
+        // Add item check to prevent activation when holding items
+        if (player.getInventory().getItemInMainHand().getType() != Material.AIR ||
+            player.getInventory().getItemInOffHand().getType() != Material.AIR) {
             return;
         }
-        // Only process left/right click actions.
-        Action action = event.getAction();
-        String clickType = null;
-        if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-            clickType = "L";
-        } else if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
-            clickType = "R";
-        }
-        if (clickType == null) {
+
+        // Add cooldown check
+        if (Instant.now().isBefore(lastActivationTimes.getOrDefault(playerId, Instant.MIN)
+            .plusMillis(comboCooldownMillis))) {
             return;
         }
-        // Record the click in the player's casting session.
-        CastingSession session = activeSessions.get(player.getUniqueId());
-        session.addClick(clickType);
-        // Update the action bar with the current combo.
-        player.sendActionBar("Combo: " + session.getComboString());
-        plugin.getLogger().info("Player " + player.getName() + " clicked: " + clickType + " (Combo: " + session.getComboString() + ")");
-        // When exactly three clicks have been recorded, process the combo.
-        if (session.getComboSize() == 3) {
-            session.cancelTimeout();
-            processCombo(player, session.getComboString());
+
+        // Toggle casting mode instead of always activating
+        if (activeCasters.containsKey(playerId)) {
+            deactivateCastingMode(player);
+        } else {
+            activateCastingMode(player);
         }
+        
+        // Add this critical line to prevent event propagation
+        event.setCancelled(true);
     }
 
     /**
@@ -231,8 +238,13 @@ public class CastingSystem implements Listener {
      * Displays an action bar message and plays the activation sound, then starts the timeout.
      */
     private void activateCastingMode(Player player) {
+        UUID playerId = player.getUniqueId();
+        if (activeCasters.containsKey(playerId)) return; // Prevent duplicate activation
+        
+        activeCasters.put(playerId, new ArrayList<>());
+        lastActivationTimes.put(playerId, Instant.now());
         CastingSession session = new CastingSession(player);
-        activeSessions.put(player.getUniqueId(), session);
+        activeSessions.put(playerId, session);
         
         // Final null check before using
         if (activationSound == null) {
@@ -736,5 +748,13 @@ public class CastingSystem implements Listener {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    private void deactivateCastingMode(Player player) {
+        UUID playerId = player.getUniqueId();
+        if (!activeCasters.containsKey(playerId)) return;
+        
+        activeCasters.remove(playerId);
+        // ... rest of deactivation logic ...
     }
 } 
