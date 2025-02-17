@@ -50,4 +50,10 @@ public class HUDManager {
             e.printStackTrace();
         }
     }
+
+    public void reloadHUD() {
+        // Add your HUD config reload logic here
+        loadHUDConfig();
+        plugin.getLogger().info("Reloaded HUD configuration");
+    }
 } 

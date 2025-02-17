@@ -86,4 +86,9 @@ public class PlayerDataManager {
         }
         return playerDataMap.get(uuid);
     }
+
+    public void reloadPlayerData() {
+        loadPlayerData();
+        logger.info("Reloaded player data");
+    }
 } 
