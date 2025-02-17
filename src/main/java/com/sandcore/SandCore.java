@@ -278,7 +278,7 @@ public class SandCore extends JavaPlugin {
             e.printStackTrace();
         }
         // Instantiate the CastingSystem to register its event listeners.
-        new com.sandcore.casting.CastingSystem(this);
+        new com.sandcore.casting.CastingSystem(this, playerDataManager);
     }
 
     public ClassManager getClassManager() {
