@@ -600,10 +600,13 @@ public class CastingSystem implements Listener {
     }
 
     private long getConfigHash(File file) throws Exception {
-        if (!file.exists()) return 0;
-        String input = file.lastModified() + "-" + file.length();
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        return ByteBuffer.wrap(md.digest(input.getBytes())).getLong();
+        try {
+            String input = file.lastModified() + "-" + file.length();
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            return ByteBuffer.wrap(md.digest(input.getBytes())).getLong();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("MD5 algorithm not available", e);
+        }
     }
 
     public void reloadConfig() {
@@ -613,7 +616,13 @@ public class CastingSystem implements Listener {
         
         if (castingSection != null) {
             this.cachedConfig = new CastingConfig(config, plugin);
-            this.lastConfigHash = getConfigHash(configFile);
+            
+            try {
+                this.lastConfigHash = getConfigHash(configFile);
+            } catch (Exception e) {
+                plugin.getLogger().severe("Error calculating config hash: " + e.getMessage());
+                this.lastConfigHash = -1; // Fallback value
+            }
             
             // Update runtime values from new config
             this.comboTimeoutSeconds = cachedConfig.timeout;
