@@ -253,7 +253,7 @@ public class CastingSystem implements Listener {
         boolean castSuccess = false;
         String playerClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
         
-        // Get session reference at start of processing
+        // Single declaration at method start
         CastingSession session = activeSessions.get(player.getUniqueId());
         if (session == null) return;
 
