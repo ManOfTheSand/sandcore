@@ -150,10 +150,11 @@ public class CastingSystem implements Listener {
         if (activeSessions.containsKey(player.getUniqueId())) {
             CastingSession session = activeSessions.remove(player.getUniqueId());
             session.cancelTimeout();
-            session.resetClicks();  // Clear any active combo
+            session.resetClicks();
             
-            // Notify the player that casting mode has been deactivated.
+            // Force immediate cleanup
             Bukkit.getScheduler().runTask(plugin, () -> {
+                activeSessions.remove(player.getUniqueId()); // Double-check removal
                 player.sendActionBar("Casting mode deactivated!");
                 playSound(player, cancelSound, 1.0f, 1.0f);
                 toggleCooldowns.put(player.getUniqueId(), Instant.now().plusSeconds(1));
@@ -571,13 +572,16 @@ public class CastingSystem implements Listener {
         }
 
         public void restartTimeout() {
-            cancelTimeout();  // Cancel any existing timeout
+            cancelTimeout();
             
             taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (!activeSessions.containsKey(player.getUniqueId())) return;
+                // Verify session still exists and matches current active session
+                CastingSession currentSession = activeSessions.get(player.getUniqueId());
+                if (currentSession != this || !activeSessions.containsKey(player.getUniqueId())) {
+                    return; // Session changed or removed
+                }
                 
-                plugin.getLogger().info("Casting combo timeout (" + comboTimeoutSeconds + "s) for player: " + player.getName());
-                resetClicks();
+                plugin.getLogger().info("Casting timeout for " + player.getName());
                 activeSessions.remove(player.getUniqueId());
                 player.sendActionBar(translateHexColors(cancelMessage));
                 playSound(player, cancelSound, 1.0f, 1.0f);
