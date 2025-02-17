@@ -303,7 +303,6 @@ public class CastingSystem implements Listener {
             castSuccess = castMythicMobSkill(player, skillName);
             if (castSuccess) {
                 session.resetClicks();
-                session.startCooldown(true);
                 session.restartTimeout();
                 
                 long formattedTime = Duration.between(session.getLastClickTime(), Instant.now()).toMillis();
@@ -323,7 +322,6 @@ public class CastingSystem implements Listener {
             plugin.getLogger().severe("Error casting skill: " + e.getMessage());
             e.printStackTrace();
         }
-        session.startTimeoutTask(comboTimeoutSeconds);
     }
 
     /**
@@ -574,17 +572,17 @@ public class CastingSystem implements Listener {
         }
 
         public void restartTimeout() {
-            if (taskId != -1) {
-                Bukkit.getScheduler().cancelTask(taskId);
-            }
-            taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            // Cancel existing timeout first
+            cancelTimeout();
+            
+            // Start fresh timeout period
+            taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
+                resetClicks();
                 activeSessions.remove(player.getUniqueId());
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    player.sendActionBar(translateHexColors(cancelMessage));
-                    playSound(player, cancelSound, 1.0f, 1.0f);
-                });
-            }, comboTimeoutSeconds * 20L);
+                player.sendActionBar(translateHexColors(cancelMessage));
+                playSound(player, cancelSound, 1.0f, 1.0f);
+            }, comboTimeoutSeconds * 20L).getTaskId();
         }
     }
 
