@@ -606,6 +606,32 @@ public class CastingSystem implements Listener {
         return ByteBuffer.wrap(md.digest(input.getBytes())).getLong();
     }
 
+    public void reloadConfig() {
+        File configFile = new File(plugin.getDataFolder(), "classes.yml");
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+        ConfigurationSection castingSection = config.getConfigurationSection("casting");
+        
+        if (castingSection != null) {
+            this.cachedConfig = new CastingConfig(config, plugin);
+            this.lastConfigHash = getConfigHash(configFile);
+            
+            // Update runtime values from new config
+            this.comboTimeoutSeconds = cachedConfig.timeout;
+            this.comboCooldownMillis = cachedConfig.comboCooldownMillis;
+            this.leftClickLockTicks = cachedConfig.leftClickLock;
+            this.rightClickLockTicks = cachedConfig.rightClickLock;
+            this.activationSound = cachedConfig.activationSound;
+            this.cancelSound = cachedConfig.cancelSound;
+            this.successSound = cachedConfig.successSound;
+            this.clickSound = cachedConfig.clickSound;
+            this.clickSoundVolume = cachedConfig.clickSoundVolume;
+            this.clickSoundPitch = cachedConfig.clickSoundPitch;
+            this.activationMessage = cachedConfig.activationMessage;
+            this.cancelMessage = cachedConfig.cancelMessage;
+            this.successMessage = cachedConfig.successMessage;
+        }
+    }
+
     private static class CastingConfig {
         final int timeout;
         final long comboCooldownMillis;
@@ -626,20 +652,21 @@ public class CastingSystem implements Listener {
         
         CastingConfig(YamlConfiguration config, SandCore plugin) {
             this.plugin = plugin;
-            this.timeout = config.getInt("casting.timeout", 5);
-            this.comboCooldownMillis = config.getLong("casting.comboCooldownMillis", 1000);
-            this.leftClickLock = config.getInt("casting.leftClickLock", 1);
-            this.rightClickLock = config.getInt("casting.rightClickLock", 4);
+            ConfigurationSection castingSection = config.getConfigurationSection("casting");
+            this.timeout = castingSection.getInt("timeout", 5);
+            this.comboCooldownMillis = castingSection.getLong("comboCooldownMillis", 1000);
+            this.leftClickLock = castingSection.getInt("leftClickLock", 1);
+            this.rightClickLock = castingSection.getInt("rightClickLock", 4);
             this.comboMappings = loadComboMappings(config);
-            this.activationSound = config.getString("casting.activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-            this.cancelSound = config.getString("casting.cancelSound", "ENTITY_BLAZE_HURT");
-            this.successSound = config.getString("casting.successSound", "ENTITY_PLAYER_LEVELUP");
-            this.clickSound = config.getString("casting.clickSound", "UI_BUTTON_CLICK");
-            this.clickSoundVolume = config.getDouble("casting.clickSoundVolume", 1.0);
-            this.clickSoundPitch = config.getDouble("casting.clickSoundPitch", 1.0);
-            this.activationMessage = config.getString("casting.activationMessage", "&aCasting Mode Activated!");
-            this.cancelMessage = config.getString("casting.cancelMessage", "&cCasting Cancelled!");
-            this.successMessage = config.getString("casting.successMessage", "&bSkill Cast Successful!");
+            this.activationSound = castingSection.getString("activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+            this.cancelSound = castingSection.getString("cancelSound", "ENTITY_BLAZE_HURT");
+            this.successSound = castingSection.getString("successSound", "ENTITY_PLAYER_LEVELUP");
+            this.clickSound = castingSection.getString("clickSound", "UI_BUTTON_CLICK");
+            this.clickSoundVolume = castingSection.getDouble("clickSoundVolume", 1.0);
+            this.clickSoundPitch = castingSection.getDouble("clickSoundPitch", 1.0);
+            this.activationMessage = castingSection.getString("activationMessage", "&aCasting Mode Activated!");
+            this.cancelMessage = castingSection.getString("cancelMessage", "&cCasting Cancelled!");
+            this.successMessage = castingSection.getString("successMessage", "&bSkill Cast Successful!");
         }
 
         private Map<String, Map<String, String>> loadComboMappings(YamlConfiguration config) {
@@ -655,30 +682,6 @@ public class CastingSystem implements Listener {
                 }
             }
             return mappings;
-        }
-
-        public void reloadConfig() {
-            File configFile = new File(plugin.getDataFolder(), "classes.yml");
-            YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
-            
-            // Create new config instance instead of modifying final fields
-            this.cachedConfig = new CastingConfig(config, plugin);
-            this.lastConfigHash = getConfigHash(configFile);
-            
-            // Update runtime values from new config
-            this.comboTimeoutSeconds = cachedConfig.timeout;
-            this.comboCooldownMillis = cachedConfig.comboCooldownMillis;
-            this.leftClickLockTicks = cachedConfig.leftClickLock;
-            this.rightClickLockTicks = cachedConfig.rightClickLock;
-            this.activationSound = cachedConfig.activationSound;
-            this.cancelSound = cachedConfig.cancelSound;
-            this.successSound = cachedConfig.successSound;
-            this.clickSound = cachedConfig.clickSound;
-            this.clickSoundVolume = cachedConfig.clickSoundVolume;
-            this.clickSoundPitch = cachedConfig.clickSoundPitch;
-            this.activationMessage = cachedConfig.activationMessage;
-            this.cancelMessage = cachedConfig.cancelMessage;
-            this.successMessage = cachedConfig.successMessage;
         }
 
         private String validateSound(String soundName, String defaultSound) {
@@ -724,29 +727,5 @@ public class CastingSystem implements Listener {
         } catch (IllegalArgumentException e) {
             return false;
         }
-    }
-
-    public void reloadConfig() {
-        File configFile = new File(plugin.getDataFolder(), "classes.yml");
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
-        
-        // Create new config instance instead of modifying final fields
-        this.cachedConfig = new CastingConfig(config, plugin);
-        this.lastConfigHash = getConfigHash(configFile);
-        
-        // Update runtime values from new config
-        this.comboTimeoutSeconds = cachedConfig.timeout;
-        this.comboCooldownMillis = cachedConfig.comboCooldownMillis;
-        this.leftClickLockTicks = cachedConfig.leftClickLock;
-        this.rightClickLockTicks = cachedConfig.rightClickLock;
-        this.activationSound = cachedConfig.activationSound;
-        this.cancelSound = cachedConfig.cancelSound;
-        this.successSound = cachedConfig.successSound;
-        this.clickSound = cachedConfig.clickSound;
-        this.clickSoundVolume = cachedConfig.clickSoundVolume;
-        this.clickSoundPitch = cachedConfig.clickSoundPitch;
-        this.activationMessage = cachedConfig.activationMessage;
-        this.cancelMessage = cachedConfig.cancelMessage;
-        this.successMessage = cachedConfig.successMessage;
     }
 } 
