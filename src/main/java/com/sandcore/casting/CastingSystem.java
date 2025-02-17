@@ -75,6 +75,8 @@ public class CastingSystem implements Listener {
     private long lastConfigHash;
     // Cooldown tracking for mode toggling (1 second)
     private final Map<UUID, Instant> toggleCooldowns = new ConcurrentHashMap<>();
+    // Add this field to track last click times
+    private final Map<UUID, Long> lastClickTimes = new HashMap<>();
 
     /**
      * Constructor. Loads the casting configuration from classes.yml
