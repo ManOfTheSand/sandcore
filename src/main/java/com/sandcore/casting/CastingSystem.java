@@ -304,15 +304,18 @@ public class CastingSystem implements Listener {
             player.sendTitle("", translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 5, 20, 5);
             player.spawnParticle(Particle.HAPPY_VILLAGER, player.getEyeLocation(), 5, 0.2, 0.5, 0.2, 0.1);
         } else {
+            // Get session reference first
             CastingSession session = activeSessions.get(player.getUniqueId());
-            session.resetClicks();
-            session.startCooldown(false); // Short cooldown on failure
-            session.restartTimeout();     // Keep session alive
-            
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                player.sendActionBar(translateHexColors(cancelMessage));
-                playSound(player, cancelSound, 1.0f, 1.0f);
-            });
+            if (session != null) {
+                session.resetClicks();
+                session.startCooldown(false); // Short cooldown on failure
+                session.restartTimeout();     // Keep session alive
+                
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    player.sendActionBar(translateHexColors(cancelMessage));
+                    playSound(player, cancelSound, 1.0f, 1.0f);
+                });
+            }
         }
         session.startTimeoutTask(comboTimeoutSeconds);
     }
