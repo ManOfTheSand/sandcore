@@ -40,16 +40,17 @@ profileGUI:
   size: 27
   items:
     profileItem:
-      slot: 4
+      slot: 4  # Center of first row
       material: PAPER
-      displayName: "<gradient:#0099FF:#6600FF>Profile Info</gradient>"
+      name: "<gradient:#0099FF:#6600FF>Profile Info</gradient>"
       lore:
-        - "<hex:#AAAAAA>Selected Class: {selectedClass}"
-        - "<hex:#AAAAAA>Level: {level}"
-        - "<hex:#AAAAAA>XP: {xp}"
+        - "<hex:#AAAAAA>Class: {selectedClass}"
+        - "<hex:#AAAAAA>Level: <gradient:#00FF00:#00AA00>{level}</gradient>"
+        - "<hex:#AAAAAA>XP: <gradient:#FFA500:#FFD700>{xp}</gradient>"
     
+    # Attributes arranged in a row below the profile item
     strength:
-      slot: 10
+      slot: 10  # Second row, first position
       material: RED_DYE
       name: "<gradient:#FF0000:#FFA500>Strength: {value}</gradient>"
       lore:
@@ -57,7 +58,7 @@ profileGUI:
         - "<hex:#555555>Allocated: <hex:#FFA500>{allocated}</hex>"
     
     dexterity:
-      slot: 12
+      slot: 12  # Second row, center
       material: GREEN_DYE
       name: "<gradient:#00FF00:#00AA00>Dexterity: {value}</gradient>"
       lore:
@@ -65,15 +66,16 @@ profileGUI:
         - "<hex:#555555>Allocated: <hex:#00FF00>{allocated}</hex>"
     
     intelligence:
-      slot: 14
+      slot: 14  # Second row, last position
       material: BLUE_DYE  
       name: "<gradient:#0099FF:#0066FF>Intelligence: {value}</gradient>"
       lore:
         - "<hex:#AAAAAA>Boosts magical power"
         - "<hex:#555555>Allocated: <hex:#0099FF>{allocated}</hex>"
     
+    # Stat points at bottom center
     stat_points:
-      slot: 16
+      slot: 22  # Third row, center
       material: NETHER_STAR
       name: "<gradient:#FFD700:#FFFFFF>Stat Points: {points}</gradient>"
       lore:

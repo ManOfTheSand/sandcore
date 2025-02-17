@@ -13,7 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
 import com.sandcore.data.PlayerData;
@@ -21,6 +20,7 @@ import com.sandcore.data.PlayerDataManager;
 import com.sandcore.stat.StatManager;
 import com.sandcore.stat.StatManager.PlayerStats;
 import com.sandcore.utils.ItemBuilder;
+import com.sandcore.util.ChatUtil;
 
 public class ProfileGUIListener implements Listener {
 
@@ -94,32 +94,43 @@ public class ProfileGUIListener implements Listener {
     }
 
     private String replacePlaceholders(String text, PlayerStats stats, String attribute) {
-        return text.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
-                  .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0)));
+        String output = text.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
+                           .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0)));
+        return ChatUtil.translateGradientsAndHex(output);
     }
 
     private List<String> replacePlaceholders(List<String> lore, PlayerStats stats, String attribute) {
         return lore.stream()
-            .map(line -> line.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
-                            .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0))))
+            .map(line -> ChatUtil.translateGradientsAndHex(
+                line.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
+                   .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0)))
+            ))
             .collect(Collectors.toList());
     }
 
     private String replacePlaceholders(String text, PlayerData data) {
-        return text.replace("{points}", String.valueOf(data.getStatPoints()));
+        return ChatUtil.translateGradientsAndHex(
+            text.replace("{points}", String.valueOf(data.getStatPoints()))
+        );
     }
 
     private List<String> replacePlaceholders(List<String> lore, PlayerData data) {
         return lore.stream()
-            .map(line -> line.replace("{points}", String.valueOf(data.getStatPoints())))
+            .map(line -> ChatUtil.translateGradientsAndHex(
+                line.replace("{points}", String.valueOf(data.getStatPoints()))
+            ))
             .collect(Collectors.toList());
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        InventoryView view = event.getView();
-        if(event.getInventory().getHolder() instanceof com.sandcore.gui.ProfileGUIHolder) {
-            event.setCancelled(true);
+        String expectedTitle = ChatColor.translateAlternateColorCodes('&', 
+            guiConfig.getString("profileGUI.title", "Profile"));
+        
+        if (event.getView().getTitle().equals(expectedTitle)) {
+            event.setCancelled(true); // Cancel all clicks in this GUI
+            
+            // Handle stat point allocation here if needed
         }
     }
 } 
