@@ -310,12 +310,10 @@ public class CastingSystem implements Listener {
                 player.spawnParticle(Particle.HAPPY_VILLAGER, player.getEyeLocation(), 5, 0.2, 0.5, 0.2, 0.1);
             } else {
                 session.resetClicks();
-                session.startCooldown(false);
                 session.restartTimeout();
                 
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     player.sendActionBar(translateHexColors(cancelMessage));
-                    playSound(player, cancelSound, 1.0f, 1.0f);
                 });
             }
         } catch (Exception e) {
@@ -411,8 +409,6 @@ public class CastingSystem implements Listener {
         private static final long MAX_BUFFER_TIME_MS = 200; // Keep clicks in buffer for 200ms
         private static final double TIMING_MULTIPLIER = 0.9; // 90% of average timing
         private long averageClickInterval = 200; // Start with 200ms assumption
-        private static final long SUCCESS_COOLDOWN = 0; // No cooldown on success
-        private static final long FAILURE_COOLDOWN = 2000; // 2 second cooldown on failure
 
         public CastingSession(Player player) {
             this.player = player;
@@ -547,15 +543,11 @@ public class CastingSystem implements Listener {
          * Starts the cooldown period between combos
          */
         public void startCooldown(boolean success) {
-            // Only apply cooldown for failures
-            this.cooldownEnd = success ? Instant.MIN : 
-                Instant.now().plusMillis(FAILURE_COOLDOWN);
+            // Empty implementation since we're removing cooldowns
         }
 
         public boolean isOnCooldown() {
-            // Only check cooldown if it's a failure cooldown
-            return cooldownEnd != Instant.MIN && 
-                Instant.now().isBefore(cooldownEnd);
+            return false; // Always false since cooldowns are disabled
         }
 
         private void updateTiming(long newInterval) {
@@ -572,15 +564,14 @@ public class CastingSystem implements Listener {
         }
 
         public void restartTimeout() {
-            // Cancel existing timeout first
             cancelTimeout();
             
-            // Start fresh timeout period
             taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
                 resetClicks();
                 activeSessions.remove(player.getUniqueId());
                 player.sendActionBar(translateHexColors(cancelMessage));
+                // Keep sound play only in timeout handler
                 playSound(player, cancelSound, 1.0f, 1.0f);
             }, comboTimeoutSeconds * 20L).getTaskId();
         }
