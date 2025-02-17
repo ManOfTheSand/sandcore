@@ -87,7 +87,7 @@ public class DamageEngine implements Listener {
     }
 
     private void showCriticalEffect(Player player) {
-        player.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, player.getLocation(), 30);
+        player.getWorld().spawnParticle(Particle.CRIT, player.getLocation(), 30);
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
     }
 

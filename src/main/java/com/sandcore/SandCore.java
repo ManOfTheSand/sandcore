@@ -23,6 +23,7 @@ import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
 import com.sandcore.listeners.ItemUpdateListener;
 import com.sandcore.listeners.XPListener;
+import com.sandcore.stats.StatManager;
 
 public class SandCore extends JavaPlugin {
 
@@ -34,6 +35,7 @@ public class SandCore extends JavaPlugin {
     private HUDManager hudManager;
     private ItemsManager itemsManager;
     private MainCommandExecutor mainCommandExecutor;
+    private StatManager statManager;
 
     @Override
     public void onEnable() {
@@ -117,6 +119,9 @@ public class SandCore extends JavaPlugin {
             levelManager,
             playerDataManager
         );
+
+        // Initialize statManager
+        this.statManager = new StatManager(this);
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
@@ -300,5 +305,9 @@ public class SandCore extends JavaPlugin {
 
     public ItemsManager getItemsManager() {
         return itemsManager;
+    }
+
+    public StatManager getStatManager() {
+        return statManager;
     }
 }
