@@ -201,7 +201,7 @@ public class CastingSystem implements Listener {
      */
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        // Add these checks at the start of the handler
+        // Only handle right-click air/block events for activation
         if (event.getAction() != Action.RIGHT_CLICK_AIR && 
             event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
@@ -210,27 +210,46 @@ public class CastingSystem implements Listener {
         Player player = event.getPlayer();
         UUID playerId = player.getUniqueId();
         
-        // Add item check to prevent activation when holding items
-        if (player.getInventory().getItemInMainHand().getType() != Material.AIR ||
-            player.getInventory().getItemInOffHand().getType() != Material.AIR) {
+        // Debug: Log initial interaction attempt
+        plugin.getLogger().info("[DEBUG] Casting mode toggle attempt by " + player.getName() + 
+                              " | Holding items: " + !player.getInventory().getItemInMainHand().getType().isAir() +
+                              " | In casting mode: " + activeCasters.containsKey(playerId));
+
+        // Check if player is holding any items
+        if (!player.getInventory().getItemInMainHand().getType().isAir() ||
+            !player.getInventory().getItemInOffHand().getType().isAir()) {
+            plugin.getLogger().info("[DEBUG] Blocked casting toggle - holding items");
             return;
         }
 
-        // Add cooldown check
-        if (Instant.now().isBefore(lastActivationTimes.getOrDefault(playerId, Instant.MIN)
-            .plusMillis(comboCooldownMillis))) {
+        // Check cooldown with debug info
+        Instant lastActivation = lastActivationTimes.getOrDefault(playerId, Instant.MIN);
+        Duration timeSinceLast = Duration.between(lastActivation, Instant.now());
+        boolean onCooldown = timeSinceLast.toMillis() < comboCooldownMillis;
+        
+        plugin.getLogger().info("[DEBUG] Cooldown check for " + player.getName() + 
+                              " | Last activation: " + lastActivation +
+                              " | Elapsed: " + timeSinceLast.toMillis() + "ms" +
+                              " | Cooldown: " + comboCooldownMillis + "ms" +
+                              " | On cooldown: " + onCooldown);
+
+        if (onCooldown) {
+            long remaining = comboCooldownMillis - timeSinceLast.toMillis();
+            player.sendActionBar("§cYou must wait " + (remaining/1000) + "s before toggling again");
+            plugin.getLogger().info("[COOLDOWN] " + player.getName() + " tried to toggle too soon");
             return;
         }
 
-        // Toggle casting mode instead of always activating
+        // Toggle casting mode with debug logging
         if (activeCasters.containsKey(playerId)) {
+            plugin.getLogger().info("[DEBUG] Deactivating casting mode for " + player.getName());
             deactivateCastingMode(player);
         } else {
+            plugin.getLogger().info("[DEBUG] Activating casting mode for " + player.getName());
             activateCastingMode(player);
         }
         
-        // Add this critical line to prevent event propagation
-        event.setCancelled(true);
+        event.setCancelled(true); // Only cancel if we handled the toggle
     }
 
     /**
@@ -239,28 +258,26 @@ public class CastingSystem implements Listener {
      */
     private void activateCastingMode(Player player) {
         UUID playerId = player.getUniqueId();
-        if (activeCasters.containsKey(playerId)) return; // Prevent duplicate activation
+        
+        if (activeCasters.containsKey(playerId)) {
+            plugin.getLogger().warning("[DUPLICATE] Tried to activate casting mode for " + player.getName());
+            return;
+        }
         
         activeCasters.put(playerId, new ArrayList<>());
-        lastActivationTimes.put(playerId, Instant.now());
-        CastingSession session = new CastingSession(player);
-        activeSessions.put(playerId, session);
+        // Start cooldown timer only when DEactivating
+        activeSessions.put(playerId, new CastingSession(player));
         
-        // Final null check before using
-        if (activationSound == null) {
-            plugin.getLogger().severe("CRITICAL ERROR: activationSound is null when activating casting mode!");
-        }
-
-        // Show the activation action bar message and play sound on the main thread.
+        // Debug: Log activation details
+        plugin.getLogger().info("[ACTIVATION] " + player.getName() + 
+                               " | Selected class: " + playerDataManager.getPlayerData(playerId).getSelectedClass() +
+                               " | Combo mappings: " + comboMappings);
+        
+        // Visual/audio feedback
         Bukkit.getScheduler().runTask(plugin, () -> {
-            player.sendActionBar(""); // Clear any previous message
-            player.sendActionBar(translateHexColors(activationMessage));
-            plugin.getLogger().info("activateCastingMode: playing activation sound, sound parameter: '" + activationSound + "'");
+            player.sendActionBar(activationMessage);
             playSound(player, activationSound, 1.0f, 1.0f);
         });
-        plugin.getLogger().info("Casting mode activated for player: " + player.getName());
-        // Schedule a timeout task that cancels the combo if not completed in time.
-        session.restartTimeout();
     }
 
     /**
@@ -754,7 +771,33 @@ public class CastingSystem implements Listener {
         UUID playerId = player.getUniqueId();
         if (!activeCasters.containsKey(playerId)) return;
         
+        // Start cooldown timer on DEactivation
+        lastActivationTimes.put(playerId, Instant.now());
         activeCasters.remove(playerId);
-        // ... rest of deactivation logic ...
+        activeSessions.remove(playerId);
+        
+        // Debug: Log deactivation
+        plugin.getLogger().info("[DEACTIVATION] " + player.getName());
+        
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            player.sendActionBar(cancelMessage);
+            playSound(player, cancelSound, 1.0f, 1.0f);
+        });
+    }
+
+    // Add new debug method
+    public void printDebugState(Player player) {
+        UUID playerId = player.getUniqueId();
+        plugin.getLogger().info("[DEBUG] Casting System State for " + player.getName() +
+                              "\n- In casting mode: " + activeCasters.containsKey(playerId) +
+                              "\n- Last activation: " + lastActivationTimes.get(playerId) +
+                              "\n- Current combo: " + activeCasters.getOrDefault(playerId, List.of()) +
+                              "\n- Cooldown remaining: " + getRemainingCooldown(playerId) + "ms");
+    }
+
+    private long getRemainingCooldown(UUID playerId) {
+        Instant last = lastActivationTimes.get(playerId);
+        if (last == null) return 0;
+        return comboCooldownMillis - Duration.between(last, Instant.now()).toMillis();
     }
 } 
