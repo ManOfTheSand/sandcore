@@ -51,7 +51,7 @@ public class SandCore extends JavaPlugin {
         this.xpSourceManager = new XPSourceManager(getLogger());
         this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
         this.hudManager = new HUDManager(this);
-        this.castingSystem = new CastingSystem(this);  
+        this.castingSystem = new CastingSystem(this, playerDataManager);  
 
         // THEN load configurations
         reloadConfig();

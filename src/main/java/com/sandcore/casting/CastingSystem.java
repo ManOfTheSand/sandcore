@@ -20,7 +20,6 @@ import java.util.concurrent.Executors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -34,6 +33,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
 import com.sandcore.SandCore;
+import com.sandcore.data.PlayerDataManager;
 
 /**
  * CastingSystem emulates a Wynncraft-like skills casting system.
@@ -54,6 +54,7 @@ import com.sandcore.SandCore;
 public class CastingSystem implements Listener {
 
     private final SandCore plugin;
+    private final PlayerDataManager playerDataManager;
     private Location loc;
     // Configurable options for casting
     private int comboTimeoutSeconds;
@@ -89,8 +90,9 @@ public class CastingSystem implements Listener {
      * Constructor. Loads the casting configuration from classes.yml
      * and registers this system as an event listener.
      */
-    public CastingSystem(SandCore plugin) {
+    public CastingSystem(SandCore plugin, PlayerDataManager playerDataManager) {
         this.plugin = plugin;
+        this.playerDataManager = playerDataManager;
         loadConfiguration();
         // Register event listeners for casting events.
         this.plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -294,7 +296,7 @@ public class CastingSystem implements Listener {
 
         try {
             // Retrieve the player's selected class from the player's data.
-            String selectedClass = plugin.getPlayerDataManager().getPlayerData(player.getUniqueId()).getSelectedClass();
+            String selectedClass = playerDataManager.getPlayerData(player.getUniqueId()).getSelectedClass();
             if (selectedClass == null) {
                 plugin.getLogger().warning("Player " + player.getName() + " does not have a selected class.");
                 Bukkit.getScheduler().runTask(plugin, () -> {
