@@ -289,15 +289,14 @@ public class CastingSystem implements Listener {
             }
             if (mappings == null || !mappings.containsKey(combo)) {
                 plugin.getLogger().info("No valid skill mapping for combo " + combo + " for class " + selectedClass);
-                // Reset clicks and RENEW TIMEOUT for invalid combos
-                if (activeSessions.containsKey(player.getUniqueId())) {
-                    CastingSession session = activeSessions.get(player.getUniqueId());
+                // Use existing session variable instead of redeclaring
+                if (session != null) {  // Now using the existing session reference
                     session.resetClicks();
-                    session.restartTimeout();  // Renew timeout instead of starting cooldown
+                    session.restartTimeout();
                 }
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     player.sendActionBar(translateHexColors(cancelMessage));
-                    player.sendActionBar(""); // Clear previous combo display
+                    player.sendActionBar(""); 
                     playSound(player, cancelSound, 1.0f, 1.0f);
                 });
                 return;
