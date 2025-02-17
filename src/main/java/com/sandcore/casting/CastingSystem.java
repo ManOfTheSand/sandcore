@@ -149,12 +149,11 @@ public class CastingSystem implements Listener {
         // If the player is already in casting mode, cancel it.
         if (activeSessions.containsKey(player.getUniqueId())) {
             CastingSession session = activeSessions.remove(player.getUniqueId());
+            session.invalidate();  // Mark session as invalid
             session.cancelTimeout();
             session.resetClicks();
             
-            // Force immediate cleanup
             Bukkit.getScheduler().runTask(plugin, () -> {
-                activeSessions.remove(player.getUniqueId()); // Double-check removal
                 player.sendActionBar("Casting mode deactivated!");
                 playSound(player, cancelSound, 1.0f, 1.0f);
                 toggleCooldowns.put(player.getUniqueId(), Instant.now().plusSeconds(1));
@@ -415,6 +414,7 @@ public class CastingSystem implements Listener {
         private static final double TIMING_MULTIPLIER = 0.9; // 90% of average timing
         private long averageClickInterval = 200; // Start with 200ms assumption
         private long lastComboTime = 0;  // Track last combo time
+        private boolean valid = true;
 
         public CastingSession(Player player) {
             this.player = player;
@@ -575,10 +575,9 @@ public class CastingSystem implements Listener {
             cancelTimeout();
             
             taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                // Verify session still exists and matches current active session
-                CastingSession currentSession = activeSessions.get(player.getUniqueId());
-                if (currentSession != this || !activeSessions.containsKey(player.getUniqueId())) {
-                    return; // Session changed or removed
+                // Triple validation check
+                if (!valid || !activeSessions.containsKey(player.getUniqueId()) || activeSessions.get(player.getUniqueId()) != this) {
+                    return;
                 }
                 
                 plugin.getLogger().info("Casting timeout for " + player.getName());
@@ -590,6 +589,10 @@ public class CastingSystem implements Listener {
 
         public void markComboUsed() {
             lastComboTime = System.currentTimeMillis();
+        }
+
+        public void invalidate() {
+            valid = false;
         }
     }
 
