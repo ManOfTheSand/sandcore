@@ -104,7 +104,7 @@ public class CastingSystem implements Listener {
             
             if (cachedConfig == null || currentHash != lastConfigHash) {
                 YamlConfiguration config = YamlConfiguration.loadConfiguration(classesFile);
-                cachedConfig = new CastingConfig(config);
+                cachedConfig = new CastingConfig(config, plugin);
                 lastConfigHash = currentHash;
                 plugin.getLogger().info("Reloaded and cached casting configuration");
             }
@@ -623,7 +623,10 @@ public class CastingSystem implements Listener {
         final String cancelMessage;
         final String successMessage;
         
-        CastingConfig(YamlConfiguration config) {
+        private final SandCore plugin;
+        
+        CastingConfig(YamlConfiguration config, SandCore plugin) {
+            this.plugin = plugin;
             this.timeout = config.getInt("casting.timeout", 5);
             this.comboCooldownMillis = config.getLong("casting.comboCooldownMillis", 1000);
             this.leftClickLock = config.getInt("casting.leftClickLock", 1);
@@ -659,31 +662,24 @@ public class CastingSystem implements Listener {
             File configFile = new File(plugin.getDataFolder(), "classes.yml");
             YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
             
-            // Load casting configuration with defaults
-            ConfigurationSection castingSection = config.getConfigurationSection("casting");
-            if (castingSection == null) {
-                plugin.getLogger().warning("No 'casting' section found in classes.yml!");
-                return;
-            }
-
-            this.timeout = castingSection.getInt("timeout", 5);
-            this.comboCooldownMillis = castingSection.getLong("comboCooldownMillis", 9000);
-            this.leftClickLock = castingSection.getInt("leftClickLock", 2);
-            this.rightClickLock = castingSection.getInt("rightClickLock", 8);
+            // Create new config instance instead of modifying final fields
+            this.cachedConfig = new CastingConfig(config, plugin);
+            this.lastConfigHash = getConfigHash(configFile);
             
-            // Sound configuration with validation
-            this.activationSound = validateSound(castingSection.getString("activationSound"), "ENTITY_EXPERIENCE_ORB_PICKUP");
-            this.cancelSound = validateSound(castingSection.getString("cancelSound"), "ENTITY_BLAZE_HURT");
-            this.successSound = validateSound(castingSection.getString("successSound"), "ENTITY_PLAYER_LEVELUP");
-            this.clickSound = validateSound(castingSection.getString("clickSound"), "UI_BUTTON_CLICK");
-            
-            // Messages
-            this.activationMessage = ChatColor.translateAlternateColorCodes('&', 
-                castingSection.getString("activationMessage", "&eCasting Mode Activated!"));
-            this.cancelMessage = ChatColor.translateAlternateColorCodes('&',
-                castingSection.getString("cancelMessage", "&cCasting Cancelled!"));
-            this.successMessage = ChatColor.translateAlternateColorCodes('&',
-                castingSection.getString("successMessage", "&aSkill Cast Successful!"));
+            // Update runtime values from new config
+            this.comboTimeoutSeconds = cachedConfig.timeout;
+            this.comboCooldownMillis = cachedConfig.comboCooldownMillis;
+            this.leftClickLockTicks = cachedConfig.leftClickLock;
+            this.rightClickLockTicks = cachedConfig.rightClickLock;
+            this.activationSound = cachedConfig.activationSound;
+            this.cancelSound = cachedConfig.cancelSound;
+            this.successSound = cachedConfig.successSound;
+            this.clickSound = cachedConfig.clickSound;
+            this.clickSoundVolume = cachedConfig.clickSoundVolume;
+            this.clickSoundPitch = cachedConfig.clickSoundPitch;
+            this.activationMessage = cachedConfig.activationMessage;
+            this.cancelMessage = cachedConfig.cancelMessage;
+            this.successMessage = cachedConfig.successMessage;
         }
 
         private String validateSound(String soundName, String defaultSound) {
@@ -731,7 +727,27 @@ public class CastingSystem implements Listener {
         }
     }
 
-    public long getComboCooldownMillis() {
-        return comboCooldownMillis;
+    public void reloadConfig() {
+        File configFile = new File(plugin.getDataFolder(), "classes.yml");
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+        
+        // Create new config instance instead of modifying final fields
+        this.cachedConfig = new CastingConfig(config, plugin);
+        this.lastConfigHash = getConfigHash(configFile);
+        
+        // Update runtime values from new config
+        this.comboTimeoutSeconds = cachedConfig.timeout;
+        this.comboCooldownMillis = cachedConfig.comboCooldownMillis;
+        this.leftClickLockTicks = cachedConfig.leftClickLock;
+        this.rightClickLockTicks = cachedConfig.rightClickLock;
+        this.activationSound = cachedConfig.activationSound;
+        this.cancelSound = cachedConfig.cancelSound;
+        this.successSound = cachedConfig.successSound;
+        this.clickSound = cachedConfig.clickSound;
+        this.clickSoundVolume = cachedConfig.clickSoundVolume;
+        this.clickSoundPitch = cachedConfig.clickSoundPitch;
+        this.activationMessage = cachedConfig.activationMessage;
+        this.cancelMessage = cachedConfig.cancelMessage;
+        this.successMessage = cachedConfig.successMessage;
     }
 } 
