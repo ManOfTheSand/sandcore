@@ -652,9 +652,44 @@ public class CastingSystem implements Listener {
             }
             return mappings;
         }
+
+        public void reloadConfig(YamlConfiguration config) {
+            this.timeout = config.getInt("casting.timeout", 5);
+            this.comboCooldownMillis = config.getLong("casting.comboCooldownMillis", 1000);
+            this.leftClickLock = config.getInt("casting.leftClickLock", 1);
+            this.rightClickLock = config.getInt("casting.rightClickLock", 4);
+            this.comboMappings = loadComboMappings(config);
+            this.activationSound = config.getString("casting.activationSound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+            this.cancelSound = config.getString("casting.cancelSound", "ENTITY_BLAZE_HURT");
+            this.successSound = config.getString("casting.successSound", "ENTITY_PLAYER_LEVELUP");
+            this.clickSound = config.getString("casting.clickSound", "UI_BUTTON_CLICK");
+            this.clickSoundVolume = config.getDouble("casting.clickSoundVolume", 1.0);
+            this.clickSoundPitch = config.getDouble("casting.clickSoundPitch", 1.0);
+            this.activationMessage = config.getString("casting.activationMessage", "&aCasting Mode Activated!");
+            this.cancelMessage = config.getString("casting.cancelMessage", "&cCasting Cancelled!");
+            this.successMessage = config.getString("casting.successMessage", "&bSkill Cast Successful!");
+        }
     }
 
     public long getComboCooldownMillis() {
         return comboCooldownMillis;
+    }
+
+    @EventHandler
+    public void onSwapHands(PlayerSwapHandItemsEvent event) {
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+        
+        if (activeSessions.containsKey(uuid)) {
+            event.setCancelled(true); // Prevent item swapping
+            CastingSession session = activeSessions.get(uuid);
+            session.cancelTimeout();
+            activeSessions.remove(uuid);
+            
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                player.sendActionBar(translateHexColors(cancelMessage));
+                playSound(player, cancelSound, 1.0f, 1.0f);
+            });
+        }
     }
 } 

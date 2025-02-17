@@ -301,4 +301,17 @@ public class SandCore extends JavaPlugin {
     public ItemsManager getItemsManager() {
         return itemsManager;
     }
+
+    public void reloadConfig() {
+        // ... existing reload logic ...
+        
+        // Reload classes.yml
+        File classesFile = new File(getDataFolder(), "classes.yml");
+        YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
+        
+        // Reload casting system with new config
+        castingSystem.reloadConfig(classesConfig);
+        
+        // ... rest of reload logic ...
+    }
 }
