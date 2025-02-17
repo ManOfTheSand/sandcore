@@ -1,6 +1,7 @@
 package com.sandcore.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -8,11 +9,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.Material;
 
 import com.sandcore.data.PlayerData;
 import com.sandcore.data.PlayerDataManager;
-import com.sandcore.levels.LevelManager;
 import com.sandcore.stat.StatManager;
 import com.sandcore.stat.StatManager.PlayerStats;
 import com.sandcore.utils.ItemBuilder;
@@ -74,19 +73,19 @@ public class StatGUIListener implements Listener {
         // Add stats items (same as ProfileGUIListener implementation)
         ItemStack strength = new ItemBuilder(Material.RED_DYE)
             .name("§4Strength: §c" + stats.getAttribute("strength"))
-            .lore("§7Allocated: §c" + stats.allocatedPoints.getOrDefault("strength", 0))
+            .lore("§7Allocated: §c" + stats.getAllocatedPoints().getOrDefault("strength", 0))
             .build();
         inv.setItem(10, strength);
 
         ItemStack dexterity = new ItemBuilder(Material.GREEN_DYE)
             .name("§2Dexterity: §a" + stats.getAttribute("dexterity"))
-            .lore("§7Allocated: §a" + stats.allocatedPoints.getOrDefault("dexterity", 0)) 
+            .lore("§7Allocated: §a" + stats.getAllocatedPoints().getOrDefault("dexterity", 0)) 
             .build();
         inv.setItem(12, dexterity);
 
         ItemStack intelligence = new ItemBuilder(Material.BLUE_DYE)
             .name("§9Intelligence: §b" + stats.getAttribute("intelligence"))
-            .lore("§7Allocated: §b" + stats.allocatedPoints.getOrDefault("intelligence", 0))
+            .lore("§7Allocated: §b" + stats.getAllocatedPoints().getOrDefault("intelligence", 0))
             .build();
         inv.setItem(14, intelligence);
 

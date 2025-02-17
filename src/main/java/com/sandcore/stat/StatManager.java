@@ -95,5 +95,9 @@ public class StatManager {
             allocatedPoints.put(attribute, allocatedPoints.getOrDefault(attribute, 0) + points);
             calculateStats(); // Recalculate with new points
         }
+
+        public Map<String, Integer> getAllocatedPoints() {
+            return new HashMap<>(allocatedPoints);
+        }
     }
 } 
