@@ -19,8 +19,8 @@ import com.sandcore.data.PlayerData;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.stat.StatManager;
 import com.sandcore.stat.StatManager.PlayerStats;
-import com.sandcore.utils.ItemBuilder;
 import com.sandcore.util.ChatUtil;
+import com.sandcore.utils.ItemBuilder;
 
 public class ProfileGUIListener implements Listener {
 
@@ -96,12 +96,12 @@ public class ProfileGUIListener implements Listener {
     private String replacePlaceholders(String text, PlayerStats stats, String attribute) {
         String output = text.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
                            .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0)));
-        return ChatUtil.translateColors(output);
+        return ChatUtil.translateGradientsAndHex(output);
     }
 
     private List<String> replacePlaceholders(List<String> lore, PlayerStats stats, String attribute) {
         return lore.stream()
-            .map(line -> ChatUtil.translateColors(
+            .map(line -> ChatUtil.translateGradientsAndHex(
                 line.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
                    .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0)))
             ))
@@ -109,14 +109,14 @@ public class ProfileGUIListener implements Listener {
     }
 
     private String replacePlaceholders(String text, PlayerData data) {
-        return ChatUtil.translateColors(
+        return ChatUtil.translateGradientsAndHex(
             text.replace("{points}", String.valueOf(data.getStatPoints()))
         );
     }
 
     private List<String> replacePlaceholders(List<String> lore, PlayerData data) {
         return lore.stream()
-            .map(line -> ChatUtil.translateColors(
+            .map(line -> ChatUtil.translateGradientsAndHex(
                 line.replace("{points}", String.valueOf(data.getStatPoints()))
             ))
             .collect(Collectors.toList());
