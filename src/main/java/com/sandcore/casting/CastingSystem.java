@@ -478,22 +478,6 @@ public class CastingSystem implements Listener {
                 playSound(player, clickSound, (float) clickSoundVolume, (float) clickSoundPitch);
                 player.sendActionBar(translateHexColors("&eCombo: &b" + String.join(",", clicks)));
             });
-            
-            // Start timeout check
-            comboExecutor.submit(() -> {
-                try {
-                    Thread.sleep(comboTimeoutSeconds * 1000);
-                    if (Instant.now().isAfter(lastClickTime.plusSeconds(comboTimeoutSeconds))) {
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            player.sendActionBar(translateHexColors(cancelMessage));
-                            playSound(player, cancelSound, 1.0f, 1.0f);
-                            resetClicks();
-                        });
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            });
         }
 
         /**
