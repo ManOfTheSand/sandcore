@@ -250,72 +250,80 @@ public class CastingSystem implements Listener {
      * MythicMob skill mapping, and attempts to cast the skill.
      */
     private void processCombo(Player player, String combo) {
-        // Retrieve the player's selected class from the player's data.
-        String selectedClass = plugin.getPlayerDataManager().getPlayerData(player.getUniqueId()).getSelectedClass();
-        if (selectedClass == null) {
-            plugin.getLogger().warning("Player " + player.getName() + " does not have a selected class.");
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                player.sendActionBar("§cNo class selected!");
-                playSound(player, cancelSound, 1.0f, 1.0f);
-            });
-            return;
-        }
-        // Try to get the combo mapping from the casting configuration.
-        Map<String, String> mappings = comboMappings.get(selectedClass);
-        // If no mapping was loaded via the "casting" section,
-        // fall back to the keyCombos defined in classes.yml under "classes.<selectedClass>.keyCombos"
-        if (mappings == null || mappings.isEmpty()) {
-            File classesFile = new File(plugin.getDataFolder(), "classes.yml");
-            YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
-            String path = "classes." + selectedClass.toLowerCase() + ".keyCombos";
-            if (classesConfig.contains(path)) {
-                mappings = new HashMap<>();
-                for (String comboKey : classesConfig.getConfigurationSection(path).getKeys(false)) {
-                    String skill = classesConfig.getString(path + "." + comboKey);
-                    mappings.put(comboKey, skill);
+        boolean castSuccess = false;
+        String playerClass = plugin.getClassManager().getPlayerClass(player.getUniqueId());
+        
+        // Get session reference at start of processing
+        CastingSession session = activeSessions.get(player.getUniqueId());
+        if (session == null) return;
+
+        try {
+            // Retrieve the player's selected class from the player's data.
+            String selectedClass = plugin.getPlayerDataManager().getPlayerData(player.getUniqueId()).getSelectedClass();
+            if (selectedClass == null) {
+                plugin.getLogger().warning("Player " + player.getName() + " does not have a selected class.");
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    player.sendActionBar("§cNo class selected!");
+                    playSound(player, cancelSound, 1.0f, 1.0f);
+                });
+                return;
+            }
+            // Try to get the combo mapping from the casting configuration.
+            Map<String, String> mappings = comboMappings.get(selectedClass);
+            // If no mapping was loaded via the "casting" section,
+            // fall back to the keyCombos defined in classes.yml under "classes.<selectedClass>.keyCombos"
+            if (mappings == null || mappings.isEmpty()) {
+                File classesFile = new File(plugin.getDataFolder(), "classes.yml");
+                YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
+                String path = "classes." + selectedClass.toLowerCase() + ".keyCombos";
+                if (classesConfig.contains(path)) {
+                    mappings = new HashMap<>();
+                    for (String comboKey : classesConfig.getConfigurationSection(path).getKeys(false)) {
+                        String skill = classesConfig.getString(path + "." + comboKey);
+                        mappings.put(comboKey, skill);
+                    }
                 }
             }
-        }
-        if (mappings == null || !mappings.containsKey(combo)) {
-            plugin.getLogger().info("No valid skill mapping for combo " + combo + " for class " + selectedClass);
-            // Reset clicks and start cooldown for invalid combos
-            if (activeSessions.containsKey(player.getUniqueId())) {
-                activeSessions.get(player.getUniqueId()).resetClicks();
-                activeSessions.get(player.getUniqueId()).startCooldown(false);
+            if (mappings == null || !mappings.containsKey(combo)) {
+                plugin.getLogger().info("No valid skill mapping for combo " + combo + " for class " + selectedClass);
+                // Reset clicks and start cooldown for invalid combos
+                if (activeSessions.containsKey(player.getUniqueId())) {
+                    activeSessions.get(player.getUniqueId()).resetClicks();
+                    activeSessions.get(player.getUniqueId()).startCooldown(false);
+                }
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    player.sendActionBar(translateHexColors(cancelMessage));
+                    player.sendActionBar(""); // Clear previous combo display
+                    playSound(player, cancelSound, 1.0f, 1.0f);
+                });
+                return;
             }
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                player.sendActionBar(translateHexColors(cancelMessage));
-                player.sendActionBar(""); // Clear previous combo display
-                playSound(player, cancelSound, 1.0f, 1.0f);
-            });
-            return;
-        }
-        String skillName = mappings.get(combo);
-        // Attempt to cast the MythicMob skill
-        boolean castSuccess = castMythicMobSkill(player, skillName);
-        if (castSuccess && activeSessions.containsKey(player.getUniqueId())) {
-            CastingSession session = activeSessions.get(player.getUniqueId());
-            session.resetClicks();
-            session.startCooldown(true);
-            session.restartTimeout();  // Reset timeout on success
-            
-            // Visual feedback
-            long formattedTime = Duration.between(session.getLastClickTime(), Instant.now()).toMillis();
-            player.sendTitle("", translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 5, 20, 5);
-            player.spawnParticle(Particle.HAPPY_VILLAGER, player.getEyeLocation(), 5, 0.2, 0.5, 0.2, 0.1);
-        } else {
-            // Get session reference first
-            CastingSession session = activeSessions.get(player.getUniqueId());
-            if (session != null) {
+            String skillName = mappings.get(combo);
+            // Attempt to cast the MythicMob skill
+            castSuccess = castMythicMobSkill(player, skillName);
+            if (castSuccess && activeSessions.containsKey(player.getUniqueId())) {
+                CastingSession session = activeSessions.get(player.getUniqueId());
                 session.resetClicks();
-                session.startCooldown(false); // Short cooldown on failure
-                session.restartTimeout();     // Keep session alive
+                session.startCooldown(true);
+                session.restartTimeout();  // Reset timeout on success
+                
+                // Visual feedback
+                long formattedTime = Duration.between(session.getLastClickTime(), Instant.now()).toMillis();
+                player.sendTitle("", translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 5, 20, 5);
+                player.spawnParticle(Particle.HAPPY_VILLAGER, player.getEyeLocation(), 5, 0.2, 0.5, 0.2, 0.1);
+            } else {
+                session.resetClicks();
+                session.startCooldown(false);
+                session.restartTimeout();
                 
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     player.sendActionBar(translateHexColors(cancelMessage));
                     playSound(player, cancelSound, 1.0f, 1.0f);
                 });
             }
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error casting skill: " + e.getMessage());
+            e.printStackTrace();
         }
         session.startTimeoutTask(comboTimeoutSeconds);
     }
