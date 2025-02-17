@@ -44,19 +44,17 @@ public class SandCore extends JavaPlugin {
         // Display an eye-catching startup message with ASCII art and version info.
         printStartupMessage();
 
-        // Initialize core systems first
-        this.castingSystem = new CastingSystem(this);  // Must be before reloadConfig()
-        
-        // Then load configurations
-        reloadConfig();
-        
-        // Initialize other managers after configs
-        this.classManager = new ClassManager(this);
+        // Initialize ALL core managers FIRST
+        this.classManager = new ClassManager(this);  // Moved before casting system
         this.itemsManager = new ItemsManager(this);
         this.levelManager = new LevelManager(getLogger());
         this.xpSourceManager = new XPSourceManager(getLogger());
         this.playerDataManager = new PlayerDataManager(getDataFolder(), getLogger());
-        this.hudManager = new HUDManager(this);  // Pass plugin instance
+        this.hudManager = new HUDManager(this);
+        this.castingSystem = new CastingSystem(this);  
+
+        // THEN load configurations
+        reloadConfig();
         
         // Leveling system initialization:
         levelManager.loadConfiguration(getConfig());
@@ -301,33 +299,24 @@ public class SandCore extends JavaPlugin {
     }
 
     public void reloadConfig() {
-        // Load main config first
         super.reloadConfig();
-        
-        // Then load classes.yml
         File classesFile = new File(getDataFolder(), "classes.yml");
         YamlConfiguration classesConfig = YamlConfiguration.loadConfiguration(classesFile);
         
-        // Only reload casting if it exists
         if (castingSystem != null) {
             castingSystem.reloadCastingConfiguration();
         }
         
-        // Reload other managers
+        // Safe to call reloadClasses() now that classManager is initialized first
         classManager.reloadClasses();
         itemsManager.reloadItems();
         
-        // Reload leveling system
         levelManager.loadConfiguration(classesConfig);
         
-        // Reload xp-sources.yml
         File xpSourcesFile = new File(getDataFolder(), "xp-sources.yml");
         xpSourceManager.reloadXPSources(xpSourcesFile);
         
-        // Reload player data
         playerDataManager.reloadPlayerData();
-        
-        // Reload hud
         hudManager.reloadHUD();
     }
 }
