@@ -76,7 +76,7 @@ public class ChatUtil {
     }
 
     // Convenience method: process gradient, then hex, then alternate color codes.
-    public static String translateColors(String message) {
+    public static String translateGradientsAndHex(String message) {
         if (message == null) return null;
         message = translateGradient(message);
         message = translateHexColorCodes(message);

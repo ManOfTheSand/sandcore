@@ -96,12 +96,12 @@ public class ProfileGUIListener implements Listener {
     private String replacePlaceholders(String text, PlayerStats stats, String attribute) {
         String output = text.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
                            .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0)));
-        return ChatUtil.translateGradientsAndHex(output);
+        return ChatUtil.translateColors(output);
     }
 
     private List<String> replacePlaceholders(List<String> lore, PlayerStats stats, String attribute) {
         return lore.stream()
-            .map(line -> ChatUtil.translateGradientsAndHex(
+            .map(line -> ChatUtil.translateColors(
                 line.replace("{value}", String.format("%.1f", stats.getAttribute(attribute)))
                    .replace("{allocated}", String.valueOf(stats.getAllocatedPoints().getOrDefault(attribute, 0)))
             ))
@@ -109,14 +109,14 @@ public class ProfileGUIListener implements Listener {
     }
 
     private String replacePlaceholders(String text, PlayerData data) {
-        return ChatUtil.translateGradientsAndHex(
+        return ChatUtil.translateColors(
             text.replace("{points}", String.valueOf(data.getStatPoints()))
         );
     }
 
     private List<String> replacePlaceholders(List<String> lore, PlayerData data) {
         return lore.stream()
-            .map(line -> ChatUtil.translateGradientsAndHex(
+            .map(line -> ChatUtil.translateColors(
                 line.replace("{points}", String.valueOf(data.getStatPoints()))
             ))
             .collect(Collectors.toList());
