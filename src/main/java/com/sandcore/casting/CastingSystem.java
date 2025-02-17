@@ -150,11 +150,12 @@ public class CastingSystem implements Listener {
         if (activeSessions.containsKey(player.getUniqueId())) {
             CastingSession session = activeSessions.remove(player.getUniqueId());
             session.cancelTimeout();
+            session.resetClicks();  // Clear any active combo
+            
             // Notify the player that casting mode has been deactivated.
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar("Casting mode deactivated!");
                 playSound(player, cancelSound, 1.0f, 1.0f);
-                // Set cooldown
                 toggleCooldowns.put(player.getUniqueId(), Instant.now().plusSeconds(1));
             });
             return;
@@ -288,10 +289,11 @@ public class CastingSystem implements Listener {
             }
             if (mappings == null || !mappings.containsKey(combo)) {
                 plugin.getLogger().info("No valid skill mapping for combo " + combo + " for class " + selectedClass);
-                // Reset clicks and start cooldown for invalid combos
+                // Reset clicks and RENEW TIMEOUT for invalid combos
                 if (activeSessions.containsKey(player.getUniqueId())) {
-                    activeSessions.get(player.getUniqueId()).resetClicks();
-                    activeSessions.get(player.getUniqueId()).startCooldown(false);
+                    CastingSession session = activeSessions.get(player.getUniqueId());
+                    session.resetClicks();
+                    session.restartTimeout();  // Renew timeout instead of starting cooldown
                 }
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     player.sendActionBar(translateHexColors(cancelMessage));
@@ -532,6 +534,7 @@ public class CastingSystem implements Listener {
         public void cancelTimeout() {
             if (taskId != -1) {
                 Bukkit.getScheduler().cancelTask(taskId);
+                taskId = -1;  // Reset task ID after cancellation
             }
         }
 
@@ -569,12 +572,12 @@ public class CastingSystem implements Listener {
         }
 
         public void restartTimeout() {
-            cancelTimeout();
+            cancelTimeout();  // Cancel any existing timeout
             
             taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (!activeSessions.containsKey(player.getUniqueId())) return;
                 
-                plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
+                plugin.getLogger().info("Casting combo timeout (" + comboTimeoutSeconds + "s) for player: " + player.getName());
                 resetClicks();
                 activeSessions.remove(player.getUniqueId());
                 player.sendActionBar(translateHexColors(cancelMessage));
