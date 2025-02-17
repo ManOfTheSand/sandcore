@@ -80,6 +80,8 @@ public class CastingSystem implements Listener {
     private final Map<UUID, Instant> toggleCooldowns = new ConcurrentHashMap<>();
     // Add this field to track last click times
     private final Map<UUID, Long> lastClickTimes = new HashMap<>();
+    private final Map<UUID, List<String>> clickSequences = new HashMap<>();
+    private final Map<UUID, Instant> lastCastTimes = new HashMap<>();
 
     /**
      * Constructor. Loads the casting configuration from classes.yml
@@ -107,9 +109,6 @@ public class CastingSystem implements Listener {
                 plugin.getLogger().info("Reloaded and cached casting configuration");
             }
             
-<<<<<<< HEAD
-            // Directly use cachedConfig instead of copying fields
-=======
             // Update runtime values from cache
             comboTimeoutSeconds = cachedConfig.timeout;
             comboCooldownMillis = cachedConfig.comboCooldownMillis;
@@ -128,7 +127,6 @@ public class CastingSystem implements Listener {
             cancelMessage = cachedConfig.cancelMessage;
             successMessage = cachedConfig.successMessage;
             
->>>>>>> deb7704 (Implement combo cooldown mechanism for casting system)
         } catch (Exception e) {
             plugin.getLogger().severe("Error loading casting config: " + e.getMessage());
         }
@@ -610,22 +608,6 @@ public class CastingSystem implements Listener {
     }
 
     private static class CastingConfig {
-<<<<<<< HEAD
-        int timeout;
-        long comboCooldownMillis;
-        int leftClickLock;
-        int rightClickLock;
-        Map<String, Map<String, String>> comboMappings;
-        String activationSound;
-        String cancelSound;
-        String successSound;
-        String clickSound;
-        double clickSoundVolume;
-        double clickSoundPitch;
-        String activationMessage;
-        String cancelMessage;
-        String successMessage;
-=======
         final int timeout;
         final long comboCooldownMillis;
         final int leftClickLock;
@@ -640,7 +622,6 @@ public class CastingSystem implements Listener {
         final String activationMessage;
         final String cancelMessage;
         final String successMessage;
->>>>>>> deb7704 (Implement combo cooldown mechanism for casting system)
         
         CastingConfig(YamlConfiguration config) {
             this.timeout = config.getInt("casting.timeout", 5);
