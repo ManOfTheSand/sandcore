@@ -1,26 +1,22 @@
 package com.sandcore.command;
 
-import java.io.File;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import com.sandcore.SandCore;
-import com.sandcore.data.PlayerData;
-import com.sandcore.data.PlayerDataManager;
-import com.sandcore.gui.ProfileGUI;
+import com.sandcore.listeners.ProfileGUIListener;
 
 public class ProfileCommandExecutor implements CommandExecutor {
 
     private final SandCore plugin;
-    private final PlayerDataManager playerDataManager;
+    private final ProfileGUIListener profileGUIListener;
     
-    public ProfileCommandExecutor(SandCore plugin, PlayerDataManager playerDataManager) {
+    public ProfileCommandExecutor(SandCore plugin, ProfileGUIListener profileGUIListener) {
         this.plugin = plugin;
-        this.playerDataManager = playerDataManager;
+        this.profileGUIListener = profileGUIListener;
     }
     
     @Override
@@ -30,14 +26,8 @@ public class ProfileCommandExecutor implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
-        PlayerData data = playerDataManager.getPlayerData(player.getUniqueId());
-        
-        // Load gui.yml from the data folder.
-        File guiFile = new File(plugin.getDataFolder(), "gui.yml");
-        YamlConfiguration guiConfig = YamlConfiguration.loadConfiguration(guiFile);
-        
-        // Open the profile GUI and pass the LevelManager and ClassManager.
-        ProfileGUI.open(player, data, guiConfig, plugin.getLevelManager(), plugin.getClassManager());
+        Inventory profileGUI = profileGUIListener.createProfileGUI(player);
+        player.openInventory(profileGUI);
         return true;
     }
 } 

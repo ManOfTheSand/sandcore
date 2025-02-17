@@ -71,8 +71,15 @@ public class SandCore extends JavaPlugin {
         // Initialize the ClassManager (loads classes from classes.yml).
         classManager = new ClassManager(this);
 
-        // Now that leveling system dependencies are initialized, register the commands.
-        registerCommands();
+        // Initialize statManager and GUI listener FIRST
+        this.statManager = new StatManager(this);
+        FileConfiguration guiConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "gui.yml"));
+        ProfileGUIListener profileGUIListener = new ProfileGUIListener(statManager, guiConfig);
+        profileGUIListener.setPlayerDataManager(playerDataManager);
+        getServer().getPluginManager().registerEvents(profileGUIListener, this);
+
+        // NOW register commands that depend on profileGUIListener
+        registerCommands(profileGUIListener);
 
         // Register global event listeners.
         registerEventListeners();
@@ -123,25 +130,8 @@ public class SandCore extends JavaPlugin {
             playerDataManager
         );
 
-        // Initialize statManager
-        this.statManager = new StatManager(this);
-
         // Register stat GUI listener
         new StatGUIListener(statManager, playerDataManager);
-
-        // Load gui.yml configuration
-        FileConfiguration guiConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "gui.yml"));
-
-        // Create the listener with required parameters and set the PlayerDataManager
-        ProfileGUIListener profileGUIListener = new ProfileGUIListener(statManager, guiConfig);
-        profileGUIListener.setPlayerDataManager(playerDataManager);
-        getServer().getPluginManager().registerEvents(profileGUIListener, this);
-
-        // Update profile command registration
-        if(getCommand("profile") != null) {
-            getCommand("profile").setExecutor(new ProfileCommandExecutor(this, profileGUIListener));
-            getLogger().info("Command /profile registered successfully.");
-        }
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
@@ -241,7 +231,7 @@ public class SandCore extends JavaPlugin {
         }
     }
 
-    private void registerCommands() {
+    private void registerCommands(ProfileGUIListener profileGUIListener) {
         try {
             getLogger().info("Registering commands...");
             // Register reload command.
