@@ -49,4 +49,8 @@ casting:
     perfect_timing_color: "&a"  # Color for perfect timing
     late_timing_color: "&e"     # Color for acceptable but late
     miss_color: "&c"            # Color for missed timing
+<<<<<<< HEAD
   comboCooldownMillis: 9000  # New - cooldown between combos in milliseconds
+=======
+  comboCooldownMillis: 1000  # New - cooldown between combos in milliseconds
+>>>>>>> deb7704 (Implement combo cooldown mechanism for casting system)

@@ -107,7 +107,28 @@ public class CastingSystem implements Listener {
                 plugin.getLogger().info("Reloaded and cached casting configuration");
             }
             
+<<<<<<< HEAD
             // Directly use cachedConfig instead of copying fields
+=======
+            // Update runtime values from cache
+            comboTimeoutSeconds = cachedConfig.timeout;
+            comboCooldownMillis = cachedConfig.comboCooldownMillis;
+            leftClickLockTicks = cachedConfig.leftClickLock;
+            rightClickLockTicks = cachedConfig.rightClickLock;
+            activationSound = cachedConfig.activationSound;
+            cancelSound = cachedConfig.cancelSound;
+            successSound = cachedConfig.successSound;
+            clickSound = cachedConfig.clickSound;
+            clickSoundVolume = cachedConfig.clickSoundVolume;
+            clickSoundPitch = cachedConfig.clickSoundPitch;
+            comboMappings = cachedConfig.comboMappings;
+            
+            // Load messages and other sound config
+            activationMessage = cachedConfig.activationMessage;
+            cancelMessage = cachedConfig.cancelMessage;
+            successMessage = cachedConfig.successMessage;
+            
+>>>>>>> deb7704 (Implement combo cooldown mechanism for casting system)
         } catch (Exception e) {
             plugin.getLogger().severe("Error loading casting config: " + e.getMessage());
         }
@@ -589,6 +610,7 @@ public class CastingSystem implements Listener {
     }
 
     private static class CastingConfig {
+<<<<<<< HEAD
         int timeout;
         long comboCooldownMillis;
         int leftClickLock;
@@ -603,6 +625,22 @@ public class CastingSystem implements Listener {
         String activationMessage;
         String cancelMessage;
         String successMessage;
+=======
+        final int timeout;
+        final long comboCooldownMillis;
+        final int leftClickLock;
+        final int rightClickLock;
+        final Map<String, Map<String, String>> comboMappings;
+        final String activationSound;
+        final String cancelSound;
+        final String successSound;
+        final String clickSound;
+        final double clickSoundVolume;
+        final double clickSoundPitch;
+        final String activationMessage;
+        final String cancelMessage;
+        final String successMessage;
+>>>>>>> deb7704 (Implement combo cooldown mechanism for casting system)
         
         CastingConfig(YamlConfiguration config) {
             this.timeout = config.getInt("casting.timeout", 5);
@@ -710,5 +748,9 @@ public class CastingSystem implements Listener {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public long getComboCooldownMillis() {
+        return comboCooldownMillis;
     }
 } 
