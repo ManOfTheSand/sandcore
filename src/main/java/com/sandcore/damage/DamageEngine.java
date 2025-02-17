@@ -6,6 +6,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import com.sandcore.SandCore;
 import com.sandcore.stat.StatManager;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 
 public class DamageEngine implements Listener {
     private final SandCore plugin;
@@ -21,9 +24,6 @@ public class DamageEngine implements Listener {
     public void onDamage(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player) {
             handlePlayerAttack((Player) event.getDamager(), event.getEntity(), event);
-        }
-        else if (event.getEntity() instanceof Player) {
-            handlePlayerDefense((Player) event.getEntity(), event);
         }
     }
 
@@ -45,9 +45,9 @@ public class DamageEngine implements Listener {
     private double calculateDamage(StatManager.PlayerStats stats, String damageType) {
         String formula = plugin.getConfig().getString("damage.formulas." + damageType + ".base");
         return new ExpressionBuilder(formula)
-            .variables(stats.attributes.keySet())
+            .variables(stats.getAttributeNames())
             .build()
-            .setVariables(stats.attributes)
+            .setVariables(stats.getAttributesMap())
             .evaluate();
     }
 
@@ -84,5 +84,16 @@ public class DamageEngine implements Listener {
 
     private enum DamageType {
         PHYSICAL, MAGICAL
+    }
+
+    private void showCriticalEffect(Player player) {
+        player.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, player.getLocation(), 30);
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.5f);
+    }
+
+    private void showDamageIndicator(Entity entity, double damage) {
+        if (entity instanceof Player) {
+            ((Player) entity).sendTitle("", "§c-" + String.format("%.1f", damage), 5, 15, 5);
+        }
     }
 } 

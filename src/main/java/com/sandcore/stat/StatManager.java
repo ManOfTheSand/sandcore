@@ -1,16 +1,18 @@
 package com.sandcore.stat;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import com.sandcore.SandCore;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
 public class StatManager {
     private final Map<UUID, PlayerStats> playerStats = new ConcurrentHashMap<>();
     private final SandCore plugin;
-    private final YamlConfiguration config;
+    private final FileConfiguration config;
 
     public StatManager(SandCore plugin) {
         this.plugin = plugin;
@@ -71,6 +73,14 @@ public class StatManager {
 
         public double getAttribute(String key) {
             return attributes.getOrDefault(key, 0.0);
+        }
+
+        public Set<String> getAttributeNames() {
+            return attributes.keySet();
+        }
+        
+        public Map<String, Double> getAttributesMap() {
+            return new HashMap<>(attributes);
         }
     }
 } 
