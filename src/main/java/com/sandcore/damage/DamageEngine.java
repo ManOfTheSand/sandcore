@@ -1,3 +1,12 @@
+package com.sandcore.damage;
+
+import org.bukkit.entity.*;
+import org.bukkit.event.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import com.sandcore.SandCore;
+import com.sandcore.stat.StatManager;
+
 public class DamageEngine implements Listener {
     private final SandCore plugin;
     private final StatManager statManager;

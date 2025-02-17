@@ -1,3 +1,12 @@
+package com.sandcore.stat;
+
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import com.sandcore.SandCore;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class StatManager {
     private final Map<UUID, PlayerStats> playerStats = new ConcurrentHashMap<>();
     private final SandCore plugin;
