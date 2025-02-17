@@ -106,7 +106,7 @@ public class CastingSystem implements Listener {
             
             // Update runtime values from cache
             comboTimeoutSeconds = cachedConfig.timeout;
-            comboCooldownMillis = cachedConfig.cooldownMillis;
+            comboCooldownMillis = cachedConfig.comboCooldownMillis;
             leftClickLockTicks = cachedConfig.leftClickLock;
             rightClickLockTicks = cachedConfig.rightClickLock;
             activationSound = cachedConfig.activationSound;
@@ -306,6 +306,7 @@ public class CastingSystem implements Listener {
             if (castSuccess) {
                 session.resetClicks();
                 session.restartTimeout();
+                session.markComboUsed();
                 
                 long formattedTime = Duration.between(session.getLastClickTime(), Instant.now()).toMillis();
                 player.sendTitle("", translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 5, 20, 5);
@@ -411,6 +412,7 @@ public class CastingSystem implements Listener {
         private static final long MAX_BUFFER_TIME_MS = 200; // Keep clicks in buffer for 200ms
         private static final double TIMING_MULTIPLIER = 0.9; // 90% of average timing
         private long averageClickInterval = 200; // Start with 200ms assumption
+        private long lastComboTime = 0;  // Track last combo time
 
         public CastingSession(Player player) {
             this.player = player;
@@ -549,7 +551,8 @@ public class CastingSystem implements Listener {
         }
 
         public boolean isOnCooldown() {
-            return false; // Always false since cooldowns are disabled
+            long elapsed = System.currentTimeMillis() - lastComboTime;
+            return elapsed < comboCooldownMillis;
         }
 
         private void updateTiming(long newInterval) {
@@ -578,6 +581,10 @@ public class CastingSystem implements Listener {
                 playSound(player, cancelSound, 1.0f, 1.0f);
             }, comboTimeoutSeconds * 20L).getTaskId();
         }
+
+        public void markComboUsed() {
+            lastComboTime = System.currentTimeMillis();
+        }
     }
 
     /**
@@ -600,7 +607,7 @@ public class CastingSystem implements Listener {
 
     private static class CastingConfig {
         final int timeout;
-        final long cooldownMillis;
+        final long comboCooldownMillis;
         final int leftClickLock;
         final int rightClickLock;
         final Map<String, Map<String, String>> comboMappings;
@@ -616,7 +623,7 @@ public class CastingSystem implements Listener {
         
         CastingConfig(YamlConfiguration config) {
             this.timeout = config.getInt("casting.timeout", 5);
-            this.cooldownMillis = config.getLong("casting.cooldownMillis", 1000);
+            this.comboCooldownMillis = config.getLong("casting.comboCooldownMillis", 1000);
             this.leftClickLock = config.getInt("casting.leftClickLock", 1);
             this.rightClickLock = config.getInt("casting.rightClickLock", 4);
             this.comboMappings = loadComboMappings(config);
@@ -645,5 +652,9 @@ public class CastingSystem implements Listener {
             }
             return mappings;
         }
+    }
+
+    public long getComboCooldownMillis() {
+        return comboCooldownMillis;
     }
 } 
