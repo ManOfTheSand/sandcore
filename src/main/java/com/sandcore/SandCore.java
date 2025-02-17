@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sandcore.classes.ClassManager;
@@ -25,6 +26,7 @@ import com.sandcore.listeners.ItemUpdateListener;
 import com.sandcore.listeners.StatGUIListener;
 import com.sandcore.listeners.XPListener;
 import com.sandcore.stat.StatManager;
+import com.sandcore.listeners.ProfileGUIListener;
 
 public class SandCore extends JavaPlugin {
 
@@ -126,6 +128,14 @@ public class SandCore extends JavaPlugin {
 
         // Register stat GUI listener
         new StatGUIListener(statManager, playerDataManager);
+
+        // Load gui.yml configuration
+        FileConfiguration guiConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "gui.yml"));
+
+        // Replace old ProfileGUIListener registration with:
+        ProfileGUIListener profileGUIListener = new ProfileGUIListener(statManager, guiConfig);
+        profileGUIListener.setPlayerDataManager(playerDataManager);
+        getServer().getPluginManager().registerEvents(profileGUIListener, this);
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }

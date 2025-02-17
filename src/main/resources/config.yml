@@ -15,7 +15,8 @@ xpRequirements:
   - 1000
   - 1500
   - 2100
-maxLevel: 6
+  - 8000
+maxLevel: 7
 
 levelUp:
   sound: "ENTITY_PLAYER_LEVELUP"

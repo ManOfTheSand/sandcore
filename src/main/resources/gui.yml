@@ -37,8 +37,9 @@ classGUI:
 
 profileGUI:
   title: "<gradient:#0099FF:#6600FF>Profile</gradient>"
-  size: 9
+  size: 27
   items:
+    # Existing profile info item
     profileItem:
       slot: 4
       material: PAPER
@@ -46,4 +47,37 @@ profileGUI:
       lore:
         - "<hex:#AAAAAA>Selected Class: {selectedClass}"
         - "<hex:#AAAAAA>Level: {level}"
-        - "<hex:#AAAAAA>XP: {xp}" 
+        - "<hex:#AAAAAA>XP: {xp}"
+    
+    # New stat attributes
+    strength:
+      slot: 10
+      material: RED_DYE
+      name: "<gradient:#FF0000:#FFA500>Strength: {value}</gradient>"
+      lore:
+        - "<hex:#AAAAAA>Increases physical damage"
+        - "<hex:#555555>Allocated: <hex:#FFA500>{allocated}</hex>"
+    
+    dexterity:
+      slot: 12
+      material: GREEN_DYE
+      name: "<gradient:#00FF00:#00AA00>Dexterity: {value}</gradient>"
+      lore:
+        - "<hex:#AAAAAA>Improves attack speed"
+        - "<hex:#555555>Allocated: <hex:#00FF00>{allocated}</hex>"
+    
+    intelligence:
+      slot: 14
+      material: BLUE_DYE  
+      name: "<gradient:#0099FF:#0066FF>Intelligence: {value}</gradient>"
+      lore:
+        - "<hex:#AAAAAA>Boosts magical power"
+        - "<hex:#555555>Allocated: <hex:#0099FF>{allocated}</hex>"
+    
+    stat_points:
+      slot: 16
+      material: NETHER_STAR
+      name: "<gradient:#FFD700:#FFFFFF>Stat Points: {points}</gradient>"
+      lore:
+        - "<hex:#AAAAAA>Click attributes to spend points!"
+        - "<hex:#555555>1 point = 1 attribute level" 

@@ -14,7 +14,7 @@ import com.sandcore.data.PlayerData;
 import com.sandcore.data.PlayerDataManager;
 import com.sandcore.stat.StatManager;
 import com.sandcore.stat.StatManager.PlayerStats;
-import com.sandcore.utils.ItemBuilder;
+import com.sandcore.util.ItemBuilder;
 
 public class StatGUIListener implements Listener {
     
