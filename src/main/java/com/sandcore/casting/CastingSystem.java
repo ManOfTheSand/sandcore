@@ -3,19 +3,23 @@ package com.sandcore.casting;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -293,6 +297,21 @@ public class CastingSystem implements Listener {
             activeSessions.get(player.getUniqueId()).resetClicks();
             activeSessions.get(player.getUniqueId()).startCooldown();
             plugin.getLogger().info("Player " + player.getName() + " successfully cast " + skillName + " using combo " + combo);
+            // Add visual feedback
+            long formattedTime = Duration.between(activeSessions.get(player.getUniqueId()).getLastClickTime(), Instant.now()).toMillis();
+            player.sendTitle(
+                "", 
+                translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 
+                5,  // Fade in
+                20, // Stay
+                5   // Fade out
+            );
+            // Add particle effects
+            player.spawnParticle(
+                Particle.VILLAGER_HAPPY, 
+                player.getEyeLocation(), 
+                5, 0.2, 0.5, 0.2, 0.1
+            );
         } else {
             activeSessions.get(player.getUniqueId()).resetClicks();
             activeSessions.get(player.getUniqueId()).startCooldown();
@@ -386,6 +405,10 @@ public class CastingSystem implements Listener {
         // Remove timestamp-based filtering; we now use a click lock.
         private boolean clickLock = false;
         private Instant lastClickTime = Instant.MIN;
+        private final Queue<String> clickBuffer = new ConcurrentLinkedQueue<>();
+        private static final long MAX_BUFFER_TIME_MS = 200; // Keep clicks in buffer for 200ms
+        private static final double TIMING_MULTIPLIER = 0.9; // 90% of average timing
+        private long averageClickInterval = 200; // Start with 200ms assumption
 
         public CastingSession(Player player) {
             this.player = player;
@@ -397,42 +420,68 @@ public class CastingSystem implements Listener {
          * events when a key is held down.
          */
         public void addClick(String click) {
+            clickBuffer.add(click);
             comboExecutor.submit(() -> {
-                if (Instant.now().isBefore(cooldownEnd)) return;
-                
-                clicks.add(click);
-                lastClickTime = Instant.now();
-                
-                // Check if we have a valid combo
-                if (clicks.size() == 3) {
-                    String combo = String.join("", clicks);
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        processCombo(player, combo);
-                        resetClicks();
-                    });
+                try {
+                    // Process buffer after short delay
+                    Thread.sleep(10); // 10ms buffer aggregation
+                    processBuffer();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
-                
+            });
+        }
+
+        private void processBuffer() {
+            List<String> processedClicks = new ArrayList<>();
+            Instant cutoff = Instant.now().minusMillis(MAX_BUFFER_TIME_MS);
+            
+            while (!clickBuffer.isEmpty()) {
+                processedClicks.add(clickBuffer.poll());
+            }
+            
+            if (!processedClicks.isEmpty()) {
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    clickLock = true;
-                    playSound(player, clickSound, (float) clickSoundVolume, (float) clickSoundPitch);
-                    player.sendActionBar(translateHexColors("&eCombo: &b" + String.join(",", clicks)));
-                });
-                
-                // Start timeout check
-                comboExecutor.submit(() -> {
-                    try {
-                        Thread.sleep(comboTimeoutSeconds * 1000);
-                        if (Instant.now().isAfter(lastClickTime.plusSeconds(comboTimeoutSeconds))) {
-                            Bukkit.getScheduler().runTask(plugin, () -> {
-                                player.sendActionBar(translateHexColors(cancelMessage));
-                                playSound(player, cancelSound, 1.0f, 1.0f);
-                                resetClicks();
-                            });
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                    for (String click : processedClicks) {
+                        handleSingleClick(click);
                     }
                 });
+            }
+        }
+
+        private void handleSingleClick(String click) {
+            clicks.add(click);
+            lastClickTime = Instant.now();
+            
+            // Check if we have a valid combo
+            if (clicks.size() == 3) {
+                String combo = String.join("", clicks);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    processCombo(player, combo);
+                    resetClicks();
+                });
+            }
+            
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                clickLock = true;
+                playSound(player, clickSound, (float) clickSoundVolume, (float) clickSoundPitch);
+                player.sendActionBar(translateHexColors("&eCombo: &b" + String.join(",", clicks)));
+            });
+            
+            // Start timeout check
+            comboExecutor.submit(() -> {
+                try {
+                    Thread.sleep(comboTimeoutSeconds * 1000);
+                    if (Instant.now().isAfter(lastClickTime.plusSeconds(comboTimeoutSeconds))) {
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            player.sendActionBar(translateHexColors(cancelMessage));
+                            playSound(player, cancelSound, 1.0f, 1.0f);
+                            resetClicks();
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             });
         }
 
@@ -492,6 +541,19 @@ public class CastingSystem implements Listener {
          */
         public void startCooldown() {
             cooldownEnd = Instant.now().plusMillis(comboCooldownMillis);
+        }
+
+        private void updateTiming(long newInterval) {
+            averageClickInterval = (long) (averageClickInterval * 0.7 + newInterval * 0.3);
+        }
+
+        private boolean withinTimingWindow() {
+            long timeSinceLast = Duration.between(lastClickTime, Instant.now()).toMillis();
+            return timeSinceLast < averageClickInterval * 1.5;
+        }
+
+        public Instant getLastClickTime() {
+            return lastClickTime;
         }
     }
 

@@ -41,3 +41,11 @@ casting:
   clickSound: "UI_BUTTON_CLICK"
   clickSoundVolume: 1.0
   clickSoundPitch: 1.0
+  input:
+    buffer_window: 150ms  # Time window for click sequence validation
+    max_click_interval: 500ms  # Maximum time between clicks
+    min_click_interval: 50ms   # Minimum time between valid clicks
+  feedback:
+    perfect_timing_color: "&a"  # Color for perfect timing
+    late_timing_color: "&e"     # Color for acceptable but late
+    miss_color: "&c"            # Color for missed timing
