@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.Objects;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sandcore.classes.ClassManager;
@@ -23,10 +23,10 @@ import com.sandcore.items.ItemsManager;
 import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
 import com.sandcore.listeners.ItemUpdateListener;
+import com.sandcore.listeners.ProfileGUIListener;
 import com.sandcore.listeners.StatGUIListener;
 import com.sandcore.listeners.XPListener;
 import com.sandcore.stat.StatManager;
-import com.sandcore.listeners.ProfileGUIListener;
 
 public class SandCore extends JavaPlugin {
 
@@ -289,8 +289,6 @@ public class SandCore extends JavaPlugin {
     private void registerEventListeners() {
         try {
             getLogger().info("Registering event listeners...");
-            // Register the Profile GUI listener.
-            getServer().getPluginManager().registerEvents(new com.sandcore.listeners.ProfileGUIListener(), this);
             // Register the Class Selection listener.
             getServer().getPluginManager().registerEvents(new com.sandcore.listeners.ClassSelectionListener(this, playerDataManager), this);
             // Register Vanilla XP listener to prevent vanilla XP from affecting the XP bar.
