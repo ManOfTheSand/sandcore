@@ -242,7 +242,7 @@ public class CastingSystem implements Listener {
         });
         plugin.getLogger().info("Casting mode activated for player: " + player.getName());
         // Schedule a timeout task that cancels the combo if not completed in time.
-        session.startTimeoutTask(comboTimeoutSeconds);
+        session.restartTimeout();
     }
 
     /**
@@ -281,7 +281,7 @@ public class CastingSystem implements Listener {
             // Reset clicks and start cooldown for invalid combos
             if (activeSessions.containsKey(player.getUniqueId())) {
                 activeSessions.get(player.getUniqueId()).resetClicks();
-                activeSessions.get(player.getUniqueId()).startCooldown();
+                activeSessions.get(player.getUniqueId()).startCooldown(false);
             }
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
@@ -294,32 +294,27 @@ public class CastingSystem implements Listener {
         // Attempt to cast the MythicMob skill
         boolean castSuccess = castMythicMobSkill(player, skillName);
         if (castSuccess && activeSessions.containsKey(player.getUniqueId())) {
-            activeSessions.get(player.getUniqueId()).resetClicks();
-            activeSessions.get(player.getUniqueId()).startCooldown();
-            plugin.getLogger().info("Player " + player.getName() + " successfully cast " + skillName + " using combo " + combo);
-            // Add visual feedback
-            long formattedTime = Duration.between(activeSessions.get(player.getUniqueId()).getLastClickTime(), Instant.now()).toMillis();
-            player.sendTitle(
-                "", 
-                translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 
-                5,  // Fade in
-                20, // Stay
-                5   // Fade out
-            );
-            // Add particle effects
-            player.spawnParticle(
-                Particle.HAPPY_VILLAGER, 
-                player.getEyeLocation(), 
-                5, 0.2, 0.5, 0.2, 0.1
-            );
+            CastingSession session = activeSessions.get(player.getUniqueId());
+            session.resetClicks();
+            session.startCooldown(true);
+            session.restartTimeout();  // Reset timeout on success
+            
+            // Visual feedback
+            long formattedTime = Duration.between(session.getLastClickTime(), Instant.now()).toMillis();
+            player.sendTitle("", translateHexColors("&a&l" + combo + " &r&7(" + formattedTime + "ms)"), 5, 20, 5);
+            player.spawnParticle(Particle.HAPPY_VILLAGER, player.getEyeLocation(), 5, 0.2, 0.5, 0.2, 0.1);
         } else {
-            activeSessions.get(player.getUniqueId()).resetClicks();
-            activeSessions.get(player.getUniqueId()).startCooldown();
+            CastingSession session = activeSessions.get(player.getUniqueId());
+            session.resetClicks();
+            session.startCooldown(false); // Short cooldown on failure
+            session.restartTimeout();     // Keep session alive
+            
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendActionBar(translateHexColors(cancelMessage));
                 playSound(player, cancelSound, 1.0f, 1.0f);
             });
         }
+        session.startTimeoutTask(comboTimeoutSeconds);
     }
 
     /**
@@ -409,6 +404,8 @@ public class CastingSystem implements Listener {
         private static final long MAX_BUFFER_TIME_MS = 200; // Keep clicks in buffer for 200ms
         private static final double TIMING_MULTIPLIER = 0.9; // 90% of average timing
         private long averageClickInterval = 200; // Start with 200ms assumption
+        private static final long SUCCESS_COOLDOWN = 6000; // 6 seconds
+        private static final long FAILURE_COOLDOWN = 800;  // 0.8 seconds
 
         public CastingSession(Player player) {
             this.player = player;
@@ -420,6 +417,9 @@ public class CastingSystem implements Listener {
          * events when a key is held down.
          */
         public void addClick(String click) {
+            if (Instant.now().isBefore(cooldownEnd)) {
+                return; // Respect cooldown period
+            }
             clickBuffer.add(click);
             comboExecutor.submit(() -> {
                 try {
@@ -539,8 +539,8 @@ public class CastingSystem implements Listener {
         /**
          * Starts the cooldown period between combos
          */
-        public void startCooldown() {
-            cooldownEnd = Instant.now().plusMillis(comboCooldownMillis);
+        public void startCooldown(boolean success) {
+            this.cooldownEnd = Instant.now().plusMillis(success ? SUCCESS_COOLDOWN : FAILURE_COOLDOWN);
         }
 
         private void updateTiming(long newInterval) {
@@ -554,6 +554,20 @@ public class CastingSystem implements Listener {
 
         public Instant getLastClickTime() {
             return lastClickTime;
+        }
+
+        public void restartTimeout() {
+            if (taskId != -1) {
+                Bukkit.getScheduler().cancelTask(taskId);
+            }
+            taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                plugin.getLogger().info("Casting combo timeout for player: " + player.getName());
+                activeSessions.remove(player.getUniqueId());
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    player.sendActionBar(translateHexColors(cancelMessage));
+                    playSound(player, cancelSound, 1.0f, 1.0f);
+                });
+            }, comboTimeoutSeconds * 20L);
         }
     }
 
