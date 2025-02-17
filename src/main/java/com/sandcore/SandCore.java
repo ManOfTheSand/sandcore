@@ -23,7 +23,7 @@ import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
 import com.sandcore.listeners.ItemUpdateListener;
 import com.sandcore.listeners.XPListener;
-import com.sandcore.stats.StatManager;
+import com.sandcore.stat.StatManager;
 
 public class SandCore extends JavaPlugin {
 
