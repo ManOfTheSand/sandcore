@@ -22,6 +22,7 @@ import com.sandcore.items.ItemsManager;
 import com.sandcore.levels.LevelManager;
 import com.sandcore.levels.XPSourceManager;
 import com.sandcore.listeners.ItemUpdateListener;
+import com.sandcore.listeners.StatGUIListener;
 import com.sandcore.listeners.XPListener;
 import com.sandcore.stat.StatManager;
 
@@ -122,6 +123,9 @@ public class SandCore extends JavaPlugin {
 
         // Initialize statManager
         this.statManager = new StatManager(this);
+
+        // Register stat GUI listener
+        new StatGUIListener(statManager, playerDataManager);
 
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
@@ -288,6 +292,9 @@ public class SandCore extends JavaPlugin {
         }
         // Instantiate the CastingSystem to register its event listeners.
         new com.sandcore.casting.CastingSystem(this);
+
+        // Register stat GUI listener
+        new StatGUIListener(statManager, playerDataManager);
     }
 
     public ClassManager getClassManager() {

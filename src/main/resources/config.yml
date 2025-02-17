@@ -87,3 +87,7 @@ damage:
   options:
     min_damage: 1.0
     max_critical: 300.0
+
+statistics:
+  points-per-level: 2
+  max-allocated: 50 # Maximum points per stat

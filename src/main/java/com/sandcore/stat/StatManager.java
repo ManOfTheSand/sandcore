@@ -1,11 +1,17 @@
 package com.sandcore.stat;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+
 import com.sandcore.SandCore;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
@@ -36,6 +42,7 @@ public class StatManager {
     public class PlayerStats {
         private final Player player;
         private final Map<String, Double> attributes = new HashMap<>();
+        private final Map<String, Integer> allocatedPoints = new HashMap<>();
 
         public PlayerStats(Player player) {
             this.player = player;
@@ -48,7 +55,8 @@ public class StatManager {
             for (String attr : primary.getKeys(false)) {
                 double base = primary.getDouble(attr + ".base");
                 double perLevel = primary.getDouble(attr + ".per-level");
-                attributes.put(attr, base + (player.getLevel() * perLevel));
+                int allocated = allocatedPoints.getOrDefault(attr, 0);
+                attributes.put(attr, base + (player.getLevel() * perLevel) + allocated);
             }
 
             // Calculate secondary attributes
@@ -81,6 +89,11 @@ public class StatManager {
         
         public Map<String, Double> getAttributesMap() {
             return new HashMap<>(attributes);
+        }
+
+        public void increaseAttribute(String attribute, int points) {
+            allocatedPoints.put(attribute, allocatedPoints.getOrDefault(attribute, 0) + points);
+            calculateStats(); // Recalculate with new points
         }
     }
 } 
