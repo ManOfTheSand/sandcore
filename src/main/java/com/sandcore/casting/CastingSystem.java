@@ -56,19 +56,18 @@ public class CastingSystem implements Listener {
     private Location loc;
     // Configurable options for casting
     private int comboTimeoutSeconds;
-    private String activationMessage;
-    private String cancelMessage;
-    private String successMessage;
-    private String activationSound = "block.note_block.harp"; // Default fallback sound
+    private long comboCooldownMillis;
+    private int leftClickLockTicks;
+    private int rightClickLockTicks;
+    private String activationSound;
     private String cancelSound;
     private String successSound;
-    private int leftClickLockTicks = 1;  // Default values if not in config
-    private int rightClickLockTicks = 4;
-    private long comboCooldownMillis = 1000;
-    // New configuration for combo click sound
     private String clickSound;
     private double clickSoundVolume;
     private double clickSoundPitch;
+    private String activationMessage;
+    private String cancelMessage;
+    private String successMessage;
     // Mapping: Player's class => combo pattern (e.g., "L,R,L") => MythicMob skill name.
     private Map<String, Map<String, String>> comboMappings;
     // Active casting sessions keyed by player UUID.
