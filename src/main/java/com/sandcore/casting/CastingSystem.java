@@ -413,8 +413,8 @@ public class CastingSystem implements Listener {
         private static final long MAX_BUFFER_TIME_MS = 200; // Keep clicks in buffer for 200ms
         private static final double TIMING_MULTIPLIER = 0.9; // 90% of average timing
         private long averageClickInterval = 200; // Start with 200ms assumption
-        private static final long SUCCESS_COOLDOWN = 6000; // 6 seconds
-        private static final long FAILURE_COOLDOWN = 800;  // 0.8 seconds
+        private static final long SUCCESS_COOLDOWN = 0; // No cooldown on success
+        private static final long FAILURE_COOLDOWN = 2000; // 2 second cooldown on failure
 
         public CastingSession(Player player) {
             this.player = player;
@@ -549,7 +549,15 @@ public class CastingSystem implements Listener {
          * Starts the cooldown period between combos
          */
         public void startCooldown(boolean success) {
-            this.cooldownEnd = Instant.now().plusMillis(success ? SUCCESS_COOLDOWN : FAILURE_COOLDOWN);
+            // Only apply cooldown for failures
+            this.cooldownEnd = success ? Instant.MIN : 
+                Instant.now().plusMillis(FAILURE_COOLDOWN);
+        }
+
+        public boolean isOnCooldown() {
+            // Only check cooldown if it's a failure cooldown
+            return cooldownEnd != Instant.MIN && 
+                Instant.now().isBefore(cooldownEnd);
         }
 
         private void updateTiming(long newInterval) {
