@@ -137,6 +137,12 @@ public class SandCore extends JavaPlugin {
         profileGUIListener.setPlayerDataManager(playerDataManager);
         getServer().getPluginManager().registerEvents(profileGUIListener, this);
 
+        // Update profile command registration
+        if(getCommand("profile") != null) {
+            getCommand("profile").setExecutor(new ProfileCommandExecutor(this, profileGUIListener));
+            getLogger().info("Command /profile registered successfully.");
+        }
+
         getLogger().info("SandCore enabled successfully with enhanced leveling system!");
     }
 
@@ -275,7 +281,7 @@ public class SandCore extends JavaPlugin {
                 getLogger().severe("Command /debugxp is not defined in plugin.yml!");
             }
             if(getCommand("profile") != null) {
-                getCommand("profile").setExecutor(new ProfileCommandExecutor(this, playerDataManager));
+                getCommand("profile").setExecutor(new ProfileCommandExecutor(this, profileGUIListener));
                 getLogger().info("Command /profile registered successfully.");
             } else {
                 getLogger().severe("Command /profile is not defined in plugin.yml!");

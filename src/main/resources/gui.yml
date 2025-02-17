@@ -39,7 +39,6 @@ profileGUI:
   title: "<gradient:#0099FF:#6600FF>Profile</gradient>"
   size: 27
   items:
-    # Existing profile info item
     profileItem:
       slot: 4
       material: PAPER
@@ -49,7 +48,6 @@ profileGUI:
         - "<hex:#AAAAAA>Level: {level}"
         - "<hex:#AAAAAA>XP: {xp}"
     
-    # New stat attributes
     strength:
       slot: 10
       material: RED_DYE

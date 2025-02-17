@@ -67,14 +67,30 @@ public class ProfileGUIListener implements Listener {
 
     private void loadGuiItem(Inventory inv, String attribute, PlayerStats stats, PlayerData data) {
         ConfigurationSection section = guiConfig.getConfigurationSection("profileGUI.items." + attribute);
-        if (section == null) return;
+        if (section == null) {
+            Bukkit.getLogger().warning("[SandCore] Missing GUI config section for: " + attribute);
+            return;
+        }
+        
+        Material material = Material.matchMaterial(section.getString("material"));
+        if (material == null) {
+            Bukkit.getLogger().warning("[SandCore] Invalid material for: " + attribute);
+            return;
+        }
 
-        ItemStack item = new ItemBuilder(Material.matchMaterial(section.getString("material")))
+        ItemStack item = new ItemBuilder(material)
             .name(replacePlaceholders(section.getString("name"), stats, attribute))
             .lore(replacePlaceholders(section.getStringList("lore"), stats, attribute))
             .build();
         
-        inv.setItem(section.getInt("slot"), item);
+        int slot = section.getInt("slot", -1);
+        if (slot == -1) {
+            Bukkit.getLogger().warning("[SandCore] Missing slot for: " + attribute);
+            return;
+        }
+        
+        inv.setItem(slot, item);
+        Bukkit.getLogger().info("[SandCore] Loaded GUI item: " + attribute + " at slot " + slot);
     }
 
     private String replacePlaceholders(String text, PlayerStats stats, String attribute) {
